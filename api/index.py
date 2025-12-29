@@ -13,7 +13,7 @@ CORS(app)
 def get_fortune():
     """
     获取运势分析
-    基于八字命理的完整分析，包括用神喜忌、大运流年流月等
+    基于八字命理的完整分析,包括用神喜忌、大运流年流月等
     """
     data = request.json
 
@@ -21,7 +21,14 @@ def get_fortune():
     birth_date_str = data.get('birthDate', '1995-08-15')
     birth_time_str = data.get('birthTime', '09:30')
     longitude = data.get('longitude', 116.4)  # 默认北京经度
-    gender = data.get('gender', 1)  # 1为男，2为女
+
+    # 转换 longitude 为 float (前端可能传递字符串)
+    try:
+        longitude = float(longitude)
+    except (ValueError, TypeError):
+        longitude = 116.4
+
+    gender = data.get('gender', 1)  # 1为男,2为女
 
     # 2. 获取目标日期
     target_date_str = data.get('date', datetime.datetime.now().strftime('%Y-%m-%d'))
@@ -52,13 +59,14 @@ def get_fortune():
             {"label": "忌", "content": ", ".join(yi_ji['ji'][:3]), "type": "down"}
         ]
 
-        # 7. 返回数据
+        # 7. 返回数据 (修复字段命名问题)
         response_data = {
             "dateStr": f"{target_lunar.getMonth()}.{target_lunar.getDay()}",
             "weekDay": f"周{target_lunar.getWeekInChinese()}",
             "lunarStr": f"{target_lunar.getMonthInChinese()}月{target_lunar.getDayInChinese()}",
 
-            "totalScore": fortune_result['totalScore'],
+            # 修复: 使用 total_score (Python 命名) 而不是 totalScore
+            "totalScore": fortune_result['total_score'],
 
             "pillars": {
                 "year": fortune_result['liu_nian']['year'],
@@ -79,7 +87,7 @@ def get_fortune():
 
             "todo": todo_list,
 
-            # 新增：八字详情
+            # 新增:八字详情
             "baziDetail": {
                 "year": fortune_result['bazi']['year'],
                 "month": fortune_result['bazi']['month'],
@@ -88,7 +96,7 @@ def get_fortune():
                 "dayMaster": fortune_result['bazi']['day_gan'] + fortune_result['bazi']['day_zhi']
             },
 
-            # 新增：用神喜忌
+            # 新增:用神喜忌
             "yongShen": {
                 "strength": fortune_result['strength']['strength'],
                 "yongShen": fortune_result['yong_shen']['yong_shen'],
@@ -97,13 +105,13 @@ def get_fortune():
                 "tenGods": fortune_result['yong_shen']['ten_gods']
             },
 
-            # 新增：大运信息
-            "daYun": fortune_result['da_yun'],
+            # 新增:大运信息 (可能为 None)
+            "daYun": fortune_result['da_yun'] if fortune_result.get('da_yun') else None,
 
-            # 新增：神煞
+            # 新增:神煞
             "shenSha": fortune_result['shen_sha'],
 
-            # 新增：流年信息
+            # 新增:流年信息
             "liuNian": {
                 "year": fortune_result['liu_nian']['year'],
                 "month": fortune_result['liu_nian']['month'],
@@ -116,7 +124,7 @@ def get_fortune():
                 "dayZhi": fortune_result['liu_nian']['day_zhi']
             },
 
-            # 新增：今日十神
+            # 新增:今日十神
             "todayTenGod": today_ten_god
         }
 
@@ -130,7 +138,7 @@ def get_fortune():
         # 返回错误信息
         return jsonify({
             "error": str(e),
-            "message": "运势分析失败，请稍后重试"
+            "message": "运势分析失败,请稍后重试"
         }), 500
 
 
