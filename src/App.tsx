@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft, ChevronRight, Settings, Share2, Eye, EyeOff,
   Briefcase, Coins, Heart, Zap, BookOpen, Map, Sparkles, TrendingUp,
@@ -455,7 +455,7 @@ export default function App() {
         </div>
 
         {/* Floating Button */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot">
            <button
              onClick={handleGenerateImage}
              disabled={isGenerating || !fortune}
