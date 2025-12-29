@@ -154,5 +154,15 @@ def health_check():
     })
 
 
+# ============================================
+# Vercel Serverless Function 入口
+# ============================================
+def handler(request):
+    """Vercel Serverless Function 的入口点"""
+    with app.app_context():
+        return app.full_dispatch_request()
+
+
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
