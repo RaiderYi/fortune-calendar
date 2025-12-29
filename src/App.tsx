@@ -2,11 +2,51 @@ import { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft, ChevronRight, Settings, Share2, Eye, EyeOff,
   Briefcase, Coins, Heart, Zap, BookOpen, Map, Sparkles, TrendingUp,
-  Crown, Loader2, X, Download
+  Crown, Loader2, X, Download, MapPin, Calendar as CalendarIcon
 } from 'lucide-react';
 
 // @ts-ignore
 import html2canvas from 'html2canvas';
+
+// ==========================================
+// 常量与配置
+// ==========================================
+
+// 常用城市经度表 (用于真太阳时校准)
+const CHINA_CITIES: Record<string, number> = {
+  '北京': 116.40, '上海': 121.47, '广州': 113.26, '深圳': 114.05,
+  '成都': 104.06, '杭州': 120.15, '武汉': 114.30, '重庆': 106.55,
+  '南京': 118.79, '天津': 117.20, '西安': 108.93, '沈阳': 123.43,
+  '哈尔滨': 126.53, '长沙': 112.93, '昆明': 102.83, '郑州': 113.62,
+  '香港': 114.16, '台北': 121.50, '乌鲁木齐': 87.61, '拉萨': 91.14
+};
+
+// 安全颜色映射表 (解决 html2canvas 不支持 oklch 颜色的问题)
+const SAFE_THEMES: Record<string, { bg: string, text: string }> = {
+  '食神': { bg: 'linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)', text: '#7c2d12' },
+  '松弛': { bg: 'linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)', text: '#7c2d12' },
+
+  '偏财': { bg: 'linear-gradient(135deg, #fef08a 0%, #fcd34d 100%)', text: '#78350f' },
+  '吸金': { bg: 'linear-gradient(135deg, #fef08a 0%, #fcd34d 100%)', text: '#78350f' },
+  '破财': { bg: 'linear-gradient(135deg, #fef08a 0%, #fcd34d 100%)', text: '#78350f' },
+
+  '七杀': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#f1f5f9' },
+  '气场': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#f1f5f9' },
+  '硬刚': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#f1f5f9' },
+
+  '桃花': { bg: 'linear-gradient(135deg, #fbcfe8 0%, #fda4af 100%)', text: '#881337' },
+  '万人迷': { bg: 'linear-gradient(135deg, #fbcfe8 0%, #fda4af 100%)', text: '#881337' },
+
+  '正印': { bg: 'linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%)', text: '#581c87' },
+  '锦鲤': { bg: 'linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%)', text: '#581c87' },
+
+  // 默认兜底
+  'default': { bg: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)', text: '#1f2937' }
+};
+
+// ==========================================
+// 类型定义
+// ==========================================
 
 type DimensionType = 'career' | 'wealth' | 'romance' | 'health' | 'academic' | 'travel';
 
@@ -38,23 +78,13 @@ interface UserProfile {
   name: string;
   birthDate: string;
   birthTime: string;
+  city: string;      // 新增：城市
+  longitude: string; // 新增：经度 (用string方便输入框处理)
 }
 
-const SAFE_THEMES: Record<string, { bg: string, text: string }> = {
-  '食神': { bg: 'linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)', text: '#7c2d12' },
-  '松弛': { bg: 'linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%)', text: '#7c2d12' },
-  '偏财': { bg: 'linear-gradient(135deg, #fef08a 0%, #fcd34d 100%)', text: '#78350f' },
-  '吸金': { bg: 'linear-gradient(135deg, #fef08a 0%, #fcd34d 100%)', text: '#78350f' },
-  '破财': { bg: 'linear-gradient(135deg, #fef08a 0%, #fcd34d 100%)', text: '#78350f' },
-  '七杀': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#f1f5f9' },
-  '气场': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#f1f5f9' },
-  '硬刚': { bg: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', text: '#f1f5f9' },
-  '桃花': { bg: 'linear-gradient(135deg, #fbcfe8 0%, #fda4af 100%)', text: '#881337' },
-  '万人迷': { bg: 'linear-gradient(135deg, #fbcfe8 0%, #fda4af 100%)', text: '#881337' },
-  '正印': { bg: 'linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%)', text: '#581c87' },
-  '锦鲤': { bg: 'linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%)', text: '#581c87' },
-  'default': { bg: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)', text: '#1f2937' }
-};
+// ==========================================
+// 主组件
+// ==========================================
 
 export default function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -62,17 +92,31 @@ export default function App() {
   const [showBazi, setShowBazi] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // UI 状态
   const [currentThemeStyle, setCurrentThemeStyle] = useState(SAFE_THEMES['default']);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('user_profile');
-    return saved ? JSON.parse(saved) : { name: '张三', birthDate: '1995-08-15', birthTime: '09:30' };
+    // 初始化默认值，增加北京作为默认地点
+    return saved ? JSON.parse(saved) : {
+      name: '张三',
+      birthDate: '1995-08-15',
+      birthTime: '09:30',
+      city: '北京',
+      longitude: '116.40'
+    };
   });
   const [editProfile, setEditProfile] = useState<UserProfile>(userProfile);
+
+  // 截图相关
   const contentRef = useRef<HTMLDivElement>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // --- 核心：调用后端接口 ---
   useEffect(() => {
     const fetchFortune = async () => {
       setIsLoading(true);
@@ -82,13 +126,15 @@ export default function App() {
         const day = String(currentDate.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
 
+        // 相对路径请求，Vercel 会处理
         const res = await fetch('/api/fortune', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             date: dateStr,
             birthDate: userProfile.birthDate,
-            birthTime: userProfile.birthTime
+            birthTime: userProfile.birthTime,
+            longitude: userProfile.longitude // 传递经度给后端计算真太阳时
           }),
         });
 
@@ -96,8 +142,10 @@ export default function App() {
           const backendData = await res.json();
           setFortune({ ...backendData, dateObj: currentDate });
 
+          // 颜色映射逻辑
           const keyword = backendData.mainTheme.keyword;
           let themeKey = 'default';
+          // 关键词模糊匹配
           if (['松弛', '食神', '叛逆', '伤官'].some(k => keyword.includes(k))) themeKey = '食神';
           else if (['吸金', '偏财', '搬砖', '正财', '破财'].some(k => keyword.includes(k))) themeKey = '偏财';
           else if (['气场', '七杀', '硬刚', '比肩'].some(k => keyword.includes(k))) themeKey = '七杀';
@@ -105,6 +153,7 @@ export default function App() {
           else if (['锦鲤', '正印', '脑洞', '偏印'].some(k => keyword.includes(k))) themeKey = '正印';
 
           setCurrentThemeStyle(SAFE_THEMES[themeKey] || SAFE_THEMES['default']);
+
         } else {
           console.error("后端返回错误");
         }
@@ -117,6 +166,7 @@ export default function App() {
     fetchFortune();
   }, [currentDate, userProfile]);
 
+  // --- 截图逻辑 ---
   const handleGenerateImage = async () => {
     if (!contentRef.current) return;
     setIsGenerating(true);
@@ -125,14 +175,15 @@ export default function App() {
       const originalShowBazi = showBazi;
       if (!showBazi) setShowBazi(true);
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 稍微等待渲染稳定
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(contentRef.current, {
         useCORS: true,
         scale: 2,
         backgroundColor: '#F5F5F7',
         logging: false,
-        ignoreElements: (element) => {
+        ignoreElements: (element: Element) => {
           return element.classList.contains('no-screenshot');
         }
       });
@@ -148,12 +199,25 @@ export default function App() {
     }
   };
 
+  // --- 设置保存 ---
   const handleSaveSettings = () => {
     setUserProfile(editProfile);
     localStorage.setItem('user_profile', JSON.stringify(editProfile));
     setIsSettingsOpen(false);
   };
 
+  // --- 城市选择处理 ---
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const city = e.target.value;
+    const lng = CHINA_CITIES[city];
+    setEditProfile({
+      ...editProfile,
+      city: city,
+      longitude: lng ? lng.toString() : editProfile.longitude
+    });
+  };
+
+  // --- 日期切换 ---
   const changeDate = (days: number) => {
     setIsAnimating(true);
     setTimeout(() => {
@@ -164,6 +228,17 @@ export default function App() {
     }, 200);
   };
 
+  // --- 日期选择器处理 ---
+  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 修复时区问题，直接解析 YYYY-MM-DD
+    const [y, m, d] = e.target.value.split('-').map(Number);
+    if (y && m && d) {
+      const newDate = new Date(y, m - 1, d);
+      setCurrentDate(newDate);
+    }
+  };
+
+  // 辅助函数
   const getIcon = (type: DimensionType, className: string) => {
     switch (type) {
       case 'career': return <Briefcase className={className} />;
@@ -186,11 +261,14 @@ export default function App() {
     }
   };
 
+  // 格式化日期为 YYYY-MM-DD 供 input 使用
+  const formattedDateValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+
   return (
     <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', justifyContent: 'center', fontFamily: 'system-ui', color: '#1e293b', userSelect: 'none', overflow: 'hidden' }}>
       <div style={{ width: '100%', maxWidth: '448px', background: '#F5F5F7', height: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
 
-        {/* Top Nav */}
+        {/* --- 顶部导航 --- */}
         <div className="px-6 pt-12 pb-4 flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-30">
           <div className="flex flex-col">
             <h1 className="text-xl font-bold tracking-tight">你好，<span className="text-indigo-600">{userProfile.name}</span></h1>
@@ -206,23 +284,37 @@ export default function App() {
           </button>
         </div>
 
-        {/* Date Selector */}
+        {/* --- 日期选择 (改进版：点击日期可弹窗选择) --- */}
         <div className="flex items-center justify-between px-6 py-2">
           <button onClick={() => changeDate(-1)} className="text-gray-400 hover:text-gray-800 p-2"><ChevronLeft /></button>
-          <div className="flex flex-col items-center">
-            <span className="text-2xl font-black font-mono tracking-tighter">
-              {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
-            </span>
+
+          <div className="flex flex-col items-center relative group cursor-pointer">
+            {/* 隐形的原生日期选择器覆盖在文字上 */}
+            <input
+              type="date"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              onChange={handleDateInput}
+              value={formattedDateValue}
+            />
+            <div className="flex items-center gap-1 group-hover:opacity-70 transition-opacity">
+              <span className="text-2xl font-black font-mono tracking-tighter">
+                {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
+              </span>
+              {/* 仅用于视觉提示的小图标 */}
+              <CalendarIcon size={14} className="text-gray-300" />
+            </div>
+
             {fortune && (
               <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full mt-1">
                 {fortune.weekDay} · {fortune.lunarStr}
               </span>
             )}
           </div>
+
           <button onClick={() => changeDate(1)} className="text-gray-400 hover:text-gray-800 p-2"><ChevronRight /></button>
         </div>
 
-        {/* Content Area */}
+        {/* --- 核心内容区 --- */}
         <div className={`flex-1 overflow-y-auto px-5 pb-24 transition-opacity duration-200 ${isAnimating ? 'opacity-50' : 'opacity-100'}`}>
           {isLoading || !fortune ? (
             <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-3">
@@ -230,218 +322,104 @@ export default function App() {
               <span className="text-sm">大师正在排盘...</span>
             </div>
           ) : (
+            // 截图区域容器
             <div ref={contentRef} style={{ paddingBottom: '24px', background: '#F5F5F7', paddingLeft: '4px', paddingRight: '4px' }}>
-              {/* Hero Card - 完全使用内联样式 */}
+              {/* Hero Card - 使用安全样式 */}
               <div
-                style={{
-                  marginTop: '16px',
-                  borderRadius: '32px',
-                  padding: '24px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: currentThemeStyle.bg
-                }}
+                className="mt-4 rounded-[2rem] p-6 shadow-lg relative overflow-hidden group"
+                style={{ background: currentThemeStyle.bg }}
               >
-                 <div style={{ position: 'absolute', right: '-24px', top: '-24px', fontSize: '10rem', opacity: 0.1, userSelect: 'none', pointerEvents: 'none', transform: 'rotate(12deg)' }}>
+                 <div className="absolute -right-6 -top-6 text-[10rem] opacity-10 select-none pointer-events-none rotate-12">
                    {fortune.mainTheme.emoji}
                  </div>
-                 <div style={{ position: 'relative', zIndex: 10, color: currentThemeStyle.text }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-                     <div style={{
-                       display: 'inline-flex',
-                       alignItems: 'center',
-                       gap: '4px',
-                       padding: '4px 12px',
-                       borderRadius: '9999px',
-                       border: '1px solid rgba(255, 255, 255, 0.2)',
-                       backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                       backdropFilter: 'blur(12px)',
-                       boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
-                     }}>
-                       <Crown size={12} style={{ opacity: 0.8 }} />
-                       <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>Today's Vibe</span>
+                 <div className="relative z-10" style={{ color: currentThemeStyle.text }}>
+                   <div className="flex justify-between items-start mb-6">
+                     <div className="inline-flex items-center gap-1 bg-white/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-sm">
+                       <Crown size={12} className="opacity-80" />
+                       <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">Today's Vibe</span>
                      </div>
-                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                          <span style={{ fontSize: '48px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: 1 }}>{fortune.totalScore}</span>
-                          <span style={{ fontSize: '12px', fontWeight: 500, opacity: 0.6 }}>分</span>
+                     <div className="flex flex-col items-end">
+                       <div className="flex items-baseline gap-1">
+                          <span className="text-5xl font-black tracking-tighter leading-none">{fortune.totalScore}</span>
+                          <span className="text-xs font-medium opacity-60">分</span>
                        </div>
                      </div>
                    </div>
 
-                   <div style={{ marginBottom: '20px' }}>
-                     <h2 style={{ fontSize: '60px', fontWeight: 900, letterSpacing: '-0.05em', marginBottom: '8px', filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))' }}>
+                   <div className="mb-5">
+                     <h2 className="text-6xl font-black tracking-tighter mb-2 drop-shadow-sm">
                        {fortune.mainTheme.keyword}
                      </h2>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                       <span style={{
-                         backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                         backdropFilter: 'blur(12px)',
-                         padding: '4px 12px',
-                         borderRadius: '9999px',
-                         fontSize: '14px',
-                         fontWeight: 700,
-                         border: '1px solid rgba(255, 255, 255, 0.2)',
-                         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                         display: 'flex',
-                         alignItems: 'center',
-                         gap: '6px'
-                       }}>
-                          <span style={{ fontSize: '18px' }}>{fortune.mainTheme.emoji}</span>
+                     <div className="flex items-center gap-2">
+                       <span className="bg-white/40 backdrop-blur-md px-3 py-1 rounded-full text-sm font-bold border border-white/20 shadow-sm flex items-center gap-1.5">
+                          <span className="text-lg">{fortune.mainTheme.emoji}</span>
                           {fortune.mainTheme.subKeyword}
                        </span>
                      </div>
                    </div>
 
-                   <div style={{ marginBottom: '12px' }}>
-                     <button
-                       onClick={() => setShowBazi(!showBazi)}
-                       style={{
-                         fontSize: '10px',
-                         opacity: 0.5,
-                         display: 'flex',
-                         alignItems: 'center',
-                         gap: '6px',
-                         backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                         padding: '4px 8px',
-                         borderRadius: '4px',
-                         border: 'none',
-                         cursor: 'pointer',
-                         width: 'fit-content'
-                       }}
-                       onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                       onMouseLeave={(e) => e.currentTarget.style.opacity = '0.5'}
-                     >
+                   <div className="mb-3">
+                     <button onClick={() => setShowBazi(!showBazi)} className="text-[10px] opacity-50 hover:opacity-100 transition flex items-center gap-1.5 bg-black/5 px-2 py-1 rounded hover:bg-black/10 w-fit">
                          {showBazi ? <EyeOff size={10} /> : <Eye size={10} />}
-                         <span>{showBazi ? `${fortune.pillars.year} / ${fortune.pillars.month} / ${fortune.pillars.day}` : '查看今日天机密码'}</span>
+                         {showBazi ? `${fortune.pillars.year} / ${fortune.pillars.month} / ${fortune.pillars.day}` : '查看今日天机密码'}
                      </button>
                    </div>
 
-                   <p style={{
-                     fontSize: '14px',
-                     fontWeight: 500,
-                     opacity: 0.9,
-                     lineHeight: 1.625,
-                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                     padding: '16px',
-                     borderRadius: '16px',
-                     backdropFilter: 'blur(12px)',
-                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                     boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)'
-                   }}>
+                   <p className="text-sm font-medium opacity-90 leading-relaxed bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
                      "{fortune.mainTheme.description}"
                    </p>
                  </div>
               </div>
 
               {/* Todo List */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '16px' }}>
+              <div className="grid grid-cols-2 gap-3 mt-4">
                  {fortune.todo.map((item, idx) => (
-                   <div
-                     key={idx}
-                     style={{
-                       padding: '16px',
-                       borderRadius: '16px',
-                       display: 'flex',
-                       flexDirection: 'column',
-                       justifyContent: 'space-between',
-                       boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                       border: '1px solid transparent',
-                       backgroundColor: item.type === 'up' ? '#ffffff' : 'rgba(229, 231, 235, 0.5)'
-                     }}
-                   >
-                     <span
-                       style={{
-                         fontSize: '10px',
-                         fontWeight: 900,
-                         padding: '2px 8px',
-                         borderRadius: '4px',
-                         width: 'fit-content',
-                         marginBottom: '8px',
-                         textTransform: 'uppercase',
-                         letterSpacing: '0.05em',
-                         backgroundColor: item.type === 'up' ? '#d1fae5' : '#ffe4e6',
-                         color: item.type === 'up' ? '#047857' : '#be123c'
-                       }}
-                     >
+                   <div key={idx} className={`p-4 rounded-2xl ${item.type === 'up' ? 'bg-white' : 'bg-gray-200/50'} flex flex-col justify-between shadow-sm border border-transparent`}
+                        style={{ backgroundColor: item.type === 'up' ? '#ffffff' : 'rgba(229, 231, 235, 0.5)' }}>
+                     <span className={`text-[10px] font-black px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide`}
+                           style={{ backgroundColor: item.type === 'up' ? '#d1fae5' : '#ffe4e6', color: item.type === 'up' ? '#047857' : '#be123c' }}>
                        {item.label}
                      </span>
-                     <span style={{ fontWeight: 700, color: '#374151', lineHeight: 1.25, fontSize: '14px' }}>{item.content}</span>
+                     <span className="font-bold text-gray-700 leading-tight text-sm">{item.content}</span>
                    </div>
                  ))}
               </div>
 
               {/* Stats Grid */}
-              <div style={{ marginTop: '24px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#9ca3af', marginBottom: '12px', paddingLeft: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <TrendingUp size={14} /> <span>深度推演</span>
+              <div className="mt-6">
+                <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                  <TrendingUp size={14} /> 深度推演
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                <div className="grid grid-cols-1 gap-3">
                   {(Object.keys(fortune.dimensions) as DimensionType[]).map((key) => {
                     const item = fortune.dimensions[key];
                     const isGood = item.level === '吉';
                     const isBad = item.level === '凶';
 
                     return (
-                      <div
-                        key={key}
-                        style={{
-                          backgroundColor: '#ffffff',
-                          padding: '16px',
-                          borderRadius: '16px',
-                          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                          border: '1px solid #f3f4f6',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '16px'
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            marginTop: '2px',
-                            backgroundColor: isGood ? '#ffedd5' : isBad ? '#f3f4f6' : '#dbeafe',
-                            color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb'
-                          }}
-                        >
-                          {getIcon(key, "")}
+                      <div key={key} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5`}
+                             style={{ backgroundColor: isGood ? '#ffedd5' : isBad ? '#f3f4f6' : '#dbeafe', color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb' }}>
+                          {getIcon(key, "w-5 h-5")}
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <span style={{ fontWeight: 700, color: '#1e293b' }}>{getLabel(key)}</span>
-                            <span
-                              style={{
-                                fontSize: '10px',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                border: '1px solid',
-                                fontWeight: 500,
-                                backgroundColor: isGood ? '#fff7ed' : isBad ? '#f9fafb' : '#eff6ff',
-                                borderColor: isGood ? '#ffedd5' : isBad ? '#f3f4f6' : '#dbeafe',
-                                color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb'
-                              }}
-                            >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-gray-800">{getLabel(key)}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium`}
+                                  style={{
+                                    backgroundColor: isGood ? '#fff7ed' : isBad ? '#f9fafb' : '#eff6ff',
+                                    borderColor: isGood ? '#ffedd5' : isBad ? '#f3f4f6' : '#dbeafe',
+                                    color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb',
+                                    borderStyle: 'solid', borderWidth: '1px'
+                                  }}>
                               {item.tag}
                             </span>
                           </div>
-                          <p style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.625, textAlign: 'justify' }}>{item.inference}</p>
+                          <p className="text-xs text-slate-500 leading-relaxed text-justify">{item.inference}</p>
                         </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', height: '100%', minWidth: '32px' }}>
-                           <span
-                             style={{
-                               fontSize: '14px',
-                               fontWeight: 700,
-                               fontFamily: 'monospace',
-                               color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb'
-                             }}
-                           >
+                        <div className="text-right shrink-0 flex flex-col items-end justify-center h-full min-w-[2rem]">
+                           <span className={`text-sm font-bold font-mono`}
+                                 style={{ color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb' }}>
                             {item.score}
                           </span>
                         </div>
@@ -454,7 +432,7 @@ export default function App() {
           )}
         </div>
 
-        {/* Floating Button */}
+        {/* --- 底部悬浮按钮 --- */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot">
            <button
              onClick={handleGenerateImage}
@@ -468,7 +446,7 @@ export default function App() {
 
         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#F5F5F7] to-transparent pointer-events-none z-10"></div>
 
-        {/* Image Modal */}
+        {/* --- 图片预览/下载弹窗 --- */}
         {generatedImage && (
           <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 animate-in fade-in duration-200">
              <div className="bg-white p-2 rounded-2xl shadow-2xl max-h-[70vh] overflow-hidden flex flex-col">
@@ -495,7 +473,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Settings Modal */}
+        {/* --- 设置弹窗 --- */}
         {isSettingsOpen && (
           <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
              <div className="bg-white w-full rounded-3xl p-6 shadow-2xl scale-in-center">
@@ -505,6 +483,7 @@ export default function App() {
                     <X size={24} className="text-gray-500"/>
                   </button>
                 </div>
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-500 mb-1">昵称</label>
@@ -518,9 +497,37 @@ export default function App() {
                     <label className="block text-sm font-bold text-gray-500 mb-1">出生时间</label>
                     <input type="time" value={editProfile.birthTime} onChange={e => setEditProfile({...editProfile, birthTime: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
+                  {/* 新增：出生城市/经度 */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-500 mb-1">出生城市 (真太阳时校准)</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={editProfile.city}
+                        onChange={handleCityChange}
+                        className="w-2/3 bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+                      >
+                        <option value="">选择城市</option>
+                        {Object.keys(CHINA_CITIES).map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                      <div className="w-1/3 relative">
+                         <input
+                           type="text"
+                           value={editProfile.longitude}
+                           onChange={e => setEditProfile({...editProfile, longitude: e.target.value})}
+                           placeholder="经度"
+                           className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                         />
+                         <span className="absolute right-3 top-3 text-xs text-gray-400">°E</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
                 <div className="mt-8">
                   <button onClick={handleSaveSettings} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition">保存并重排运势</button>
+                  <p className="text-center text-[10px] text-gray-400 mt-3">我们将根据经度为您校准真太阳时</p>
                 </div>
              </div>
           </div>
