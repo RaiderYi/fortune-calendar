@@ -57,6 +57,44 @@ interface DimensionAnalysis {
   inference: string;
 }
 
+interface BaziDetail {
+  year: string;
+  month: string;
+  day: string;
+  hour: string;
+  dayMaster: string;
+}
+
+interface YongShen {
+  strength: string;
+  yongShen: string[];
+  xiShen: string[];
+  jiShen: string[];
+  tenGods: string[];
+}
+
+interface DaYun {
+  index: number;
+  start_year: number;
+  end_year: number;
+  gan_zhi: string;
+  gan: string;
+  zhi: string;
+  age: number;
+}
+
+interface LiuNian {
+  year: string;
+  month: string;
+  day: string;
+  yearGan: string;
+  yearZhi: string;
+  monthGan: string;
+  monthZhi: string;
+  dayGan: string;
+  dayZhi: string;
+}
+
 interface DailyFortune {
   dateObj: Date;
   dateStr: string;
@@ -72,6 +110,12 @@ interface DailyFortune {
   };
   dimensions: { [key in DimensionType]: DimensionAnalysis; };
   todo: { label: string; content: string; type: 'up' | 'down'; }[];
+  baziDetail?: BaziDetail;
+  yongShen?: YongShen;
+  daYun?: DaYun;
+  shenSha?: string[];
+  liuNian?: LiuNian;
+  todayTenGod?: string;
 }
 
 interface UserProfile {
@@ -384,6 +428,135 @@ export default function App() {
                    </div>
                  ))}
               </div>
+
+              {/* 八字详情和用神喜忌 */}
+              {(showBazi || fortune.baziDetail) && (
+                <div className="mt-6 space-y-4">
+                  {/* 八字详情 */}
+                  {fortune.baziDetail && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles size={14} /> 八字详情
+                      </h3>
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-xl">
+                          <div className="text-[10px] text-gray-400 mb-1">年柱</div>
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.year}</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl">
+                          <div className="text-[10px] text-gray-400 mb-1">月柱</div>
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.month}</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-xl">
+                          <div className="text-[10px] text-gray-400 mb-1">日柱</div>
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.day}</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-3 rounded-xl">
+                          <div className="text-[10px] text-gray-400 mb-1">时柱</div>
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.hour}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-center">
+                        <span className="text-xs text-gray-400">日主：</span>
+                        <span className="text-sm font-bold text-indigo-600 ml-1">{fortune.baziDetail.dayMaster}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 用神喜忌 */}
+                  {fortune.yongShen && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                        <TrendingUp size={14} /> 用神喜忌
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-[10px] text-gray-400 mb-2">日主旺衰</div>
+                          <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                            fortune.yongShen.strength === '身旺' ? 'bg-red-100 text-red-700' :
+                            fortune.yongShen.strength === '身弱' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {fortune.yongShen.strength}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-gray-400 mb-2">用神</div>
+                          <div className="flex flex-wrap gap-1">
+                            {fortune.yongShen.yongShen.map((elem, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                {elem}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-gray-400 mb-2">喜神</div>
+                          <div className="flex flex-wrap gap-1">
+                            {fortune.yongShen.xiShen.map((elem, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
+                                {elem}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-gray-400 mb-2">忌神</div>
+                          <div className="flex flex-wrap gap-1">
+                            {fortune.yongShen.jiShen.map((elem, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                {elem}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 大运信息 */}
+                  {fortune.daYun && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                        <Crown size={14} /> 当前大运
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl">
+                            <div className="text-2xl font-black">{fortune.daYun.gan_zhi}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-400">起运年龄</div>
+                            <div className="text-sm font-bold text-gray-800">{fortune.daYun.age}岁</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs text-gray-400">大运周期</div>
+                          <div className="text-sm font-bold text-gray-800">
+                            {fortune.daYun.start_year} - {fortune.daYun.end_year}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 神煞信息 */}
+                  {fortune.shenSha && fortune.shenSha.length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles size={14} /> 今日神煞
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {fortune.shenSha.map((ss, idx) => (
+                          <span key={idx} className="px-3 py-1.5 bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                            {ss}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Stats Grid */}
               <div className="mt-6">
