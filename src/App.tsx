@@ -232,6 +232,32 @@ export default function App() {
         logging: false,
         ignoreElements: (element: Element) => {
           return element.classList.contains('no-screenshot');
+        },
+        // 🔧 修复：在克隆的DOM中替换现代颜色函数
+        onclone: (clonedDoc) => {
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            const computed = window.getComputedStyle(el);
+
+            // 替换背景色
+            const bgColor = computed.backgroundColor;
+            if (bgColor && (bgColor.includes('oklch') || bgColor.includes('oklab') || bgColor.includes('color('))) {
+              htmlEl.style.backgroundColor = '#ffffff';
+            }
+
+            // 替换文字颜色
+            const textColor = computed.color;
+            if (textColor && (textColor.includes('oklch') || textColor.includes('oklab') || textColor.includes('color('))) {
+              htmlEl.style.color = '#1f2937';
+            }
+
+            // 替换边框颜色
+            const borderColor = computed.borderColor;
+            if (borderColor && (borderColor.includes('oklch') || borderColor.includes('oklab') || borderColor.includes('color('))) {
+              htmlEl.style.borderColor = '#e5e7eb';
+            }
+          });
         }
       });
       const imgData = canvas.toDataURL('image/png');
