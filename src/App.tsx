@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import Header from './components/Header';
+import DateSelector from './components/DateSelector';
 import {
-  Share2, Eye, EyeOff,
+  Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
   Crown, Loader2, X, Download, MapPin
 } from 'lucide-react';
-import Header from './components/Header';
 // @ts-ignore
 import html2canvas from 'html2canvas';
-import DateSelector from './components/DateSelector';
-// ==========================================
 // 常量与配置
 // ==========================================
 
