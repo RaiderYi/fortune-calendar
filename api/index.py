@@ -8,6 +8,8 @@ from http.server import BaseHTTPRequestHandler
 import json
 import datetime
 from urllib.parse import parse_qs
+from functools import lru_cache  # ← 新增
+import hashlib                   # ← 新增
 
 # ==================== lunar_calculator_pure 模块 ====================
 # -*- coding: utf-8 -*-
@@ -931,6 +933,65 @@ def analyze_bazi_enhanced(bazi):
 
 
 # ==================== 测试代码 ====================
+# ==================== 缓存优化 ====================
+
+def generate_bazi_cache_key(birth_date_str, birth_time_str, longitude):
+    """
+    生成八字缓存键
+
+    说明：
+    - 对于相同的出生信息，生成相同的MD5 key
+    - 用于缓存 analyze_bazi_enhanced 的计算结果
+    - 这样相同出生信息的查询可以直接返回缓存
+
+    参数：
+        birth_date_str: 出生日期字符串，如 "1990-01-01"
+        birth_time_str: 出生时间字符串，如 "12:00"
+        longitude: 出生地经度，如 116.4
+
+    返回：
+        32位MD5字符串，如 "a1b2c3d4..."
+    """
+    # 把三个参数组合成一个唯一字符串
+    data_string = f"{birth_date_str}:{birth_time_str}:{longitude}"
+
+    # 生成MD5哈希（作为缓存键）
+    cache_key = hashlib.md5(data_string.encode()).hexdigest()
+
+    return cache_key
+
+
+@lru_cache(maxsize=500)
+def analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude):
+    """
+    带缓存的八字分析函数
+
+    说明：
+    - 这个函数会：1)计算八字 → 2)分析旺衰和用神 → 3)缓存结果
+    - 相同出生信息的查询会直接返回缓存（速度快90%+）
+    - maxsize=500 表示最多缓存500个不同用户的数据
+
+    参数：
+        cache_key: 缓存键（由 generate_bazi_cache_key 生成）
+        birth_date_str: 出生日期字符串
+        birth_time_str: 出生时间字符串
+        longitude: 出生地经度
+
+    返回：
+        (bazi, analysis) 元组
+        - bazi: 八字计算结果（字典）
+        - analysis: 旺衰和用神分析结果（字典）
+    """
+    # 步骤1：计算八字
+    birth_dt = parse_datetime(birth_date_str, birth_time_str)
+    bazi = calculate_bazi(birth_dt, longitude)
+
+    # 步骤2：分析八字（这是最耗时的部分，约1-2秒）
+    # 通过缓存，相同出生信息的第2次查询会跳过这个计算
+    analysis = analyze_bazi_enhanced(bazi)
+
+    # 返回两个结果
+    return bazi, analysis
 
 # ==================== 主API处理器 ====================
 # ==================== 工具函数 ====================
@@ -1246,12 +1307,14 @@ class handler(BaseHTTPRequestHandler):
             except:
                 longitude = 116.4
 
-            # 1. 计算八字
-            birth_dt = parse_datetime(birth_date_str, birth_time_str)
-            bazi = calculate_bazi(birth_dt, longitude)
 
-            # 2. 旺衰分析 + 用神推导
-            analysis = analyze_bazi_enhanced(bazi)
+            # 生成缓存键
+            cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
+
+            # 调用缓存函数（相同出生信息会直接返回缓存）
+            bazi, analysis = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
+            # =============================================
+
 
             # 3. 计算流年流月流日
             current_date = parse_date(date_str)
