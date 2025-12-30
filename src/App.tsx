@@ -4,7 +4,7 @@ import {
   Briefcase, Coins, Heart, Zap, BookOpen, Map, Sparkles, TrendingUp,
   Crown, Loader2, X, Download, MapPin, Calendar as CalendarIcon
 } from 'lucide-react';
-
+import Header from './components/Header';
 // @ts-ignore
 import html2canvas from 'html2canvas';
 
@@ -377,20 +377,10 @@ export default function App() {
       <div style={{ width: '100%', maxWidth: '448px', background: '#F5F5F7', height: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
 
         {/* --- 顶部导航 --- */}
-        <div className="px-6 pt-12 pb-4 flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-30">
-          <div className="flex flex-col">
-            <h1 className="text-xl font-bold tracking-tight">你好，<span className="text-indigo-600">{userProfile.name}</span></h1>
-            <div className="text-xs text-gray-400 flex items-center gap-1">
-              <Sparkles size={10} /> 这里的每一天都为你定制
-            </div>
-          </div>
-          <button
-            onClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
-            className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition active:scale-90"
-          >
-            <Settings size={20} className="text-gray-600" />
-          </button>
-        </div>
+        <Header
+          userName={userProfile.name}
+          onSettingsClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
+        />
 
         {/* --- 日期选择 (改进版：点击日期可弹窗选择) --- */}
         <div className="flex items-center justify-between px-6 py-2">
