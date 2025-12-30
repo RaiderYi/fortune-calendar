@@ -240,151 +240,147 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         """处理 GET 请求 - 健康检查"""
-        if self.path == '/api/health' or self.path == '/api/fortune':
+        # Vercel中路径是 / 而不是 /api
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+
+        response = {
+            'status': 'ok',
+            'message': '增强版API正常运行！',
+            'version': '2.0.0',
+            'features': [
+                '纯Python八字计算',
+                '五维旺衰分析',
+                '多层次用神推导'
+            ]
+        }
+
+        self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+
+    def do_POST(self):
+        """处理 POST 请求 - 运势分析"""
+        # Vercel中路径是 / 而不是 /api/fortune
+        try:
+            # 读取请求体
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8'))
+
+            # 解析参数
+            date_str = data.get('date', datetime.datetime.now().strftime('%Y-%m-%d'))
+            birth_date_str = data.get('birthDate', '1990-01-01')
+            birth_time_str = data.get('birthTime', '12:00')
+            longitude_str = data.get('longitude', '116.4')
+
+            # 转换经度为浮点数
+            try:
+                longitude = float(longitude_str)
+            except:
+                longitude = 116.4
+
+            # 1. 计算八字
+            birth_dt = parse_datetime(birth_date_str, birth_time_str)
+            bazi = calculate_bazi(birth_dt, longitude)
+
+            # 2. 旺衰分析 + 用神推导
+            analysis = analyze_bazi_enhanced(bazi)
+
+            # 3. 计算流年流月流日
+            current_date = parse_date(date_str)
+            liu_nian = calculate_liu_nian(current_date.year)
+            liu_yue = calculate_liu_yue(current_date.year, current_date.month, current_date.day)
+            liu_ri = calculate_liu_ri(current_date.year, current_date.month, current_date.day)
+
+            # 4. 计算运势评分
+            total_score = calculate_fortune_score(
+                analysis['yong_shen'],
+                liu_nian,
+                liu_yue,
+                liu_ri
+            )
+
+            # 5. 生成各维度评分
+            dimensions = generate_dimension_scores(total_score, liu_ri['gan'])
+
+            # 6. 生成宜忌
+            todo = generate_todo(
+                analysis['yong_shen']['primary'],
+                analysis['yong_shen']['ji_shen']
+            )
+
+            # 7. 生成主题
+            main_theme = generate_main_theme(
+                total_score,
+                analysis['yong_shen']['primary']
+            )
+
+            # 8. 构建响应
+            response = {
+                'dateStr': current_date.strftime('%m.%d'),
+                'weekDay': get_week_day_cn(current_date),
+                'lunarStr': f"{bazi['solar_term']}",
+                'totalScore': total_score,
+                'pillars': {
+                    'year': bazi['year'],
+                    'month': bazi['month'],
+                    'day': bazi['day']
+                },
+                'mainTheme': main_theme,
+                'dimensions': dimensions,
+                'todo': todo,
+                'baziDetail': {
+                    'year': bazi['year'],
+                    'month': bazi['month'],
+                    'day': bazi['day'],
+                    'hour': bazi['hour'],
+                    'dayMaster': bazi['day_gan']
+                },
+                'yongShen': {
+                    'strength': analysis['strength']['level'],
+                    'yongShen': [analysis['yong_shen']['primary']],
+                    'xiShen': analysis['yong_shen']['xi_shen'],
+                    'jiShen': analysis['yong_shen']['ji_shen']
+                },
+                'liuNian': {
+                    'year': liu_nian['gan_zhi'],
+                    'month': liu_yue['gan_zhi'],
+                    'day': liu_ri['gan_zhi'],
+                    'yearGan': liu_nian['gan'],
+                    'yearZhi': liu_nian['zhi'],
+                    'monthGan': liu_yue['gan'],
+                    'monthZhi': liu_yue['zhi'],
+                    'dayGan': liu_ri['gan'],
+                    'dayZhi': liu_ri['zhi']
+                },
+                'todayTenGod': '偏财'  # 简化版
+            }
+
+            # 返回响应
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
 
-            response = {
-                'status': 'ok',
-                'message': '增强版API正常运行！',
-                'version': '2.0.0',
-                'features': [
-                    '纯Python八字计算',
-                    '五维旺衰分析',
-                    '多层次用神推导'
-                ]
+            output = json.dumps(response, ensure_ascii=False, indent=2)
+            self.wfile.write(output.encode('utf-8'))
+
+        except Exception as e:
+            # 错误处理
+            import traceback
+            error_response = {
+                'success': False,
+                'error': str(e),
+                'traceback': traceback.format_exc()
             }
 
-            self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
-        else:
-            self.send_error(404, 'Not Found')
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
 
-    def do_POST(self):
-        """处理 POST 请求 - 运势分析"""
-        if self.path == '/api/fortune':
-            try:
-                # 读取请求体
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8'))
-
-                # 解析参数
-                date_str = data.get('date', datetime.datetime.now().strftime('%Y-%m-%d'))
-                birth_date_str = data.get('birthDate', '1990-01-01')
-                birth_time_str = data.get('birthTime', '12:00')
-                longitude_str = data.get('longitude', '116.4')
-
-                # 转换经度为浮点数
-                try:
-                    longitude = float(longitude_str)
-                except:
-                    longitude = 116.4
-
-                # 1. 计算八字
-                birth_dt = parse_datetime(birth_date_str, birth_time_str)
-                bazi = calculate_bazi(birth_dt, longitude)
-
-                # 2. 旺衰分析 + 用神推导
-                analysis = analyze_bazi_enhanced(bazi)
-
-                # 3. 计算流年流月流日
-                current_date = parse_date(date_str)
-                liu_nian = calculate_liu_nian(current_date.year)
-                liu_yue = calculate_liu_yue(current_date.year, current_date.month, current_date.day)
-                liu_ri = calculate_liu_ri(current_date.year, current_date.month, current_date.day)
-
-                # 4. 计算运势评分
-                total_score = calculate_fortune_score(
-                    analysis['yong_shen'],
-                    liu_nian,
-                    liu_yue,
-                    liu_ri
-                )
-
-                # 5. 生成各维度评分
-                dimensions = generate_dimension_scores(total_score, liu_ri['gan'])
-
-                # 6. 生成宜忌
-                todo = generate_todo(
-                    analysis['yong_shen']['primary'],
-                    analysis['yong_shen']['ji_shen']
-                )
-
-                # 7. 生成主题
-                main_theme = generate_main_theme(
-                    total_score,
-                    analysis['yong_shen']['primary']
-                )
-
-                # 8. 构建响应
-                response = {
-                    'dateStr': current_date.strftime('%m.%d'),
-                    'weekDay': get_week_day_cn(current_date),
-                    'lunarStr': f"{bazi['solar_term']}",
-                    'totalScore': total_score,
-                    'pillars': {
-                        'year': bazi['year'],
-                        'month': bazi['month'],
-                        'day': bazi['day']
-                    },
-                    'mainTheme': main_theme,
-                    'dimensions': dimensions,
-                    'todo': todo,
-                    'baziDetail': {
-                        'year': bazi['year'],
-                        'month': bazi['month'],
-                        'day': bazi['day'],
-                        'hour': bazi['hour'],
-                        'dayMaster': bazi['day_gan']
-                    },
-                    'yongShen': {
-                        'strength': analysis['strength']['level'],
-                        'yongShen': [analysis['yong_shen']['primary']],
-                        'xiShen': analysis['yong_shen']['xi_shen'],
-                        'jiShen': analysis['yong_shen']['ji_shen']
-                    },
-                    'liuNian': {
-                        'year': liu_nian['gan_zhi'],
-                        'month': liu_yue['gan_zhi'],
-                        'day': liu_ri['gan_zhi'],
-                        'yearGan': liu_nian['gan'],
-                        'yearZhi': liu_nian['zhi'],
-                        'monthGan': liu_yue['gan'],
-                        'monthZhi': liu_yue['zhi'],
-                        'dayGan': liu_ri['gan'],
-                        'dayZhi': liu_ri['zhi']
-                    },
-                    'todayTenGod': '偏财'  # 简化版
-                }
-
-                # 返回响应
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json; charset=utf-8')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-
-                output = json.dumps(response, ensure_ascii=False, indent=2)
-                self.wfile.write(output.encode('utf-8'))
-
-            except Exception as e:
-                # 错误处理
-                import traceback
-                error_response = {
-                    'success': False,
-                    'error': str(e),
-                    'traceback': traceback.format_exc()
-                }
-
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json; charset=utf-8')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-
-                self.wfile.write(json.dumps(error_response, ensure_ascii=False).encode('utf-8'))
-        else:
-            self.send_error(404, 'Not Found')
+            self.wfile.write(json.dumps(error_response, ensure_ascii=False).encode('utf-8'))
 
 
 # 本地测试
@@ -432,5 +428,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 测试失败: {e}")
         import traceback
-
         traceback.print_exc()
