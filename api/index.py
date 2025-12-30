@@ -217,16 +217,21 @@ def get_day_gan_zhi(year, month, day):
     计算日柱干支
 
     使用公元纪年推算法
+    基准：1900年1月1日 = 甲戌日（六十甲子序号10，从0开始计数）
     """
-    # 使用简化算法：以1984年1月1日（甲子日）为基准
-    base_date = datetime.date(1984, 1, 1)
+    # 使用1900年1月1日作为基准，这一天是甲戌日（序号10）
+    base_date = datetime.date(1900, 1, 1)
     target_date = datetime.date(year, month, day)
 
     # 计算天数差
     days_diff = (target_date - base_date).days
 
-    # 1984-01-01 是甲子日（数字1）
-    gan_zhi_num = (days_diff % 60) + 1
+    # 1900-01-01 是甲戌日（序号10，从0开始计数）
+    # 计算目标日期的干支序号（0-59）
+    gan_zhi_index = (10 + days_diff) % 60
+
+    # get_gan_zhi_from_num 使用1-60，所以加1转换
+    gan_zhi_num = gan_zhi_index + 1
 
     return get_gan_zhi_from_num(gan_zhi_num)
 
@@ -953,6 +958,52 @@ def get_week_day_cn(date):
     return weekdays[date.weekday()]
 
 
+def get_dayun_direction(year_gan, gender):
+    """
+    判断大运顺逆
+
+    规则：阳男阴女顺排，阴男阳女逆排
+
+    参数:
+        year_gan: 年干，如 "甲"
+        gender: 性别，"male" 或 "female"
+
+    返回:
+        {
+            'direction': 'shun' 或 'ni',  # 顺排或逆排
+            'description': 说明文字
+        }
+    """
+    # 阳年天干：甲、丙、戊、庚、壬
+    yang_gan = ['甲', '丙', '戊', '庚', '壬']
+    is_yang_year = year_gan in yang_gan
+
+    # 判断顺逆
+    if gender == 'male':
+        is_shun = is_yang_year  # 阳男顺排，阴男逆排
+        if is_shun:
+            direction = 'shun'
+            desc = '阳年男命，大运顺排'
+        else:
+            direction = 'ni'
+            desc = '阴年男命，大运逆排'
+    else:  # female
+        is_shun = not is_yang_year  # 阴女顺排，阳女逆排
+        if is_shun:
+            direction = 'shun'
+            desc = '阴年女命，大运顺排'
+        else:
+            direction = 'ni'
+            desc = '阳年女命，大运逆排'
+
+    return {
+        'direction': direction,
+        'description': desc,
+        'is_yang_year': is_yang_year,
+        'gender_cn': '男' if gender == 'male' else '女'
+    }
+
+
 # ==================== 评分和建议生成 ====================
 
 def calculate_fortune_score(yong_shen_result, liu_nian, liu_yue, liu_ri):
@@ -1187,6 +1238,7 @@ class handler(BaseHTTPRequestHandler):
             birth_date_str = data.get('birthDate', '1990-01-01')
             birth_time_str = data.get('birthTime', '12:00')
             longitude_str = data.get('longitude', '116.4')
+            gender = data.get('gender', 'male')  # 新增：性别参数（male/female）
 
             # 转换经度为浮点数
             try:
@@ -1230,7 +1282,10 @@ class handler(BaseHTTPRequestHandler):
                 analysis['yong_shen']['primary']
             )
 
-            # 8. 构建响应
+            # 8. 判断大运顺逆（基于性别和年干）
+            dayun_info = get_dayun_direction(bazi['year_gan'], gender)
+
+            # 9. 构建响应
             response = {
                 'dateStr': current_date.strftime('%m.%d'),
                 'weekDay': get_week_day_cn(current_date),
@@ -1268,6 +1323,8 @@ class handler(BaseHTTPRequestHandler):
                     'dayGan': liu_ri['gan'],
                     'dayZhi': liu_ri['zhi']
                 },
+                'dayun': dayun_info,  # 新增：大运信息
+                'gender': gender,  # 新增：性别信息
                 'todayTenGod': '偏财'  # 简化版
             }
 

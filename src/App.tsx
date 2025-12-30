@@ -124,6 +124,7 @@ interface UserProfile {
   birthTime: string;
   city: string;      // 新增：城市
   longitude: string; // 新增：经度 (用string方便输入框处理)
+  gender: 'male' | 'female'; // 新增：性别
 }
 
 // ==========================================
@@ -150,7 +151,8 @@ export default function App() {
       birthDate: '1995-08-15',
       birthTime: '09:30',
       city: '北京',
-      longitude: '116.40'
+      longitude: '116.40',
+      gender: 'male' // 新增：默认性别为男
     };
   });
   const [editProfile, setEditProfile] = useState<UserProfile>(userProfile);
@@ -178,7 +180,8 @@ export default function App() {
             date: dateStr,
             birthDate: userProfile.birthDate,
             birthTime: userProfile.birthTime,
-            longitude: userProfile.longitude // 传递经度给后端计算真太阳时
+            longitude: userProfile.longitude, // 传递经度给后端计算真太阳时
+            gender: userProfile.gender // 新增：传递性别给后端
           }),
         });
 
@@ -669,6 +672,18 @@ export default function App() {
                   <div>
                     <label className="block text-sm font-bold text-gray-500 mb-1">出生时间</label>
                     <input type="time" value={editProfile.birthTime} onChange={e => setEditProfile({...editProfile, birthTime: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  {/* 新增：性别选择 */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-500 mb-1">性别 (影响大运排序)</label>
+                    <select
+                      value={editProfile.gender}
+                      onChange={e => setEditProfile({...editProfile, gender: e.target.value as 'male' | 'female'})}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+                    >
+                      <option value="male">男</option>
+                      <option value="female">女</option>
+                    </select>
                   </div>
                   {/* 新增：出生城市/经度 */}
                   <div>
