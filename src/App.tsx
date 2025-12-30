@@ -222,60 +222,85 @@ export default function App() {
       const originalShowBazi = showBazi;
       if (!showBazi) setShowBazi(true);
 
-      // 稍微等待渲染稳定
       await new Promise(resolve => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(contentRef.current, {
         useCORS: true,
         scale: 2,
         backgroundColor: '#F5F5F7',
-        logging: false,
+        logging: true,  // 开启日志，方便调试
         ignoreElements: (element: Element) => {
           return element.classList.contains('no-screenshot');
         },
-        // 🔧 修复：在克隆的DOM中替换现代颜色函数
         onclone: (clonedDoc) => {
-          // 检查是否包含任何不支持的颜色函数
+          console.log('🔧 onclone 回调执行了！');
+
+          // 超宽松的检查函数 - 不要求括号，只检查关键词
           const hasModernColor = (colorStr: string) => {
             if (!colorStr) return false;
-            const modernColorFunctions = [
-              'oklch(', 'oklab(', 'lab(', 'lch(',
-              'color(', 'color-mix(', 'hwb('
-            ];
-            return modernColorFunctions.some(fn => colorStr.includes(fn));
+            const lower = colorStr.toLowerCase();
+            // 检查所有可能的现代颜色关键词
+            return lower.includes('oklch') ||
+                   lower.includes('oklab') ||
+                   lower.includes('lab') ||   // 注意：不要求括号！
+                   lower.includes('lch') ||
+                   lower.includes('color-mix') ||
+                   lower.includes('hwb') ||
+                   lower.includes('color(');
           };
 
           const allElements = clonedDoc.querySelectorAll('*');
+          let replacedCount = 0;
+
           allElements.forEach((el) => {
             const htmlEl = el as HTMLElement;
             const computed = window.getComputedStyle(el);
 
-            // 替换背景色
+            // 背景色
             const bgColor = computed.backgroundColor;
-            if (hasModernColor(bgColor)) {
-              htmlEl.style.backgroundColor = '#ffffff';
+            if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+              if (hasModernColor(bgColor)) {
+                htmlEl.style.backgroundColor = '#ffffff';
+                replacedCount++;
+                console.log('替换背景色:', bgColor, '→ #ffffff');
+              }
             }
 
-            // 替换文字颜色
+            // 文字颜色
             const textColor = computed.color;
-            if (hasModernColor(textColor)) {
+            if (textColor && hasModernColor(textColor)) {
               htmlEl.style.color = '#1f2937';
+              replacedCount++;
+              console.log('替换文字色:', textColor, '→ #1f2937');
             }
 
-            // 替换边框颜色
+            // 边框颜色
             const borderColor = computed.borderColor;
-            if (hasModernColor(borderColor)) {
+            if (borderColor && hasModernColor(borderColor)) {
               htmlEl.style.borderColor = '#e5e7eb';
+              replacedCount++;
+              console.log('替换边框色:', borderColor, '→ #e5e7eb');
             }
           });
+
+          console.log(`✅ 共替换 ${replacedCount} 处现代颜色`);
+
+          // 强制设置根背景
+          if (clonedDoc.body) {
+            clonedDoc.body.style.backgroundColor = '#F5F5F7';
+          }
         }
       });
+
       const imgData = canvas.toDataURL('image/png');
       setGeneratedImage(imgData);
-
       setShowBazi(originalShowBazi);
+
+      console.log('✅ 截图成功！');
+
     } catch (error: any) {
-      console.error("截图失败:", error);
+      console.error("❌ 截图失败:", error);
+      console.error("详细信息:", error.message, error.stack);
       alert(`截图失败: ${error.message}`);
     } finally {
       setIsGenerating(false);
