@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  ChevronLeft, ChevronRight, Settings, Share2, Eye, EyeOff,
-  Briefcase, Coins, Heart, Zap, BookOpen, Map, Sparkles, TrendingUp,
-  Crown, Loader2, X, Download, MapPin, Calendar as CalendarIcon
+  Share2, Eye, EyeOff,
+  Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
+  Crown, Loader2, X, Download, MapPin
 } from 'lucide-react';
 import Header from './components/Header';
 // @ts-ignore
 import html2canvas from 'html2canvas';
-
+import DateSelector from './components/DateSelector';
 // ==========================================
 // 常量与配置
 // ==========================================
@@ -336,16 +336,6 @@ export default function App() {
     }, 200);
   };
 
-  // --- 日期选择器处理 ---
-  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 修复时区问题，直接解析 YYYY-MM-DD
-    const [y, m, d] = e.target.value.split('-').map(Number);
-    if (y && m && d) {
-      const newDate = new Date(y, m - 1, d);
-      setCurrentDate(newDate);
-    }
-  };
-
   // 辅助函数
   const getIcon = (type: DimensionType, className: string) => {
     switch (type) {
@@ -382,35 +372,15 @@ export default function App() {
           onSettingsClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
         />
 
-        {/* --- 日期选择 (改进版：点击日期可弹窗选择) --- */}
-        <div className="flex items-center justify-between px-6 py-2">
-          <button onClick={() => changeDate(-1)} className="text-gray-400 hover:text-gray-800 p-2"><ChevronLeft /></button>
-
-          <div className="flex flex-col items-center relative group cursor-pointer">
-            {/* 隐形的原生日期选择器覆盖在文字上 */}
-            <input
-              type="date"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              onChange={handleDateInput}
-              value={formattedDateValue}
-            />
-            <div className="flex items-center gap-1 group-hover:opacity-70 transition-opacity">
-              <span className="text-2xl font-black font-mono tracking-tighter">
-                {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
-              </span>
-              {/* 仅用于视觉提示的小图标 */}
-              <CalendarIcon size={14} className="text-gray-300" />
-            </div>
-
-            {fortune && (
-              <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full mt-1">
-                {fortune.weekDay} · {fortune.lunarStr}
-              </span>
-            )}
-          </div>
-
-          <button onClick={() => changeDate(1)} className="text-gray-400 hover:text-gray-800 p-2"><ChevronRight /></button>
-        </div>
+        {/* --- 日期选择 --- */}
+        <DateSelector
+          currentDate={currentDate}
+          weekDay={fortune?.weekDay}
+          lunarStr={fortune?.lunarStr}
+          onPrevDay={() => changeDate(-1)}
+          onNextDay={() => changeDate(1)}
+          onDateChange={setCurrentDate}
+        />
 
         {/* --- 核心内容区 --- */}
         <div className={`flex-1 overflow-y-auto px-5 pb-24 transition-opacity duration-200 ${isAnimating ? 'opacity-50' : 'opacity-100'}`}>
