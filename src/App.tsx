@@ -3,6 +3,9 @@ import Header from './components/Header';
 import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
 import DimensionCard from './components/DimensionCard';
+import HistoryDrawer from './components/HistoryDrawer';
+import { saveHistory } from './utils/historyStorage';
+import type { HistoryRecord } from './utils/historyStorage';
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
@@ -142,6 +145,7 @@ export default function App() {
   // UI 状态
   const [currentThemeStyle, setCurrentThemeStyle] = useState(SAFE_THEMES['default']);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false); // 历史记录抽屉
 
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -189,6 +193,28 @@ export default function App() {
         if (res.ok) {
           const backendData = await res.json();
           setFortune({ ...backendData, dateObj: currentDate });
+
+          // 保存到历史记录
+          const historyRecord: HistoryRecord = {
+            date: dateStr, // YYYY-MM-DD
+            timestamp: Date.now(),
+            fortune: {
+              totalScore: backendData.totalScore,
+              mainTheme: {
+                keyword: backendData.mainTheme.keyword,
+                emoji: backendData.mainTheme.emoji,
+              },
+              dimensions: {
+                career: { score: backendData.dimensions.career.score },
+                wealth: { score: backendData.dimensions.wealth.score },
+                romance: { score: backendData.dimensions.romance.score },
+                health: { score: backendData.dimensions.health.score },
+                academic: { score: backendData.dimensions.academic.score },
+                travel: { score: backendData.dimensions.travel.score },
+              },
+            },
+          };
+          saveHistory(historyRecord);
 
           // 颜色映射逻辑
           const keyword = backendData.mainTheme.keyword;
@@ -349,6 +375,7 @@ export default function App() {
         <Header
           userName={userProfile.name}
           onSettingsClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
+          onHistoryClick={() => setShowHistory(true)}
         />
 
         {/* --- 日期选择 --- */}
@@ -643,6 +670,16 @@ export default function App() {
              </div>
           </div>
         )}
+
+        {/* 历史记录抽屉 */}
+        <HistoryDrawer
+          isOpen={showHistory}
+          onClose={() => setShowHistory(false)}
+          onSelectDate={(date) => {
+            setCurrentDate(date);
+            setShowHistory(false);
+          }}
+        />
 
       </div>
     </div>
