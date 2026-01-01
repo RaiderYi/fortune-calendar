@@ -526,6 +526,8 @@ export default function App() {
               {/* 六维度运势 */}
               <DimensionCard dimensions={fortune.dimensions} />
             </div>
+          )}
+        </div>
 
 
 
