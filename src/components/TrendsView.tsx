@@ -262,7 +262,10 @@ export default function TrendsView({ isOpen, onClose, onSelectDate }: TrendsView
                     <button
                       key={day.date}
                       onClick={() => {
-                        onSelectDate(new Date(day.date));
+                        // 修复：使用本地时区创建日期
+                        const [year, month, dayNum] = day.date.split('-').map(Number);
+                        const date = new Date(year, month - 1, dayNum, 12, 0, 0);
+                        onSelectDate(date);
                         onClose();
                       }}
                       className="w-full bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl border border-yellow-200 hover:border-yellow-400 transition text-left group"

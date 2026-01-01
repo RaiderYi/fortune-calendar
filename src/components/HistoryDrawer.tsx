@@ -31,7 +31,9 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate }: History
 
   // 选择日期
   const handleSelectDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    // 修复：使用本地时区创建日期，避免时区偏移
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day, 12, 0, 0); // 使用中午12点，避免跨日期问题
     onSelectDate(date);
     onClose();
   };
