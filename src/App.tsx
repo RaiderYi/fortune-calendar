@@ -4,6 +4,7 @@ import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
 import DimensionCard from './components/DimensionCard';
 import HistoryDrawer from './components/HistoryDrawer';
+import TrendsView from './components/TrendsView';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
 import {
@@ -146,6 +147,7 @@ export default function App() {
   const [currentThemeStyle, setCurrentThemeStyle] = useState(SAFE_THEMES['default']);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // 历史记录抽屉
+  const [showTrends, setShowTrends] = useState(false); // 趋势视图
 
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -376,6 +378,7 @@ export default function App() {
           userName={userProfile.name}
           onSettingsClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
           onHistoryClick={() => setShowHistory(true)}
+          onTrendsClick={() => setShowTrends(true)}
         />
 
         {/* --- 日期选择 --- */}
@@ -678,6 +681,16 @@ export default function App() {
           onSelectDate={(date) => {
             setCurrentDate(date);
             setShowHistory(false);
+          }}
+        />
+
+        {/* 趋势视图 */}
+        <TrendsView
+          isOpen={showTrends}
+          onClose={() => setShowTrends(false)}
+          onSelectDate={(date) => {
+            setCurrentDate(date);
+            setShowTrends(false);
           }}
         />
 
