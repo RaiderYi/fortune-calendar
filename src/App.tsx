@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
+import DimensionCard from './components/DimensionCard';
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
@@ -336,28 +337,6 @@ export default function App() {
     }, 200);
   };
 
-  // 辅助函数
-  const getIcon = (type: DimensionType, className: string) => {
-    switch (type) {
-      case 'career': return <Briefcase className={className} />;
-      case 'wealth': return <Coins className={className} />;
-      case 'romance': return <Heart className={className} />;
-      case 'health': return <Zap className={className} />;
-      case 'academic': return <BookOpen className={className} />;
-      case 'travel': return <Map className={className} />;
-    }
-  };
-
-  const getLabel = (type: DimensionType) => {
-    switch (type) {
-      case 'career': return '事业';
-      case 'wealth': return '财运';
-      case 'romance': return '情感';
-      case 'health': return '健康';
-      case 'academic': return '学业';
-      case 'travel': return '出行';
-    }
-  };
 
   // 格式化日期为 YYYY-MM-DD 供 input 使用
   const formattedDateValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -545,52 +524,8 @@ export default function App() {
                 </div>
               )}
 
-              {/* Stats Grid */}
-              <div className="mt-6">
-                <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-                  <TrendingUp size={14} /> 深度推演
-                </h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {(Object.keys(fortune.dimensions) as DimensionType[]).map((key) => {
-                    const item = fortune.dimensions[key];
-                    const isGood = item.level === '吉';
-                    const isBad = item.level === '凶';
-
-                    return (
-                      <div key={key} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5`}
-                             style={{ backgroundColor: isGood ? '#ffedd5' : isBad ? '#f3f4f6' : '#dbeafe', color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb' }}>
-                          {getIcon(key, "w-5 h-5")}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-gray-800">{getLabel(key)}</span>
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium`}
-                                  style={{
-                                    backgroundColor: isGood ? '#fff7ed' : isBad ? '#f9fafb' : '#eff6ff',
-                                    borderColor: isGood ? '#ffedd5' : isBad ? '#f3f4f6' : '#dbeafe',
-                                    color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb',
-                                    borderStyle: 'solid', borderWidth: '1px'
-                                  }}>
-                              {item.tag}
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-500 leading-relaxed text-justify">{item.inference}</p>
-                        </div>
-                        <div className="text-right shrink-0 flex flex-col items-end justify-center h-full min-w-[2rem]">
-                           <span className={`text-sm font-bold font-mono`}
-                                 style={{ color: isGood ? '#ea580c' : isBad ? '#9ca3af' : '#2563eb' }}>
-                            {item.score}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+             {/* 六维度运势 */}
+              <DimensionCard dimensions={fortune.dimensions} />
 
         {/* --- 底部悬浮按钮 --- */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot">
