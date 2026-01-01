@@ -1,27 +1,44 @@
-import { Settings, Sparkles } from 'lucide-react';
+import { Settings, Sparkles, Clock } from 'lucide-react';
 
 interface HeaderProps {
   userName: string;
   onSettingsClick: () => void;
+  onHistoryClick: () => void; // 新增
 }
 
-export default function Header({ userName, onSettingsClick }: HeaderProps) {
+export default function Header({
+  userName,
+  onSettingsClick,
+  onHistoryClick // 新增
+}: HeaderProps) {
   return (
-    <div className="px-6 pt-12 pb-4 flex justify-between items-center bg-white/50 backdrop-blur-md sticky top-0 z-30">
-      <div className="flex flex-col">
-        <h1 className="text-xl font-bold tracking-tight">
-          你好，<span className="text-indigo-600">{userName}</span>
+    <div className="flex items-center justify-between px-5 pt-5">
+      <div className="flex items-center gap-2">
+        <Sparkles size={20} className="text-yellow-500" />
+        <h1 className="text-xl font-black text-gray-800">
+          {userName}，今日如何？
         </h1>
-        <div className="text-xs text-gray-400 flex items-center gap-1">
-          <Sparkles size={10} /> 这里的每一天都为你定制
-        </div>
       </div>
-      <button
-        onClick={onSettingsClick}
-        className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition active:scale-90"
-      >
-        <Settings size={20} className="text-gray-600" />
-      </button>
+
+      <div className="flex items-center gap-2">
+        {/* 历史按钮 */}
+        <button
+          onClick={onHistoryClick}
+          className="p-2 hover:bg-gray-100 rounded-full transition"
+          aria-label="历史记录"
+        >
+          <Clock size={20} className="text-gray-600" />
+        </button>
+
+        {/* 设置按钮 */}
+        <button
+          onClick={onSettingsClick}
+          className="p-2 hover:bg-gray-100 rounded-full transition"
+          aria-label="设置"
+        >
+          <Settings size={20} className="text-gray-600" />
+        </button>
+      </div>
     </div>
   );
 }
