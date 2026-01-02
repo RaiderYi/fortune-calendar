@@ -1959,7 +1959,7 @@ class handler(BaseHTTPRequestHandler):
                 liu_yue=liu_yue,
                 liu_ri=liu_ri,
                 day_gan=bazi['day_gan'],
-                shen_sha_list=shen_sha,  # 神煞列表
+                shen_sha_list=[],  # 神煞列表（暂时为空）
                 dayun=dayun_info,        # 大运信息
                 bazi=bazi                # 八字信息（用于调候）
             )
