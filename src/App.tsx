@@ -710,7 +710,7 @@ export default function App() {
               try {
                 const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
                 const record = history.find((h: HistoryRecord) => h.date === dateStr);
-                return record ? record.totalScore : null;
+                return record ? record.fortune.totalScore : null; // ← 修复：添加 .fortune
               } catch {
                 return null;
               }

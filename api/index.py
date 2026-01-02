@@ -1205,53 +1205,88 @@ def get_dayun_direction(year_gan, gender):
 # ==================== 评分和建议生成 ====================
 
 def calculate_fortune_score(yong_shen_result, liu_nian, liu_yue, liu_ri):
-    """计算运势评分"""
-    base_score = 60
-
+    """计算运势评分 - 优化版"""
+    import random
+    
+    # 降低基础分数，增加变化空间
+    base_score = 50
+    
     # 获取用神五行
     primary_yong = yong_shen_result['primary']
     xi_shen_list = yong_shen_result.get('xi_shen', [])
     ji_shen_list = yong_shen_result.get('ji_shen', [])
-
-    # 流年影响 (40%)
+    
+    # 使用流日天干作为随机种子，确保同一天结果一致但有变化
+    random.seed(hash(liu_ri['gan'] + liu_ri['zhi']))
+    
+    # 流年影响 (25%) - 天干+地支分开计算
+    nian_score = 0
     liu_nian_gan_element = WU_XING_MAP.get(liu_nian['gan'])
     liu_nian_zhi_element = WU_XING_MAP.get(liu_nian['zhi'])
-
-    nian_score = 0
+    
+    # 天干影响（15%）
     if liu_nian_gan_element == primary_yong:
-        nian_score += 20
+        nian_score += 12 + random.randint(-2, 3)
     elif liu_nian_gan_element in xi_shen_list:
-        nian_score += 10
+        nian_score += 7 + random.randint(-2, 2)
     elif liu_nian_gan_element in ji_shen_list:
-        nian_score -= 15
-
-    # 流月影响 (30%)
-    liu_yue_gan_element = WU_XING_MAP.get(liu_yue['gan'])
-
+        nian_score -= 8 + random.randint(0, 2)
+    
+    # 地支影响（10%）
+    if liu_nian_zhi_element == primary_yong:
+        nian_score += 8 + random.randint(-1, 2)
+    elif liu_nian_zhi_element in xi_shen_list:
+        nian_score += 4 + random.randint(-1, 1)
+    elif liu_nian_zhi_element in ji_shen_list:
+        nian_score -= 5 + random.randint(0, 2)
+    
+    # 流月影响 (25%) - 天干为主
     yue_score = 0
+    liu_yue_gan_element = WU_XING_MAP.get(liu_yue['gan'])
+    liu_yue_zhi_element = WU_XING_MAP.get(liu_yue['zhi'])
+    
     if liu_yue_gan_element == primary_yong:
-        yue_score += 15
+        yue_score += 15 + random.randint(-2, 3)
     elif liu_yue_gan_element in xi_shen_list:
-        yue_score += 8
+        yue_score += 8 + random.randint(-2, 2)
     elif liu_yue_gan_element in ji_shen_list:
-        yue_score -= 10
-
-    # 流日影响 (30%)
-    liu_ri_gan_element = WU_XING_MAP.get(liu_ri['gan'])
-
+        yue_score -= 10 + random.randint(0, 2)
+    else:
+        # 中性情况也加一点随机性
+        yue_score += random.randint(-5, 5)
+    
+    # 流日影响 (50%) - 对当天影响最大
     ri_score = 0
+    liu_ri_gan_element = WU_XING_MAP.get(liu_ri['gan'])
+    liu_ri_zhi_element = WU_XING_MAP.get(liu_ri['zhi'])
+    
+    # 天干影响（30%）
     if liu_ri_gan_element == primary_yong:
-        ri_score += 15
+        ri_score += 20 + random.randint(-3, 5)
     elif liu_ri_gan_element in xi_shen_list:
-        ri_score += 8
+        ri_score += 12 + random.randint(-3, 3)
     elif liu_ri_gan_element in ji_shen_list:
-        ri_score -= 10
-
+        ri_score -= 12 + random.randint(0, 3)
+    else:
+        # 中性情况
+        ri_score += random.randint(-8, 8)
+    
+    # 地支影响（20%）
+    if liu_ri_zhi_element == primary_yong:
+        ri_score += 12 + random.randint(-2, 3)
+    elif liu_ri_zhi_element in xi_shen_list:
+        ri_score += 7 + random.randint(-2, 2)
+    elif liu_ri_zhi_element in ji_shen_list:
+        ri_score -= 8 + random.randint(0, 2)
+    else:
+        # 中性情况
+        ri_score += random.randint(-5, 5)
+    
     # 综合评分
     total = base_score + nian_score + yue_score + ri_score
-
-    # 限制在 0-100 之间
-    return max(0, min(100, int(total)))
+    
+    # 限制在 30-100 之间（避免过低）
+    return max(30, min(100, int(total)))
 
 
 def generate_dimension_scores(base_score, liu_ri_gan):
