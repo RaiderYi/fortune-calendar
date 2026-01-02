@@ -1,17 +1,19 @@
-import { Settings, Sparkles, Clock, TrendingUp } from 'lucide-react';
+import { Settings, Sparkles, Clock, TrendingUp, Calendar } from 'lucide-react';
 
 interface HeaderProps {
   userName: string;
   onSettingsClick: () => void;
   onHistoryClick: () => void;
-  onTrendsClick: () => void; // 新增
+  onTrendsClick: () => void;
+  onCalendarClick: () => void; // 新增
 }
 
 export default function Header({ 
   userName, 
   onSettingsClick,
   onHistoryClick,
-  onTrendsClick // 新增
+  onTrendsClick,
+  onCalendarClick // 新增
 }: HeaderProps) {
   return (
     <div className="flex items-center justify-between px-5 pt-5">
@@ -23,6 +25,15 @@ export default function Header({
       </div>
       
       <div className="flex items-center gap-2">
+        {/* 日历按钮 */}
+        <button 
+          onClick={onCalendarClick}
+          className="p-2 hover:bg-gray-100 rounded-full transition"
+          aria-label="运势日历"
+        >
+          <Calendar size={20} className="text-gray-600" />
+        </button>
+        
         {/* 趋势按钮 */}
         <button 
           onClick={onTrendsClick}

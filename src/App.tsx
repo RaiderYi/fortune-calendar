@@ -5,6 +5,7 @@ import FortuneCard from './components/FortuneCard';
 import DimensionCard from './components/DimensionCard';
 import HistoryDrawer from './components/HistoryDrawer';
 import TrendsView from './components/TrendsView';
+import CalendarView from './components/CalendarView';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
 import {
@@ -148,6 +149,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false); // 历史记录抽屉
   const [showTrends, setShowTrends] = useState(false); // 趋势视图
+  const [showCalendar, setShowCalendar] = useState(false); // 日历视图
 
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -379,6 +381,7 @@ export default function App() {
           onSettingsClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
           onHistoryClick={() => setShowHistory(true)}
           onTrendsClick={() => setShowTrends(true)}
+          onCalendarClick={() => setShowCalendar(true)}
         />
 
         {/* --- 日期选择 --- */}
@@ -693,6 +696,27 @@ export default function App() {
             setShowTrends(false);
           }}
         />
+
+        {/* 日历视图 */}
+        {showCalendar && (
+          <CalendarView
+            currentDate={currentDate}
+            onDateSelect={(date) => {
+              setCurrentDate(date);
+              setShowCalendar(false);
+            }}
+            onClose={() => setShowCalendar(false)}
+            getHistoryScore={(dateStr) => {
+              try {
+                const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+                const record = history.find((h: HistoryRecord) => h.date === dateStr);
+                return record ? record.totalScore : null;
+              } catch {
+                return null;
+              }
+            }}
+          />
+        )}
 
       </div>
     </div>
