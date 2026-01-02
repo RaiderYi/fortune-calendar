@@ -1951,7 +1951,9 @@ class handler(BaseHTTPRequestHandler):
             liu_yue = calculate_liu_yue(current_date.year, current_date.month, current_date.day)
             liu_ri = calculate_liu_ri(current_date.year, current_date.month, current_date.day)
 
-            # 4. 计算运势评分
+            # 3.5. 计算大运
+            dayun_info = get_dayun_direction(bazi['year_gan'], gender)
+
             # 4. 计算运势评分 - V3.1 新算法
             score_result = calculate_fortune_score_v3_1(
                 yong_shen_result=analysis['yong_shen'],
@@ -1982,10 +1984,7 @@ class handler(BaseHTTPRequestHandler):
                 liu_ri['gan']     # 流日天干
             )
 
-            # 8. 判断大运顺逆（基于性别和年干）
-            dayun_info = get_dayun_direction(bazi['year_gan'], gender)
-
-            # 9. 构建响应
+            # 8. 构建响应
             response = {
                 'dateStr': current_date.strftime('%m.%d'),
                 'weekDay': get_week_day_cn(current_date),
