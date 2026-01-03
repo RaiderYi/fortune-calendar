@@ -239,117 +239,103 @@ export default function App() {
     fetchFortune();
   }, [currentDate, userProfile]);
 
-  // --- 截图逻辑 ---
+  // --- 截图逻辑（增强版：自动清理lab颜色）---
   const handleGenerateImage = async () => {
-    if (!contentRef.current) return;
-    setIsGenerating(true);
+  if (!contentRef.current) return;
+  setIsGenerating(true);
 
-    try {
-      const originalShowBazi = showBazi;
-      if (!showBazi) setShowBazi(true);
+  try {
+    const originalShowBazi = showBazi;
+    if (!showBazi) setShowBazi(true);
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const canvas = await html2canvas(contentRef.current, {
-        useCORS: true,
-        scale: 2,
-        backgroundColor: '#F5F5F7',
-        logging: true,  // 开启日志，方便调试
-        ignoreElements: (element: Element) => {
-          return element.classList.contains('no-screenshot');
-        },
-        onclone: (clonedDoc) => {
-          console.log('🔧 onclone 回调执行了！');
-
-          // 超宽松的检查函数 - 不要求括号，只检查关键词
-          const hasModernColor = (colorStr: string) => {
-            if (!colorStr) return false;
-            const lower = colorStr.toLowerCase();
-            // 检查所有可能的现代颜色关键词
-            return lower.includes('oklch') ||
-                   lower.includes('oklab') ||
-                   lower.includes('lab') ||   // 注意：不要求括号！
-                   lower.includes('lch') ||
-                   lower.includes('color-mix') ||
-                   lower.includes('hwb') ||
-                   lower.includes('color(');
+    // ========== 增强版：暴力清理所有lab颜色 ==========
+    const canvas = await html2canvas(contentRef.current, {
+      useCORS: true,
+      scale: 2,
+      backgroundColor: '#F5F5F7',
+      logging: false,
+      ignoreElements: (element: Element) => {
+        return element.classList.contains('no-screenshot');
+      },
+      onclone: (clonedDoc) => {
+        // 暴力清理：遍历所有元素
+        const allElements = clonedDoc.querySelectorAll('*');
+        let cleanedCount = 0;
+        
+        allElements.forEach((el) => {
+          const htmlEl = el as HTMLElement;
+          const computed = window.getComputedStyle(el);
+          
+          // 检测lab颜色的函数
+          const hasLab = (str: string) => {
+            if (!str) return false;
+            return /\b(lab|lch|oklch|oklab|color-mix)\s*\(/i.test(str);
           };
-
-          const allElements = clonedDoc.querySelectorAll('*');
-          let replacedCount = 0;
-
-          allElements.forEach((el) => {
-            const htmlEl = el as HTMLElement;
-            const computed = window.getComputedStyle(el);
-
-            // 背景色
-            const bgColor = computed.backgroundColor;
-            if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
-              if (hasModernColor(bgColor)) {
-                htmlEl.style.backgroundColor = '#ffffff';
-                replacedCount++;
-                console.log('替换背景色:', bgColor, '→ #ffffff');
-              }
-            }
-
-            // 文字颜色
-            const textColor = computed.color;
-            if (textColor && hasModernColor(textColor)) {
-              htmlEl.style.color = '#1f2937';
-              replacedCount++;
-              console.log('替换文字色:', textColor, '→ #1f2937');
-            }
-
-            // 边框颜色
-            const borderColor = computed.borderColor;
-            if (borderColor && hasModernColor(borderColor)) {
-              htmlEl.style.borderColor = '#e5e7eb';
-              replacedCount++;
-              console.log('替换边框色:', borderColor, '→ #e5e7eb');
-            }
-          });
-
-          console.log(`✅ 共替换 ${replacedCount} 处现代颜色`);
-
-          // 强制设置根背景
-          if (clonedDoc.body) {
-            clonedDoc.body.style.backgroundColor = '#F5F5F7';
+          
+          // 清理背景色
+          const bg = computed.backgroundColor;
+          if (bg && hasLab(bg)) {
+            htmlEl.style.backgroundColor = '#ffffff';
+            cleanedCount++;
           }
+          
+          // 清理文字色
+          const fg = computed.color;
+          if (fg && hasLab(fg)) {
+            htmlEl.style.color = '#1f2937';
+            cleanedCount++;
+          }
+          
+          // 清理渐变（最常见的lab源）
+          const bgImg = computed.backgroundImage || '';
+          if (bgImg && hasLab(bgImg)) {
+            htmlEl.style.backgroundImage = 'none';
+            htmlEl.style.backgroundColor = '#f3f4f6';
+            cleanedCount++;
+          }
+          
+          // 清理边框
+          const borderColor = computed.borderColor;
+          if (borderColor && hasLab(borderColor)) {
+            htmlEl.style.borderColor = '#e5e7eb';
+            cleanedCount++;
+          }
+          
+          // 清理内联样式
+          const inlineStyle = htmlEl.getAttribute('style') || '';
+          if (hasLab(inlineStyle)) {
+            // 保留position等重要样式，只清理颜色
+            htmlEl.style.backgroundColor = '';
+            htmlEl.style.color = '';
+            htmlEl.style.borderColor = '';
+            htmlEl.style.backgroundImage = '';
+            cleanedCount++;
+          }
+        });
+        
+        if (cleanedCount > 0) {
+          console.log(`✅ 清理了 ${cleanedCount} 处lab颜色`);
         }
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      setGeneratedImage(imgData);
-      setShowBazi(originalShowBazi);
-
-      console.log('✅ 截图成功！');
-
-    } catch (error: any) {
-      console.error("❌ 截图失败:", error);
-      console.error("详细信息:", error.message, error.stack);
-      alert(`截图失败: ${error.message}`);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // --- 设置保存 ---
-  const handleSaveSettings = () => {
-    setUserProfile(editProfile);
-    localStorage.setItem('user_profile', JSON.stringify(editProfile));
-    setIsSettingsOpen(false);
-  };
-
-  // --- 城市选择处理 ---
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const city = e.target.value;
-    const lng = CHINA_CITIES[city];
-    setEditProfile({
-      ...editProfile,
-      city: city,
-      longitude: lng ? lng.toString() : editProfile.longitude
+        
+        // 强制设置根背景
+        if (clonedDoc.body) {
+          clonedDoc.body.style.backgroundColor = '#F5F5F7';
+        }
+      }
     });
-  };
+
+    const imgData = canvas.toDataURL('image/png');
+    setGeneratedImage(imgData);
+    setShowBazi(originalShowBazi);
+    
+  } catch (error: any) {
+    console.error("截图失败:", error);
+    alert(`截图功能暂时不可用\n请稍后再试或联系技术支持`);
+  } finally {
+    setIsGenerating(false);
+  }
+
 
   // --- 日期切换 ---
   const changeDate = (days: number) => {
