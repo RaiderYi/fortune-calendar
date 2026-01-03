@@ -196,7 +196,6 @@ TEN_GOD_THEMES = {
     }
 }
 
-
 # ==================== 工具函数 ====================
 
 def get_gan_zhi_from_num(num):
@@ -207,7 +206,6 @@ def get_gan_zhi_from_num(num):
     gan_index = (num - 1) % 10
     zhi_index = (num - 1) % 12
     return TIAN_GAN[gan_index] + DI_ZHI[zhi_index]
-
 
 def adjust_time_for_longitude(dt, longitude):
     """
@@ -226,7 +224,6 @@ def adjust_time_for_longitude(dt, longitude):
 
     adjusted_dt = dt + datetime.timedelta(minutes=time_diff_minutes)
     return adjusted_dt
-
 
 # ==================== 节气计算 ====================
 
@@ -267,7 +264,6 @@ def get_solar_term_for_year(year, term_index):
     # 简化处理：假设不变（实际应用中可以加入更精确的算法）
     return base_month, base_day
 
-
 def get_current_solar_term(date):
     """
     获取指定日期所处的节气
@@ -288,7 +284,6 @@ def get_current_solar_term(date):
 
     # 如果在当年第一个节气之前，属于上一年的冬至
     return SOLAR_TERMS[23], 23
-
 
 # ==================== 干支推算 ====================
 
@@ -318,7 +313,6 @@ def get_year_gan_zhi(year, month, day):
     gan_zhi_num = offset + 1
 
     return get_gan_zhi_from_num(gan_zhi_num)
-
 
 def get_month_gan_zhi(year, month, day):
     """
@@ -350,7 +344,6 @@ def get_month_gan_zhi(year, month, day):
 
     return TIAN_GAN[month_gan_index] + DI_ZHI[month_zhi_index]
 
-
 def get_day_gan_zhi(year, month, day):
     """
     计算日柱干支
@@ -373,7 +366,6 @@ def get_day_gan_zhi(year, month, day):
     gan_zhi_num = gan_zhi_index + 1
 
     return get_gan_zhi_from_num(gan_zhi_num)
-
 
 def get_hour_gan_zhi(day_gan, hour):
     """
@@ -403,7 +395,6 @@ def get_hour_gan_zhi(day_gan, hour):
     time_gan_index = (time_gan_base + time_zhi_index) % 10
 
     return TIAN_GAN[time_gan_index] + DI_ZHI[time_zhi_index]
-
 
 # ==================== 完整八字计算 ====================
 
@@ -454,7 +445,6 @@ def calculate_bazi(birth_datetime, longitude=120.0):
         'original_datetime': birth_datetime
     }
 
-
 def calculate_liu_nian(year):
     """
     计算流年干支
@@ -469,7 +459,6 @@ def calculate_liu_nian(year):
         'zhi': year_gz[1]
     }
 
-
 def calculate_liu_yue(year, month, day):
     """
     计算流月干支
@@ -483,7 +472,6 @@ def calculate_liu_yue(year, month, day):
         'gan': month_gz[0],
         'zhi': month_gz[1]
     }
-
 
 def calculate_liu_ri(year, month, day):
     """
@@ -500,55 +488,31 @@ def calculate_liu_ri(year, month, day):
         'zhi': day_gz[1]
     }
 
-
 # ==================== 测试函数 ====================
 
 def test_calculation():
     """
     测试八字计算功能
     """
-    print("=" * 60)
-    print("八字计算模块测试")
-    print("=" * 60)
 
     # 测试案例：1995年8月15日 9:30，北京
     test_date = datetime.datetime(1995, 8, 15, 9, 30)
     longitude = 116.4
 
-    print(f"\n📅 测试日期: {test_date}")
-    print(f"📍 出生地: 东经 {longitude}°")
 
     bazi = calculate_bazi(test_date, longitude)
 
-    print(f"\n⏰ 真太阳时: {bazi['adjusted_datetime']}")
-    print(f"🌱 当前节气: {bazi['solar_term']}")
 
-    print(f"\n八字排盘:")
-    print(f"  年柱: {bazi['year']} ({bazi['year_gan']}{bazi['year_zhi']})")
-    print(f"  月柱: {bazi['month']} ({bazi['month_gan']}{bazi['month_zhi']})")
-    print(f"  日柱: {bazi['day']} ({bazi['day_gan']}{bazi['day_zhi']})")
-    print(f"  时柱: {bazi['hour']} ({bazi['time_gan']}{bazi['time_zhi']})")
 
     # 测试流年流月流日
-    print(f"\n\n{'=' * 60}")
-    print("流年流月流日测试")
-    print("=" * 60)
 
     test_date2 = datetime.date(2025, 12, 30)
-    print(f"\n📅 测试日期: {test_date2}")
 
     liu_nian = calculate_liu_nian(test_date2.year)
-    print(f"流年: {liu_nian['gan_zhi']} ({test_date2.year}年)")
 
     liu_yue = calculate_liu_yue(test_date2.year, test_date2.month, test_date2.day)
-    print(f"流月: {liu_yue['gan_zhi']}")
 
     liu_ri = calculate_liu_ri(test_date2.year, test_date2.month, test_date2.day)
-    print(f"流日: {liu_ri['gan_zhi']}")
-
-    print("\n" + "=" * 60)
-    print("✅ 测试完成！")
-    print("=" * 60)
 
 
 # ==================== bazi_analyzer_enhanced 模块 ====================
@@ -1086,8 +1050,6 @@ TEN_GOD_INFLUENCE_V5 = {
     }
 }
 
-
-
 # ============================================
 # V3.1 新增配置常量
 # ============================================
@@ -1146,7 +1108,6 @@ CLIMATE_PRIORITY = {
     'summer_reason': '夏季炎热，水润为先',
 }
 
-
 # ============================================
 # V3.1 新增辅助函数
 # ============================================
@@ -1169,7 +1130,6 @@ def calculate_ten_god_bonus(day_gan, liu_ri_gan):
     bonus = TEN_GOD_BONUS.get(ten_god, 0)
     
     return bonus, ten_god
-
 
 def calculate_shen_sha_bonus(shen_sha_list):
     """
@@ -1201,7 +1161,6 @@ def calculate_shen_sha_bonus(shen_sha_list):
     total_bonus = max(-20, min(20, total_bonus))
     
     return total_bonus, detail
-
 
 def check_climate_yongshen(bazi, original_yongshen):
     """
@@ -1258,7 +1217,6 @@ def check_climate_yongshen(bazi, original_yongshen):
     
     return yongshen
 
-
 def check_element_strength_in_bazi(bazi, target_element):
     """
     检查某五行在八字中的力量
@@ -1285,7 +1243,6 @@ def check_element_strength_in_bazi(bazi, target_element):
             strength += 0.10
     
     return min(1.0, strength)
-
 
 def calculate_dayun_influence(dayun, yongshen):
     """
@@ -1349,7 +1306,6 @@ def calculate_dayun_influence(dayun, yongshen):
     
     return dayun_score, detail
 
-
 def get_ten_god_description(ten_god):
     """获取十神的描述"""
     descriptions = {
@@ -1365,7 +1321,6 @@ def get_ten_god_description(ten_god):
         '正印': '庇护力强，学习运佳，贵人相助'
     }
     return descriptions.get(ten_god, '中性能量')
-
 
 # ============================================
 # V3.1 新算法主函数
@@ -1552,7 +1507,6 @@ TIAO_HOU_RULES = {
     '酉': {'need': '火', 'reason': '金寒需暖'},
     '戌': {'need': '水', 'reason': '燥土需湿'}
 }
-
 
 # ==================== 增强版旺衰分析器 ====================
 
@@ -1802,7 +1756,6 @@ class EnhancedStrengthAnalyzer:
 
         return score, '; '.join(details)
 
-
 # ==================== 多层次用神推导器 ====================
 
 class EnhancedYongShenDeriver:
@@ -1940,7 +1893,6 @@ class EnhancedYongShenDeriver:
 
         return xi_shen, ji_shen
 
-
 # ==================== 导出函数 ====================
 
 def analyze_bazi_enhanced(bazi):
@@ -1969,7 +1921,6 @@ def analyze_bazi_enhanced(bazi):
         'yong_shen': yong_shen_result
     }
 
-
 # ==================== 测试代码 ====================
 # ==================== 缓存优化 ====================
 
@@ -1997,7 +1948,6 @@ def generate_bazi_cache_key(birth_date_str, birth_time_str, longitude):
     cache_key = hashlib.md5(data_string.encode()).hexdigest()
 
     return cache_key
-
 
 @lru_cache(maxsize=500)
 def analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude):
@@ -2041,7 +1991,6 @@ def parse_date(date_str):
     except:
         return datetime.datetime.now()
 
-
 def parse_datetime(date_str, time_str):
     """解析日期和时间字符串"""
     try:
@@ -2050,12 +1999,10 @@ def parse_datetime(date_str, time_str):
     except:
         return datetime.datetime.now()
 
-
 def get_week_day_cn(date):
     """获取中文星期"""
     weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
     return weekdays[date.weekday()]
-
 
 def get_dayun_direction(year_gan, gender):
     """
@@ -2102,9 +2049,7 @@ def get_dayun_direction(year_gan, gender):
         'gender_cn': '男' if gender == 'male' else '女'
     }
 
-
 # ==================== 评分和建议生成 ====================
-
 
 # ============================================================================
 # Celestial-Quant V5.0 - 核心算法函数
@@ -2132,7 +2077,6 @@ def calculate_element_strength_v5(bazi):
             'pattern': 'Weak'/'Neutral'/'Strong'/'Dominant'/'Follower'
         }
     """
-    from v5_config import ELEMENT_STRENGTH_WEIGHTS, STRENGTH_THRESHOLDS
     
     # 初始化五行分数
     strength = {'木': 0, '火': 0, '土': 0, '金': 0, '水': 0}
@@ -2190,7 +2134,6 @@ def calculate_element_strength_v5(bazi):
         'day_master_element': day_master_element
     }
 
-
 # ==================== Phase 1.2: 三层用神体系 ====================
 
 def determine_yongshen_tiered_v5(bazi, element_analysis):
@@ -2210,7 +2153,6 @@ def determine_yongshen_tiered_v5(bazi, element_analysis):
             'unfavorable': ['水', '金', '土']
         }
     """
-    from v5_config import YONGSHEN_TIERS, CLIMATE_CONFIG, MEDIATOR_ELEMENTS
     
     tiers = {}
     pattern = element_analysis['pattern']
@@ -2358,7 +2300,6 @@ def determine_yongshen_tiered_v5(bazi, element_analysis):
         'pattern': pattern
     }
 
-
 # ==================== Phase 2.1: 天干互动检测 ====================
 
 def check_tiangan_interaction_v5(gan1, gan2, yongshen, is_weak):
@@ -2367,7 +2308,6 @@ def check_tiangan_interaction_v5(gan1, gan2, yongshen, is_weak):
     
     返回: (score, description)
     """
-    from v5_config import TIANGAN_INTERACTIONS
     
     score = 0
     descriptions = []
@@ -2424,7 +2364,6 @@ def check_tiangan_interaction_v5(gan1, gan2, yongshen, is_weak):
     
     return score, descriptions
 
-
 # ==================== Phase 2.2: 地支互动检测 ====================
 
 def check_dizhi_interaction_v5(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
@@ -2439,7 +2378,6 @@ def check_dizhi_interaction_v5(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
     
     返回: (score, descriptions)
     """
-    from v5_config import DIZHI_INTERACTIONS, TREASURY_BRANCHES
     
     score = 0
     descriptions = []
@@ -2518,7 +2456,6 @@ def check_dizhi_interaction_v5(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
     
     return score, descriptions
 
-
 # ==================== Phase 2.3: 神煞完整计算 ====================
 
 def calculate_shensha_v5(bazi, liu_ri):
@@ -2531,7 +2468,6 @@ def calculate_shensha_v5(bazi, liu_ri):
         'dimension_boosts': {...}
     }
     """
-    from v5_config import SHEN_SHA_COMPLETE
     
     total_score = 0
     details = []
@@ -2604,7 +2540,6 @@ def calculate_shensha_v5(bazi, liu_ri):
         'dimension_boosts': dimension_boosts
     }
 
-
 # ============================================================================
 # Celestial-Quant V5.0 - 主算法和六大维度
 # ============================================================================
@@ -2643,7 +2578,6 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
             'factors': [...]
         }
     """
-    from v5_config import FORTUNE_WEIGHTS_V5
     
     # 使用流日作为随机种子
     random.seed(hash(liu_ri['gan'] + liu_ri['zhi']))
@@ -2759,7 +2693,6 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
     shensha_score = shensha_result['total_score']
     
     # ========== 第8步：十神影响（保留V3.1优化版）==========
-    from v5_config import TEN_GOD_INFLUENCE_V5
     
     ten_god = calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
     ten_god_config = TEN_GOD_INFLUENCE_V5.get(ten_god, {})
@@ -2813,7 +2746,6 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
         'factors': all_factors[:5]  # 最多5个关键因素
     }
 
-
 # ==================== 六大维度计算 ====================
 
 def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen, 
@@ -2827,7 +2759,6 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
         ...
     }
     """
-    from v5_config import DIMENSION_MAPPING
     
     dimensions = {}
     
@@ -2925,7 +2856,6 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     
     return dimensions
 
-
 # ==================== 辅助函数 ====================
 
 def has_zhengguan_in_bazi(bazi):
@@ -2953,7 +2883,6 @@ def has_zhengguan_in_bazi(bazi):
     
     return False
 
-
 def has_wealth_in_bazi(bazi):
     """检查八字中是否有财星"""
     day_gan = bazi['day_gan']
@@ -2975,7 +2904,6 @@ def has_wealth_in_bazi(bazi):
             return True
     
     return False
-
 
 def is_opposite_yinyang(gan1, gan2):
     """判断两个天干是否阴阳相异"""
@@ -3040,7 +2968,6 @@ def generate_dimension_scores(base_score, liu_ri_gan):
 
     return dimensions
 
-
 def generate_todo(yong_shen_element, ji_shen_list):
     """生成宜忌事项"""
     # 用神对应的宜做事项
@@ -3082,7 +3009,6 @@ def generate_todo(yong_shen_element, ji_shen_list):
         }
     ]
 
-
 def calculate_ten_god(day_gan, target_gan):
     """
     计算十神
@@ -3100,7 +3026,6 @@ def calculate_ten_god(day_gan, target_gan):
     diff = (target_idx - day_idx) % 10
     
     return SHI_SHEN[diff]
-
 
 def generate_main_theme(total_score, day_gan, liu_ri_gan):
     """
@@ -3143,7 +3068,6 @@ def generate_main_theme(total_score, day_gan, liu_ri_gan):
         'textColor': 'text-slate-800',
         'description': description
     }
-
 
 # ==================== HTTP Handler ====================
 
@@ -3200,14 +3124,12 @@ class handler(BaseHTTPRequestHandler):
             except:
                 longitude = 116.4
 
-
             # 生成缓存键
             cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
 
             # 调用缓存函数（相同出生信息会直接返回缓存）
             bazi, analysis = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
             # =============================================
-
 
             # 3. 计算流年流月流日
             current_date = parse_date(date_str)
