@@ -15,17 +15,12 @@ import {
 } from 'lucide-react';
 // @ts-ignore
 import html2canvas from 'html2canvas';
+import { CITY_LONGITUDE_MAP } from './utils/cityData';
 // 常量与配置
 // ==========================================
 
-// 常用城市经度表 (用于真太阳时校准)
-const CHINA_CITIES: Record<string, number> = {
-  '北京': 116.40, '上海': 121.47, '广州': 113.26, '深圳': 114.05,
-  '成都': 104.06, '杭州': 120.15, '武汉': 114.30, '重庆': 106.55,
-  '南京': 118.79, '天津': 117.20, '西安': 108.93, '沈阳': 123.43,
-  '哈尔滨': 126.53, '长沙': 112.93, '昆明': 102.83, '郑州': 113.62,
-  '香港': 114.16, '台北': 121.50, '乌鲁木齐': 87.61, '拉萨': 91.14
-};
+// 常用城市经度表 (用于真太阳时校准) - 已扩展到330+个城市
+const CHINA_CITIES = CITY_LONGITUDE_MAP;
 
 // 安全颜色映射表 (解决 html2canvas 不支持 oklch 颜色的问题)
 const SAFE_THEMES: Record<string, { bg: string, text: string }> = {
@@ -651,9 +646,11 @@ export default function App() {
                         className="w-2/3 bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
                       >
                         <option value="">选择城市</option>
-                        {Object.keys(CHINA_CITIES).map(city => (
-                          <option key={city} value={city}>{city}</option>
-                        ))}
+                        {Object.keys(CHINA_CITIES)
+                          .sort((a, b) => a.localeCompare(b, 'zh-CN'))
+                          .map(city => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
                       </select>
                       <div className="w-1/3 relative">
                          <input
@@ -671,7 +668,7 @@ export default function App() {
 
                 <div className="mt-8">
                   <button onClick={handleSaveSettings} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition">保存并重排运势</button>
-                  <p className="text-center text-[10px] text-gray-400 mt-3">我们将根据经度为您校准真太阳时</p>
+                  <p className="text-center text-[10px] text-gray-400 mt-3">已支持 {Object.keys(CHINA_CITIES).length} 个城市，真太阳时校准</p>
                 </div>
              </div>
           </div>
