@@ -277,6 +277,25 @@ export default function App() {
     }
   };
 
+
+  // --- 保存设置 ---
+  const handleSaveSettings = () => {
+    setUserProfile(editProfile);
+    localStorage.setItem('user_profile', JSON.stringify(editProfile));
+    setIsSettingsOpen(false);
+  };
+
+  // --- 城市选择处理 ---
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const city = e.target.value;
+    const lng = CHINA_CITIES[city];
+    setEditProfile({
+      ...editProfile,
+      city: city,
+      longitude: lng ? lng.toString() : editProfile.longitude
+    });
+  };
+
   // --- 日期切换 ---
   const changeDate = (days: number) => {
     setIsAnimating(true);
