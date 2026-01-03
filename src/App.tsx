@@ -13,8 +13,7 @@ import {
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
   Crown, Loader2, X, Download, MapPin
 } from 'lucide-react';
-// @ts-ignore
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { CITY_LONGITUDE_MAP } from './utils/cityData';
 // 常量与配置
 // ==========================================
@@ -239,103 +238,44 @@ export default function App() {
     fetchFortune();
   }, [currentDate, userProfile]);
 
-  // --- 截图逻辑（增强版：自动清理lab颜色）---
+  // --- 截图逻辑（使用html-to-image，完美支持lab颜色）---
   const handleGenerateImage = async () => {
-  if (!contentRef.current) return;
-  setIsGenerating(true);
+    if (!contentRef.current) return;
+    setIsGenerating(true);
 
-  try {
-    const originalShowBazi = showBazi;
-    if (!showBazi) setShowBazi(true);
-    await new Promise(resolve => setTimeout(resolve, 300));
+    try {
+      const originalShowBazi = showBazi;
+      if (!showBazi) setShowBazi(true);
+      
+      // 等待DOM更新
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-    // ========== 增强版：暴力清理所有lab颜色 ==========
-    const canvas = await html2canvas(contentRef.current, {
-      useCORS: true,
-      scale: 2,
-      backgroundColor: '#F5F5F7',
-      logging: false,
-      ignoreElements: (element: Element) => {
-        return element.classList.contains('no-screenshot');
-      },
-      onclone: (clonedDoc) => {
-        // 暴力清理：遍历所有元素
-        const allElements = clonedDoc.querySelectorAll('*');
-        let cleanedCount = 0;
-        
-        allElements.forEach((el) => {
-          const htmlEl = el as HTMLElement;
-          const computed = window.getComputedStyle(el);
-          
-          // 检测lab颜色的函数
-          const hasLab = (str: string) => {
-            if (!str) return false;
-            return /\b(lab|lch|oklch|oklab|color-mix)\s*\(/i.test(str);
-          };
-          
-          // 清理背景色
-          const bg = computed.backgroundColor;
-          if (bg && hasLab(bg)) {
-            htmlEl.style.backgroundColor = '#ffffff';
-            cleanedCount++;
+      // 使用 html-to-image（原生支持所有现代CSS颜色）
+      const dataUrl = await toPng(contentRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: '#F5F5F7',
+        filter: (node) => {
+          // 过滤不需要截图的元素
+          if (node.classList) {
+            return !node.classList.contains('no-screenshot');
           }
-          
-          // 清理文字色
-          const fg = computed.color;
-          if (fg && hasLab(fg)) {
-            htmlEl.style.color = '#1f2937';
-            cleanedCount++;
-          }
-          
-          // 清理渐变（最常见的lab源）
-          const bgImg = computed.backgroundImage || '';
-          if (bgImg && hasLab(bgImg)) {
-            htmlEl.style.backgroundImage = 'none';
-            htmlEl.style.backgroundColor = '#f3f4f6';
-            cleanedCount++;
-          }
-          
-          // 清理边框
-          const borderColor = computed.borderColor;
-          if (borderColor && hasLab(borderColor)) {
-            htmlEl.style.borderColor = '#e5e7eb';
-            cleanedCount++;
-          }
-          
-          // 清理内联样式
-          const inlineStyle = htmlEl.getAttribute('style') || '';
-          if (hasLab(inlineStyle)) {
-            // 保留position等重要样式，只清理颜色
-            htmlEl.style.backgroundColor = '';
-            htmlEl.style.color = '';
-            htmlEl.style.borderColor = '';
-            htmlEl.style.backgroundImage = '';
-            cleanedCount++;
-          }
-        });
-        
-        if (cleanedCount > 0) {
-          console.log(`✅ 清理了 ${cleanedCount} 处lab颜色`);
-        }
-        
-        // 强制设置根背景
-        if (clonedDoc.body) {
-          clonedDoc.body.style.backgroundColor = '#F5F5F7';
-        }
-      }
-    });
+          return true;
+        },
+      });
 
-    const imgData = canvas.toDataURL('image/png');
-    setGeneratedImage(imgData);
-    setShowBazi(originalShowBazi);
-    
-  } catch (error: any) {
-    console.error("截图失败:", error);
-    alert(`截图功能暂时不可用\n请稍后再试或联系技术支持`);
-  } finally {
-    setIsGenerating(false);
-  }
+      setGeneratedImage(dataUrl);
+      setShowBazi(originalShowBazi);
 
+      console.log('✅ 截图成功！');
+
+    } catch (error: any) {
+      console.error('截图失败:', error);
+      alert('截图功能暂时不可用，请稍后再试');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // --- 日期切换 ---
   const changeDate = (days: number) => {
