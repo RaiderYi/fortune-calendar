@@ -600,13 +600,13 @@ USE_V5_ALGORITHM = True
 # ==================== Phase 1.1: 五行强度权重配置 ====================
 
 ELEMENT_STRENGTH_WEIGHTS = {
-    'month_branch': 40,  # 月令（提纲）权重最大
-    'day_branch': 15,    # 日支
-    'hour_branch': 15,   # 时支
-    'year_branch': 15,   # 年支
-    'year_stem': 5,      # 年干
-    'month_stem': 5,     # 月干
-    'hour_stem': 5       # 时干
+    'month_zhi': 40,  # 月令（提纲）权重最大
+    'day_zhi': 15,    # 日支
+    'hour_zhi': 15,   # 时支
+    'year_zhi': 15,   # 年支
+    'year_gan': 5,    # 年干
+    'month_gan': 5,   # 月干
+    'hour_gan': 5     # 时干
     # 日干不计入（日主自身）
 }
 
@@ -2086,7 +2086,7 @@ def calculate_element_strength_v5(bazi):
     # 1. 月令（40%）
     month_element = WU_XING_MAP.get(bazi['month_zhi'])
     if month_element:
-        strength[month_element] += ELEMENT_STRENGTH_WEIGHTS['month_branch']
+        strength[month_element] += ELEMENT_STRENGTH_WEIGHTS['month_zhi']
     
     # 2. 日支、时支、年支（各15%）
     for branch_key in ['day_zhi', 'hour_zhi', 'year_zhi']:
