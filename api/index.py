@@ -618,6 +618,475 @@ YUE_LING_WANG = {
     '亥': '水', '子': '水', '丑': '土'
 }
 
+# ============================================================================
+# Celestial-Quant V5.0 - 版本控制
+# ============================================================================
+
+# 版本切换开关（True=V5.0, False=V3.1）
+USE_V5_ALGORITHM = True
+
+# ============================================================================
+# Celestial-Quant V5.0 - 配置常量
+# ============================================================================
+
+# ============================================================================
+# Celestial-Quant V5.0 - 配置和数据结构
+# ============================================================================
+
+# ==================== Phase 1.1: 五行强度权重配置 ====================
+
+ELEMENT_STRENGTH_WEIGHTS = {
+    'month_branch': 40,  # 月令（提纲）权重最大
+    'day_branch': 15,    # 日支
+    'hour_branch': 15,   # 时支
+    'year_branch': 15,   # 年支
+    'year_stem': 5,      # 年干
+    'month_stem': 5,     # 月干
+    'hour_stem': 5       # 时干
+    # 日干不计入（日主自身）
+}
+
+# 身强身弱判定阈值
+STRENGTH_THRESHOLDS = {
+    'dominant': 75,      # >75: 专旺/从强
+    'strong': 55,        # 55-75: 身强
+    'neutral_high': 50,  # 50-55: 中和偏旺
+    'neutral_low': 40,   # 40-50: 中和偏弱
+    'weak': 40,          # <40: 身弱
+    'follower': 25       # <25: 从格
+}
+
+# ==================== Phase 1.2: 三层用神配置 ====================
+
+YONGSHEN_TIERS = {
+    'tier1_climate': {
+        'priority': 100,
+        'weight_multiplier': 1.3,
+        'description': '调候用神'
+    },
+    'tier2_mediator': {
+        'priority': 80,
+        'weight_multiplier': 2.0,
+        'description': '通关用神'
+    },
+    'tier3_balance': {
+        'priority': 60,
+        'weight_multiplier': 1.0,
+        'description': '扶抑用神'
+    }
+}
+
+# 调候配置（冬夏特殊处理）
+CLIMATE_CONFIG = {
+    'winter': {
+        'months': ['亥', '子', '丑'],
+        'favorable_element': '火',
+        'reason': '冬季寒冷，火暖为先',
+        'threshold': 0.20  # 火力量<20%时启用调候
+    },
+    'summer': {
+        'months': ['巳', '午', '未'],
+        'favorable_element': '水',
+        'reason': '夏季炎热，水润为先',
+        'threshold': 0.20  # 水力量<20%时启用调候
+    }
+}
+
+# 通关五行配置
+MEDIATOR_ELEMENTS = {
+    ('金', '木'): '水',  # 金木相战，水通关
+    ('木', '土'): '火',  # 木土相战，火通关
+    ('土', '水'): '金',  # 土水相战，金通关
+    ('水', '火'): '木',  # 水火相战，木通关
+    ('火', '金'): '土'   # 火金相战，土通关
+}
+
+# ==================== Phase 1.3: 权重分配配置 ====================
+
+FORTUNE_WEIGHTS_V5 = {
+    'base_score': 60,
+    'dayun_adjust': {
+        'favorable': +10,
+        'unfavorable': -10,
+        'neutral': 0
+    },
+    'liunian': {
+        'weight': 0.10,
+        'stem_ratio': 0.60,  # 天干占60%
+        'branch_ratio': 0.40  # 地支占40%
+    },
+    'liuyue': {
+        'weight': 0.20,
+        'stem_only': True  # 只看天干
+    },
+    'liuri': {
+        'weight': 0.70,
+        'stem_ratio': 0.60,  # 天干占60%
+        'branch_ratio': 0.40  # 地支占40%
+    }
+}
+
+# ==================== Phase 2.1: 天干互动规则 ====================
+
+TIANGAN_INTERACTIONS = {
+    # 五合化局
+    'wu_he': {
+        '甲己': {'element': '土', 'favorable_bonus': 5, 'unfavorable_penalty': -4, 'desc': '甲己合化土'},
+        '乙庚': {'element': '金', 'favorable_bonus': 5, 'unfavorable_penalty': -4, 'desc': '乙庚合化金'},
+        '丙辛': {'element': '水', 'favorable_bonus': 5, 'unfavorable_penalty': -4, 'desc': '丙辛合化水'},
+        '丁壬': {'element': '木', 'favorable_bonus': 5, 'unfavorable_penalty': -4, 'desc': '丁壬合化木'},
+        '戊癸': {'element': '火', 'favorable_bonus': 5, 'unfavorable_penalty': -4, 'desc': '戊癸合化火'}
+    },
+    
+    # 相生关系
+    'sheng': {
+        'bonus': 3,
+        'penalty': -2,
+        'desc': '天干相生'
+    },
+    
+    # 相克关系
+    'ke': {
+        'controlled_bonus': -2,  # 被克减分
+        'control_bonus': 3,      # 克制忌神加分
+        'desc': '天干相克'
+    },
+    
+    # 比和关系
+    'bi_he': {
+        'weak_bonus': 2,      # 身弱遇比和加分
+        'strong_penalty': -3,  # 身强遇比和减分
+        'desc': '天干比和'
+    }
+}
+
+# ==================== Phase 2.2: 地支互动规则 ====================
+
+DIZHI_INTERACTIONS = {
+    # 六冲（最重要）
+    'liu_chong': {
+        '子': '午', '午': '子',
+        '丑': '未', '未': '丑',
+        '寅': '申', '申': '寅',
+        '卯': '酉', '酉': '卯',
+        '辰': '戌', '戌': '辰',
+        '巳': '亥', '亥': '巳'
+    },
+    'liu_chong_scores': {
+        'clash_favorable': 5,   # 冲去忌神
+        'clash_unfavorable': -10,  # 冲去用神
+        'clash_root': -12,      # 冲动日支（根基）
+        'clash_treasury': 8     # 冲开财库（辰戌丑未）
+    },
+    
+    # 三合局
+    'san_he': {
+        '申子辰': '水',  # 水局
+        '亥卯未': '木',  # 木局
+        '寅午戌': '火',  # 火局
+        '巳酉丑': '金'   # 金局
+    },
+    'san_he_scores': {
+        'favorable_complete': 8,  # 三合成喜用局
+        'favorable_partial': 4,   # 半合喜用
+        'unfavorable_complete': -6,  # 三合成忌神局
+        'unfavorable_partial': -3    # 半合忌神
+    },
+    
+    # 六合
+    'liu_he': {
+        '子': '丑', '丑': '子',
+        '寅': '亥', '亥': '寅',
+        '卯': '戌', '戌': '卯',
+        '辰': '酉', '酉': '辰',
+        '巳': '申', '申': '巳',
+        '午': '未', '未': '午'
+    },
+    'liu_he_scores': {
+        'favorable': 4,
+        'unfavorable': -3,
+        'bind_favorable': -4  # 合绊用神
+    },
+    
+    # 三刑
+    'san_xing': {
+        'ziwu': ['子', '卯'],           # 无礼之刑
+        'yinshen': ['寅', '巳', '申'],   # 恃势之刑
+        'chouxu': ['丑', '未', '戌'],    # 无恩之刑
+        'zixing': ['辰', '午', '酉', '亥']  # 自刑
+    },
+    'san_xing_score': -6,  # 刑主是非、压力
+    
+    # 六害（穿）
+    'liu_hai': {
+        '子': '未', '未': '子',
+        '丑': '午', '午': '丑',
+        '寅': '巳', '巳': '寅',
+        '卯': '辰', '辰': '卯',
+        '申': '亥', '亥': '申',
+        '酉': '戌', '戌': '酉'
+    },
+    'liu_hai_score': -4  # 害主小人、不和
+}
+
+# 财库判定（辰戌丑未）
+TREASURY_BRANCHES = {
+    '辰': '水库',
+    '戌': '火库',
+    '丑': '金库',
+    '未': '木库'
+}
+
+# ==================== Phase 2.3: 神煞完整表 ====================
+
+SHEN_SHA_COMPLETE = {
+    # 贵人类
+    'tianyi_guiren': {
+        'score': 8,
+        'calc_method': 'stem_based',
+        'table': {
+            '甲': ['丑', '未'], '戊': ['丑', '未'],
+            '乙': ['子', '申'], '己': ['子', '申'],
+            '丙': ['亥', '酉'], '丁': ['亥', '酉'],
+            '庚': ['丑', '未'], '辛': ['寅', '午'],
+            '壬': ['卯', '巳'], '癸': ['卯', '巳']
+        },
+        'desc': '天乙贵人：遇难呈祥，化险为夷'
+    },
+    
+    'tiande': {
+        'score': 10,
+        'calc_method': 'month_based',
+        'table': {
+            '正月': '丁', '二月': '申', '三月': '壬', '四月': '辛',
+            '五月': '亥', '六月': '甲', '七月': '癸', '八月': '寅',
+            '九月': '丙', '十月': '乙', '十一月': '巳', '十二月': '庚'
+        },
+        'desc': '天德贵人：天赐之福，逢凶化吉'
+    },
+    
+    'yuede': {
+        'score': 10,
+        'calc_method': 'month_based',
+        'table': {
+            '正月': '丙', '二月': '甲', '三月': '壬', '四月': '庚',
+            '五月': '丙', '六月': '甲', '七月': '壬', '八月': '庚',
+            '九月': '丙', '十月': '甲', '十一月': '壬', '十二月': '庚'
+        },
+        'desc': '月德贵人：月中之德，助运添福'
+    },
+    
+    'wenchang': {
+        'score': 8,
+        'calc_method': 'stem_based',
+        'table': {
+            '甲': '巳', '乙': '午', '丙': '申', '丁': '酉', '戊': '申',
+            '己': '酉', '庚': '亥', '辛': '子', '壬': '寅', '癸': '卯'
+        },
+        'desc': '文昌贵人：聪明才智，学业有成'
+    },
+    
+    # 桃花类
+    'taohua': {
+        'score': 5,
+        'calc_method': 'branch_based',
+        'table': {
+            '申子辰': '酉',
+            '寅午戌': '卯',
+            '巳酉丑': '午',
+            '亥卯未': '子'
+        },
+        'desc': '咸池桃花：人缘魅力，情感机遇',
+        'dimension_boost': {'romance': 10}
+    },
+    
+    # 驿马类
+    'yima': {
+        'score': 3,
+        'calc_method': 'branch_based',
+        'table': {
+            '申子辰': '寅',
+            '寅午戌': '申',
+            '巳酉丑': '亥',
+            '亥卯未': '巳'
+        },
+        'desc': '驿马星：奔走动荡，变动出行',
+        'dimension_boost': {'travel': 15}
+    },
+    
+    # 凶神类
+    'yangbian': {
+        'score': -8,
+        'calc_method': 'stem_based',
+        'table': {
+            '甲': '卯', '乙': '辰', '丙': '午', '丁': '未', '戊': '午',
+            '己': '未', '庚': '酉', '辛': '戌', '壬': '子', '癸': '丑'
+        },
+        'desc': '羊刃：刚烈冲动，易有血光',
+        'dimension_boost': {'career': 3}  # 事业反而有爆发力
+    },
+    
+    'jiesha': {
+        'score': -6,
+        'calc_method': 'branch_based',
+        'table': {
+            '申子辰': '巳',
+            '寅午戌': '亥',
+            '巳酉丑': '寅',
+            '亥卯未': '申'
+        },
+        'desc': '劫煞：破耗损失，小心财物'
+    },
+    
+    'zaisha': {
+        'score': -5,
+        'calc_method': 'branch_based',
+        'table': {
+            '申子辰': '午',
+            '寅午戌': '子',
+            '巳酉丑': '卯',
+            '亥卯未': '酉'
+        },
+        'desc': '灾煞：疾病灾祸，注意安全'
+    },
+    
+    'guchen': {
+        'score': -4,
+        'calc_method': 'branch_based',
+        'table': {
+            '亥子丑': '寅',
+            '寅卯辰': '巳',
+            '巳午未': '申',
+            '申酉戌': '亥'
+        },
+        'desc': '孤辰：孤独寂寞，六亲缘薄'
+    },
+    
+    'guasu': {
+        'score': -4,
+        'calc_method': 'branch_based',
+        'table': {
+            '亥子丑': '戌',
+            '寅卯辰': '丑',
+            '巳午未': '辰',
+            '申酉戌': '未'
+        },
+        'desc': '寡宿：孤独冷清，感情不顺'
+    }
+}
+
+# ==================== Phase 3: 六大维度映射配置 ====================
+
+DIMENSION_MAPPING = {
+    'career': {
+        'core_shishen': ['正官', '七杀', '正印'],
+        'favorable_interactions': ['官印相生', '杀印相生'],
+        'unfavorable_interactions': ['伤官见官', '财破印'],
+        'base_weight': 1.0,
+        'desc': '事业运势'
+    },
+    
+    'wealth': {
+        'core_shishen': ['正财', '偏财', '食神', '伤官'],
+        'favorable_interactions': ['食神生财', '伤官生财'],
+        'unfavorable_interactions': ['比劫夺财', '印制食伤'],
+        'base_weight': 1.0,
+        'desc': '财运势'
+    },
+    
+    'romance': {
+        'core_elements': {
+            'male': ['正财', '偏财'],  # 男命看财
+            'female': ['正官', '七杀']  # 女命看官杀
+        },
+        'branch_interactions': ['六合日支', '桃花入命'],
+        'unfavorable_interactions': ['六冲日支', '刑害日支'],
+        'base_weight': 1.0,
+        'desc': '情感运势'
+    },
+    
+    'health': {
+        'balance_check': True,
+        'critical_clashes': ['子午冲', '卯酉冲'],  # 心脑血管、眼目
+        'element_excess_threshold': 0.50,  # 某五行>50%
+        'element_deficiency_threshold': 0.05,  # 某五行<5%
+        'base_weight': 0.8,
+        'desc': '健康运势'
+    },
+    
+    'studies': {
+        'core_shishen': ['正印', '偏印', '食神', '伤官'],
+        'favorable_shensha': ['文昌贵人', '学堂'],
+        'unfavorable_interactions': ['财破印', '印枭夺食'],
+        'base_weight': 1.0,
+        'desc': '学业运势'
+    },
+    
+    'travel': {
+        'core_shensha': ['驿马'],
+        'trigger_clashes': ['冲年支', '冲月支'],
+        'four_changsheng': ['寅', '申', '巳', '亥'],
+        'base_weight': 0.9,
+        'desc': '出行运势'
+    }
+}
+
+# ==================== 十神影响系数（保留V3.1并优化） ====================
+
+TEN_GOD_INFLUENCE_V5 = {
+    '比肩': {
+        'weak_bonus': 8,
+        'strong_penalty': -4,
+        'desc': '自我能量强，适合独立行动'
+    },
+    '劫财': {
+        'weak_bonus': 5,
+        'strong_penalty': -6,
+        'wealth_penalty': -8,  # 有财时特别减分
+        'desc': '容易破财，需谨慎理财'
+    },
+    '食神': {
+        'bonus': 10,
+        'desc': '轻松愉快，创意丰富'
+    },
+    '伤官': {
+        'bonus': 3,
+        'officer_penalty': -15,  # 见官大凶
+        'desc': '创新能力强，但需注意口舌'
+    },
+    '偏财': {
+        'strong_bonus': 12,
+        'weak_penalty': -2,
+        'desc': '横财运佳，投资有利'
+    },
+    '正财': {
+        'strong_bonus': 8,
+        'weak_penalty': -3,
+        'desc': '稳定收入，正财稳健'
+    },
+    '七杀': {
+        'strong_penalty': -8,
+        'weak_penalty': -12,
+        'seal_bonus': 5,  # 有印化杀
+        'desc': '压力较大，挑战多'
+    },
+    '正官': {
+        'strong_bonus': 10,
+        'weak_bonus': 5,
+        'desc': '贵人运强，名誉提升'
+    },
+    '偏印': {
+        'bonus': 0,
+        'food_penalty': -8,  # 夺食
+        'desc': '思维独特，略显孤独'
+    },
+    '正印': {
+        'bonus': 10,
+        'desc': '庇护力强，学习运佳'
+    }
+}
+
+
 
 # ============================================
 # V3.1 新增配置常量
@@ -1636,90 +2105,885 @@ def get_dayun_direction(year_gan, gender):
 
 # ==================== 评分和建议生成 ====================
 
-def calculate_fortune_score(yong_shen_result, liu_nian, liu_yue, liu_ri):
-    """计算运势评分 - 优化版"""
-    import random
+
+# ============================================================================
+# Celestial-Quant V5.0 - 核心算法函数
+# ============================================================================
+
+# ============================================================================
+# Celestial-Quant V5.0 - 核心算法函数
+# ============================================================================
+
+import random
+
+# ==================== Phase 1.1: 五行强度精确量化 ====================
+
+def calculate_element_strength_v5(bazi):
+    """
+    100分制精确量化五行力量
     
-    # 降低基础分数，增加变化空间
-    base_score = 50
+    参数:
+        bazi: 八字信息字典
     
-    # 获取用神五行
-    primary_yong = yong_shen_result['primary']
-    xi_shen_list = yong_shen_result.get('xi_shen', [])
-    ji_shen_list = yong_shen_result.get('ji_shen', [])
+    返回:
+        {
+            'strength': {'木': 25, '火': 30, ...},
+            'day_master_score': 45,
+            'pattern': 'Weak'/'Neutral'/'Strong'/'Dominant'/'Follower'
+        }
+    """
+    from v5_config import ELEMENT_STRENGTH_WEIGHTS, STRENGTH_THRESHOLDS
     
-    # 使用流日天干作为随机种子，确保同一天结果一致但有变化
+    # 初始化五行分数
+    strength = {'木': 0, '火': 0, '土': 0, '金': 0, '水': 0}
+    
+    # WU_XING_MAP 使用全局的
+    
+    # 1. 月令（40%）
+    month_element = WU_XING_MAP.get(bazi['month_zhi'])
+    if month_element:
+        strength[month_element] += ELEMENT_STRENGTH_WEIGHTS['month_branch']
+    
+    # 2. 日支、时支、年支（各15%）
+    for branch_key in ['day_zhi', 'hour_zhi', 'year_zhi']:
+        element = WU_XING_MAP.get(bazi[branch_key])
+        if element:
+            strength[element] += ELEMENT_STRENGTH_WEIGHTS[branch_key]
+    
+    # 3. 天干（各5%）
+    for stem_key in ['year_gan', 'month_gan', 'hour_gan']:
+        element = WU_XING_MAP.get(bazi[stem_key])
+        if element:
+            strength[element] += ELEMENT_STRENGTH_WEIGHTS[stem_key]
+    
+    # 4. 计算日主同党力量
+    day_master_element = WU_XING_MAP.get(bazi['day_gan'])
+    
+    # 同党：日主本气 + 生日主的五行
+    same_party_score = strength[day_master_element]
+    
+    # 生日主的五行（印星）
+    sheng_element = None
+    for elem, sheng_elem in WU_XING_SHENG.items():
+        if sheng_elem == day_master_element:
+            sheng_element = elem
+            break
+    if sheng_element:
+        same_party_score += strength[sheng_element]
+    
+    # 5. 判定身强身弱格局
+    if same_party_score >= STRENGTH_THRESHOLDS['dominant']:
+        pattern = 'Dominant'  # 专旺
+    elif same_party_score >= STRENGTH_THRESHOLDS['strong']:
+        pattern = 'Strong'  # 身强
+    elif same_party_score >= STRENGTH_THRESHOLDS['neutral_high']:
+        pattern = 'Neutral'  # 中和
+    elif same_party_score >= STRENGTH_THRESHOLDS['weak']:
+        pattern = 'Weak'  # 身弱
+    else:
+        pattern = 'Follower'  # 从格
+    
+    return {
+        'strength': strength,
+        'day_master_score': same_party_score,
+        'pattern': pattern,
+        'day_master_element': day_master_element
+    }
+
+
+# ==================== Phase 1.2: 三层用神体系 ====================
+
+def determine_yongshen_tiered_v5(bazi, element_analysis):
+    """
+    三层优先级用神体系
+    
+    优先级：
+    1. 调候法（Tier 1）
+    2. 通关法（Tier 2）
+    3. 扶抑法（Tier 3）
+    
+    返回:
+        {
+            'tiers': {...},
+            'primary': '火',
+            'favorable': ['火', '木'],
+            'unfavorable': ['水', '金', '土']
+        }
+    """
+    from v5_config import YONGSHEN_TIERS, CLIMATE_CONFIG, MEDIATOR_ELEMENTS
+    
+    tiers = {}
+    pattern = element_analysis['pattern']
+    strength = element_analysis['strength']
+    day_master_element = element_analysis['day_master_element']
+    
+    # ========== Tier 1: 调候法 ==========
+    month_zhi = bazi['month_zhi']
+    
+    # 检查冬季
+    if month_zhi in CLIMATE_CONFIG['winter']['months']:
+        fire_strength = strength['火'] / 100  # 转换为比例
+        if fire_strength < CLIMATE_CONFIG['winter']['threshold']:
+            tiers['tier1_climate'] = {
+                'element': '火',
+                'priority': YONGSHEN_TIERS['tier1_climate']['priority'],
+                'weight': YONGSHEN_TIERS['tier1_climate']['weight_multiplier'],
+                'reason': CLIMATE_CONFIG['winter']['reason']
+            }
+    
+    # 检查夏季
+    elif month_zhi in CLIMATE_CONFIG['summer']['months']:
+        water_strength = strength['水'] / 100
+        if water_strength < CLIMATE_CONFIG['summer']['threshold']:
+            tiers['tier1_climate'] = {
+                'element': '水',
+                'priority': YONGSHEN_TIERS['tier1_climate']['priority'],
+                'weight': YONGSHEN_TIERS['tier1_climate']['weight_multiplier'],
+                'reason': CLIMATE_CONFIG['summer']['reason']
+            }
+    
+    # ========== Tier 2: 通关法 ==========
+    # 检查五行战局（两种五行力量相近且都>30）
+    sorted_elements = sorted(strength.items(), key=lambda x: x[1], reverse=True)
+    if len(sorted_elements) >= 2:
+        first_elem, first_score = sorted_elements[0]
+        second_elem, second_score = sorted_elements[1]
+        
+        if first_score > 30 and second_score > 25 and abs(first_score - second_score) < 15:
+            # 判断是否相克
+            if WU_XING_KE.get(first_elem) == second_elem or WU_XING_KE.get(second_elem) == first_elem:
+                # 找到通关五行
+                mediator = MEDIATOR_ELEMENTS.get((first_elem, second_elem)) or MEDIATOR_ELEMENTS.get((second_elem, first_elem))
+                if mediator:
+                    tiers['tier2_mediator'] = {
+                        'element': mediator,
+                        'priority': YONGSHEN_TIERS['tier2_mediator']['priority'],
+                        'weight': YONGSHEN_TIERS['tier2_mediator']['weight_multiplier'],
+                        'reason': f'{first_elem}{second_elem}相战，{mediator}通关'
+                    }
+    
+    # ========== Tier 3: 扶抑法（基础） ==========
+    if pattern in ['Strong', 'Dominant']:
+        # 身强：克泄耗为用
+        favorable = []
+        unfavorable = []
+        
+        # 官杀克身
+        ke_element = WU_XING_KE.get(day_master_element)
+        if ke_element:
+            favorable.append(ke_element)
+        
+        # 食伤泄身
+        sheng_by_day = WU_XING_SHENG.get(day_master_element)
+        if sheng_by_day:
+            favorable.append(sheng_by_day)
+        
+        # 财星耗身
+        for elem, ke_target in WU_XING_KE.items():
+            if ke_target == day_master_element:
+                continue
+            if WU_XING_SHENG.get(day_master_element) == elem:
+                favorable.append(elem)
+        
+        # 忌神：印生、比劫帮
+        sheng_day = None
+        for elem, sheng_to in WU_XING_SHENG.items():
+            if sheng_to == day_master_element:
+                sheng_day = elem
+                break
+        if sheng_day:
+            unfavorable.append(sheng_day)
+        unfavorable.append(day_master_element)
+        
+    else:  # Weak, Neutral, Follower
+        # 身弱：生扶为用
+        favorable = []
+        unfavorable = []
+        
+        # 印星生身
+        sheng_day = None
+        for elem, sheng_to in WU_XING_SHENG.items():
+            if sheng_to == day_master_element:
+                sheng_day = elem
+                break
+        if sheng_day:
+            favorable.append(sheng_day)
+        
+        # 比劫帮身
+        favorable.append(day_master_element)
+        
+        # 忌神：官杀克、食伤泄、财星耗
+        ke_element = WU_XING_KE.get(day_master_element)
+        if ke_element:
+            unfavorable.append(ke_element)
+        
+        sheng_by_day = WU_XING_SHENG.get(day_master_element)
+        if sheng_by_day:
+            unfavorable.append(sheng_by_day)
+    
+    # 去重
+    favorable = list(set(favorable))
+    unfavorable = list(set(unfavorable))
+    
+    tiers['tier3_balance'] = {
+        'favorable': favorable,
+        'unfavorable': unfavorable,
+        'priority': YONGSHEN_TIERS['tier3_balance']['priority'],
+        'weight': YONGSHEN_TIERS['tier3_balance']['weight_multiplier'],
+        'pattern': pattern
+    }
+    
+    # 确定最终用神（优先级最高的）
+    primary_yongshen = None
+    if 'tier1_climate' in tiers:
+        primary_yongshen = tiers['tier1_climate']['element']
+        # 将调候用神加入喜用
+        if primary_yongshen not in favorable:
+            favorable.insert(0, primary_yongshen)
+    elif 'tier2_mediator' in tiers:
+        primary_yongshen = tiers['tier2_mediator']['element']
+        if primary_yongshen not in favorable:
+            favorable.insert(0, primary_yongshen)
+    else:
+        # 从扶抑用神中选择力量最弱的
+        if favorable:
+            favorable_strengths = {elem: strength[elem] for elem in favorable}
+            primary_yongshen = min(favorable_strengths, key=favorable_strengths.get)
+    
+    return {
+        'tiers': tiers,
+        'primary': primary_yongshen,
+        'favorable': favorable,
+        'unfavorable': unfavorable,
+        'pattern': pattern
+    }
+
+
+# ==================== Phase 2.1: 天干互动检测 ====================
+
+def check_tiangan_interaction_v5(gan1, gan2, yongshen, is_weak):
+    """
+    检测天干互动关系
+    
+    返回: (score, description)
+    """
+    from v5_config import TIANGAN_INTERACTIONS
+    
+    score = 0
+    descriptions = []
+    
+    # 1. 检查五合
+    he_key = gan1 + gan2
+    he_reverse = gan2 + gan1
+    wu_he_table = TIANGAN_INTERACTIONS['wu_he']
+    
+    if he_key in wu_he_table or he_reverse in wu_he_table:
+        he_info = wu_he_table.get(he_key) or wu_he_table.get(he_reverse)
+        he_element = he_info['element']
+        
+        if he_element in yongshen['favorable']:
+            score += he_info['favorable_bonus']
+            descriptions.append(f"{he_info['desc']}化喜用，贵人相助")
+        else:
+            score += he_info['unfavorable_penalty']
+            descriptions.append(f"{he_info['desc']}化忌神，羁绊重重")
+        
+        return score, descriptions
+    
+    # 2. 检查相生
+    gan1_element = WU_XING_MAP.get(gan1)
+    gan2_element = WU_XING_MAP.get(gan2)
+    
+    if WU_XING_SHENG.get(gan2_element) == gan1_element:
+        # gan2生gan1
+        if gan2_element in yongshen['favorable']:
+            score += TIANGAN_INTERACTIONS['sheng']['bonus']
+            descriptions.append("天干相生，喜神助力")
+        else:
+            score += TIANGAN_INTERACTIONS['sheng']['penalty']
+            descriptions.append("天干相生，生助忌神")
+    
+    # 3. 检查相克
+    if WU_XING_KE.get(gan2_element) == gan1_element:
+        # gan2克gan1
+        if gan2_element in yongshen['unfavorable']:
+            score += TIANGAN_INTERACTIONS['ke']['controlled_bonus']
+            descriptions.append("天干受克，忌神来袭")
+        else:
+            score += TIANGAN_INTERACTIONS['ke']['control_bonus']
+            descriptions.append("天干相克，克制忌神")
+    
+    # 4. 检查比和
+    if gan1_element == gan2_element:
+        if is_weak:
+            score += TIANGAN_INTERACTIONS['bi_he']['weak_bonus']
+            descriptions.append("天干比和，同类相助")
+        else:
+            score += TIANGAN_INTERACTIONS['bi_he']['strong_penalty']
+            descriptions.append("天干比和，竞争夺利")
+    
+    return score, descriptions
+
+
+# ==================== Phase 2.2: 地支互动检测 ====================
+
+def check_dizhi_interaction_v5(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
+    """
+    检测地支互动关系（刑冲合害）
+    
+    参数:
+        bazi_zhis: 八字的四个地支 [年支, 月支, 日支, 时支]
+        liu_ri_zhi: 流日地支
+        day_zhi: 日支
+        yongshen: 用神信息
+    
+    返回: (score, descriptions)
+    """
+    from v5_config import DIZHI_INTERACTIONS, TREASURY_BRANCHES
+    
+    score = 0
+    descriptions = []
+    
+    all_zhis = bazi_zhis + [liu_ri_zhi]
+    
+    # 1. 六冲检测
+    liu_chong_table = DIZHI_INTERACTIONS['liu_chong']
+    liu_chong_scores = DIZHI_INTERACTIONS['liu_chong_scores']
+    
+    for bazi_zhi in bazi_zhis:
+        if liu_chong_table.get(liu_ri_zhi) == bazi_zhi:
+            zhi_element = WU_XING_MAP.get(bazi_zhi)
+            
+            # 特殊：冲日支
+            if bazi_zhi == day_zhi:
+                score += liu_chong_scores['clash_root']
+                descriptions.append(f"六冲日支（{liu_ri_zhi}冲{bazi_zhi}），动荡不安")
+                continue
+            
+            # 判断是否冲财库
+            if bazi_zhi in TREASURY_BRANCHES:
+                score += liu_chong_scores['clash_treasury']
+                descriptions.append(f"冲开{TREASURY_BRANCHES[bazi_zhi]}，变动中求财")
+                continue
+            
+            # 一般六冲
+            if zhi_element in yongshen['unfavorable']:
+                score += liu_chong_scores['clash_favorable']
+                descriptions.append(f"六冲去忌神（{liu_ri_zhi}冲{bazi_zhi}），变动中求吉")
+            else:
+                score += liu_chong_scores['clash_unfavorable']
+                descriptions.append(f"六冲用神（{liu_ri_zhi}冲{bazi_zhi}），防备突发")
+    
+    # 2. 六合检测
+    liu_he_table = DIZHI_INTERACTIONS['liu_he']
+    liu_he_scores = DIZHI_INTERACTIONS['liu_he_scores']
+    
+    for bazi_zhi in bazi_zhis:
+        if liu_he_table.get(liu_ri_zhi) == bazi_zhi:
+            zhi_element = WU_XING_MAP.get(bazi_zhi)
+            
+            # 合日支特殊处理
+            if bazi_zhi == day_zhi:
+                score += liu_he_scores['favorable']
+                descriptions.append(f"六合日支（{liu_ri_zhi}合{bazi_zhi}），情投意合")
+                continue
+            
+            if zhi_element in yongshen['favorable']:
+                score += liu_he_scores['bind_favorable']
+                descriptions.append(f"六合羁绊用神（{liu_ri_zhi}合{bazi_zhi}），难以施展")
+            else:
+                score += liu_he_scores['favorable']
+                descriptions.append(f"六合忌神（{liu_ri_zhi}合{bazi_zhi}），合住凶神")
+    
+    # 3. 三刑检测（简化版）
+    san_xing_score = DIZHI_INTERACTIONS['san_xing_score']
+    
+    # 检测是否触发刑
+    for xing_group in DIZHI_INTERACTIONS['san_xing'].values():
+        if liu_ri_zhi in xing_group:
+            for bazi_zhi in bazi_zhis:
+                if bazi_zhi in xing_group and bazi_zhi != liu_ri_zhi:
+                    score += san_xing_score
+                    descriptions.append(f"三刑（{liu_ri_zhi}刑{bazi_zhi}），内心纠结，易有是非")
+                    break
+    
+    # 4. 六害检测
+    liu_hai_table = DIZHI_INTERACTIONS['liu_hai']
+    liu_hai_score = DIZHI_INTERACTIONS['liu_hai_score']
+    
+    for bazi_zhi in bazi_zhis:
+        if liu_hai_table.get(liu_ri_zhi) == bazi_zhi:
+            score += liu_hai_score
+            descriptions.append(f"六害（{liu_ri_zhi}害{bazi_zhi}），小人不和，注意口舌")
+    
+    return score, descriptions
+
+
+# ==================== Phase 2.3: 神煞完整计算 ====================
+
+def calculate_shensha_v5(bazi, liu_ri):
+    """
+    计算当日神煞影响
+    
+    返回: {
+        'total_score': int,
+        'details': [...],
+        'dimension_boosts': {...}
+    }
+    """
+    from v5_config import SHEN_SHA_COMPLETE
+    
+    total_score = 0
+    details = []
+    dimension_boosts = {}
+    
+    day_gan = bazi['day_gan']
+    day_zhi = bazi['day_zhi']
+    month_zhi = bazi['month_zhi']
+    liu_ri_gan = liu_ri['gan']
+    liu_ri_zhi = liu_ri['zhi']
+    
+    # 遍历所有神煞
+    for sha_name, sha_config in SHEN_SHA_COMPLETE.items():
+        triggered = False
+        
+        if sha_config['calc_method'] == 'stem_based':
+            # 基于天干查表
+            table = sha_config['table']
+            valid_zhis = table.get(day_gan, [])
+            
+            if isinstance(valid_zhis, list):
+                if liu_ri_zhi in valid_zhis:
+                    triggered = True
+            else:
+                if liu_ri_zhi == valid_zhis:
+                    triggered = True
+        
+        elif sha_config['calc_method'] == 'month_based':
+            # 基于月份查表
+            table = sha_config['table']
+            # 月份转换（需要农历月份）
+            # 简化处理：用地支代替
+            month_key = f"{bazi['month_zhi']}"  # 需要更精确的实现
+            # 暂时跳过月德天德的精确计算
+            continue
+        
+        elif sha_config['calc_method'] == 'branch_based':
+            # 基于地支三合/会局查表
+            table = sha_config['table']
+            for branch_group, target_zhi in table.items():
+                # 检查是否在这个组
+                bazi_zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['hour_zhi']]
+                group_list = list(branch_group)
+                
+                # 简化：检查是否日支在组内
+                if day_zhi in group_list and liu_ri_zhi == target_zhi:
+                    triggered = True
+                    break
+        
+        if triggered:
+            total_score += sha_config['score']
+            details.append({
+                'name': sha_name,
+                'score': sha_config['score'],
+                'desc': sha_config['desc'],
+                'type': 'auspicious' if sha_config['score'] > 0 else 'inauspicious'
+            })
+            
+            # 维度加成
+            if 'dimension_boost' in sha_config:
+                for dim, boost in sha_config['dimension_boost'].items():
+                    dimension_boosts[dim] = dimension_boosts.get(dim, 0) + boost
+    
+    # 限制总分在合理范围
+    total_score = max(-25, min(25, total_score))
+    
+    return {
+        'total_score': total_score,
+        'details': details,
+        'dimension_boosts': dimension_boosts
+    }
+
+
+# ============================================================================
+# Celestial-Quant V5.0 - 主算法和六大维度
+# ============================================================================
+
+# ============================================================================
+# Celestial-Quant V5.0 - 主算法和六大维度
+# ============================================================================
+
+import random
+
+# ==================== 主算法：运势评分 V5.0 ====================
+
+def calculate_fortune_score_v5(bazi, element_analysis, yongshen, 
+                                liu_nian, liu_yue, liu_ri, dayun=None):
+    """
+    Celestial-Quant 完整算法
+    
+    权重分配：
+    - Base: 60（大运修正±10）
+    - 流年: 10% (天干60% + 地支40%)
+    - 流月: 20% (只看天干)
+    - 流日: 70% (天干60% + 地支40%)
+    
+    参数:
+        bazi: 八字信息
+        element_analysis: 五行分析结果
+        yongshen: 用神分析结果
+        liu_nian, liu_yue, liu_ri: 流年月日
+        dayun: 大运信息（可选）
+    
+    返回:
+        {
+            'score': 78,
+            'breakdown': {...},
+            'interactions': [...],
+            'factors': [...]
+        }
+    """
+    from v5_config import FORTUNE_WEIGHTS_V5
+    
+    # 使用流日作为随机种子
     random.seed(hash(liu_ri['gan'] + liu_ri['zhi']))
     
-    # 流年影响 (25%) - 天干+地支分开计算
-    nian_score = 0
-    liu_nian_gan_element = WU_XING_MAP.get(liu_nian['gan'])
-    liu_nian_zhi_element = WU_XING_MAP.get(liu_nian['zhi'])
+    # ========== 第1步：基础分（大运修正）==========
+    base_score = FORTUNE_WEIGHTS_V5['base_score']
+    dayun_adjust = 0
     
-    # 天干影响（15%）
-    if liu_nian_gan_element == primary_yong:
-        nian_score += 12 + random.randint(-2, 3)
-    elif liu_nian_gan_element in xi_shen_list:
-        nian_score += 7 + random.randint(-2, 2)
-    elif liu_nian_gan_element in ji_shen_list:
-        nian_score -= 8 + random.randint(0, 2)
+    if dayun:
+        dayun_gan_element = WU_XING_MAP.get(dayun.get('current_gan'))
+        dayun_zhi_element = WU_XING_MAP.get(dayun.get('current_zhi'))
+        
+        # 简化判断：天干为主
+        if dayun_gan_element in yongshen['favorable']:
+            dayun_adjust = FORTUNE_WEIGHTS_V5['dayun_adjust']['favorable']
+        elif dayun_gan_element in yongshen['unfavorable']:
+            dayun_adjust = FORTUNE_WEIGHTS_V5['dayun_adjust']['unfavorable']
+        
+        base_score += dayun_adjust
     
-    # 地支影响（10%）
-    if liu_nian_zhi_element == primary_yong:
-        nian_score += 8 + random.randint(-1, 2)
-    elif liu_nian_zhi_element in xi_shen_list:
-        nian_score += 4 + random.randint(-1, 1)
-    elif liu_nian_zhi_element in ji_shen_list:
-        nian_score -= 5 + random.randint(0, 2)
+    # ========== 第2步：流年影响（10%）==========
+    liunian_score = 0
+    liunian_weight = FORTUNE_WEIGHTS_V5['liunian']['weight']
     
-    # 流月影响 (25%) - 天干为主
-    yue_score = 0
-    liu_yue_gan_element = WU_XING_MAP.get(liu_yue['gan'])
-    liu_yue_zhi_element = WU_XING_MAP.get(liu_yue['zhi'])
+    # 天干（60%）
+    nian_gan_element = WU_XING_MAP.get(liu_nian['gan'])
+    nian_gan_bonus = 0
+    if nian_gan_element == yongshen['primary']:
+        nian_gan_bonus = 8 + random.randint(-2, 2)
+    elif nian_gan_element in yongshen['favorable']:
+        nian_gan_bonus = 5 + random.randint(-1, 1)
+    elif nian_gan_element in yongshen['unfavorable']:
+        nian_gan_bonus = -6 + random.randint(-1, 1)
     
-    if liu_yue_gan_element == primary_yong:
-        yue_score += 15 + random.randint(-2, 3)
-    elif liu_yue_gan_element in xi_shen_list:
-        yue_score += 8 + random.randint(-2, 2)
-    elif liu_yue_gan_element in ji_shen_list:
-        yue_score -= 10 + random.randint(0, 2)
+    # 地支（40%）
+    nian_zhi_element = WU_XING_MAP.get(liu_nian['zhi'])
+    nian_zhi_bonus = 0
+    if nian_zhi_element == yongshen['primary']:
+        nian_zhi_bonus = 5 + random.randint(-1, 1)
+    elif nian_zhi_element in yongshen['favorable']:
+        nian_zhi_bonus = 3 + random.randint(0, 1)
+    elif nian_zhi_element in yongshen['unfavorable']:
+        nian_zhi_bonus = -4 + random.randint(-1, 0)
+    
+    liunian_score = (nian_gan_bonus * 0.6 + nian_zhi_bonus * 0.4) * (liunian_weight / 0.1)
+    
+    # ========== 第3步：流月影响（20%）==========
+    liuyue_score = 0
+    liuyue_weight = FORTUNE_WEIGHTS_V5['liuyue']['weight']
+    
+    # 只看天干
+    yue_gan_element = WU_XING_MAP.get(liu_yue['gan'])
+    if yue_gan_element == yongshen['primary']:
+        liuyue_score = 12 + random.randint(-2, 3)
+    elif yue_gan_element in yongshen['favorable']:
+        liuyue_score = 7 + random.randint(-2, 2)
+    elif yue_gan_element in yongshen['unfavorable']:
+        liuyue_score = -8 + random.randint(-1, 1)
     else:
-        # 中性情况也加一点随机性
-        yue_score += random.randint(-5, 5)
+        liuyue_score = random.randint(-3, 3)
     
-    # 流日影响 (50%) - 对当天影响最大
-    ri_score = 0
-    liu_ri_gan_element = WU_XING_MAP.get(liu_ri['gan'])
-    liu_ri_zhi_element = WU_XING_MAP.get(liu_ri['zhi'])
+    liuyue_score = liuyue_score * (liuyue_weight / 0.2)
     
-    # 天干影响（30%）
-    if liu_ri_gan_element == primary_yong:
-        ri_score += 20 + random.randint(-3, 5)
-    elif liu_ri_gan_element in xi_shen_list:
-        ri_score += 12 + random.randint(-3, 3)
-    elif liu_ri_gan_element in ji_shen_list:
-        ri_score -= 12 + random.randint(0, 3)
+    # ========== 第4步：流日影响（70%）==========
+    liuri_score = 0
+    liuri_weight = FORTUNE_WEIGHTS_V5['liuri']['weight']
+    
+    # 天干（60%）
+    ri_gan_element = WU_XING_MAP.get(liu_ri['gan'])
+    ri_gan_bonus = 0
+    if ri_gan_element == yongshen['primary']:
+        ri_gan_bonus = 35 + random.randint(-4, 5)
+    elif ri_gan_element in yongshen['favorable']:
+        ri_gan_bonus = 20 + random.randint(-3, 3)
+    elif ri_gan_element in yongshen['unfavorable']:
+        ri_gan_bonus = -18 + random.randint(-2, 2)
     else:
-        # 中性情况
-        ri_score += random.randint(-8, 8)
+        ri_gan_bonus = random.randint(-5, 5)
     
-    # 地支影响（20%）
-    if liu_ri_zhi_element == primary_yong:
-        ri_score += 12 + random.randint(-2, 3)
-    elif liu_ri_zhi_element in xi_shen_list:
-        ri_score += 7 + random.randint(-2, 2)
-    elif liu_ri_zhi_element in ji_shen_list:
-        ri_score -= 8 + random.randint(0, 2)
+    # 地支（40%）
+    ri_zhi_element = WU_XING_MAP.get(liu_ri['zhi'])
+    ri_zhi_bonus = 0
+    if ri_zhi_element == yongshen['primary']:
+        ri_zhi_bonus = 25 + random.randint(-3, 4)
+    elif ri_zhi_element in yongshen['favorable']:
+        ri_zhi_bonus = 15 + random.randint(-2, 2)
+    elif ri_zhi_element in yongshen['unfavorable']:
+        ri_zhi_bonus = -12 + random.randint(-2, 1)
     else:
-        # 中性情况
-        ri_score += random.randint(-5, 5)
+        ri_zhi_bonus = random.randint(-4, 4)
     
-    # 综合评分
-    total = base_score + nian_score + yue_score + ri_score
+    liuri_score = (ri_gan_bonus * 0.6 + ri_zhi_bonus * 0.4) * (liuri_weight / 0.7)
     
-    # 限制在 30-100 之间（避免过低）
-    return max(30, min(100, int(total)))
+    # ========== 第5步：天干互动 ==========
+    tiangan_score, tiangan_desc = check_tiangan_interaction_v5(
+        bazi['day_gan'], 
+        liu_ri['gan'],
+        yongshen,
+        element_analysis['pattern'] in ['Weak', 'Follower']
+    )
+    
+    # ========== 第6步：地支互动 ==========
+    bazi_zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['hour_zhi']]
+    dizhi_score, dizhi_desc = check_dizhi_interaction_v5(
+        bazi_zhis,
+        liu_ri['zhi'],
+        bazi['day_zhi'],
+        yongshen
+    )
+    
+    # ========== 第7步：神煞影响 ==========
+    shensha_result = calculate_shensha_v5(bazi, liu_ri)
+    shensha_score = shensha_result['total_score']
+    
+    # ========== 第8步：十神影响（保留V3.1优化版）==========
+    from v5_config import TEN_GOD_INFLUENCE_V5
+    
+    ten_god = calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
+    ten_god_config = TEN_GOD_INFLUENCE_V5.get(ten_god, {})
+    ten_god_score = 0
+    
+    if element_analysis['pattern'] in ['Weak', 'Follower']:
+        ten_god_score = ten_god_config.get('weak_bonus', ten_god_config.get('bonus', 0))
+    else:
+        ten_god_score = ten_god_config.get('strong_bonus', ten_god_config.get('bonus', 0))
+    
+    # 特殊处理
+    if ten_god == '伤官':
+        # 检查是否有正官
+        if has_zhengguan_in_bazi(bazi):
+            ten_god_score = ten_god_config.get('officer_penalty', 0)
+    
+    # ========== 综合计算 ==========
+    total = (base_score + liunian_score + liuyue_score + liuri_score + 
+             tiangan_score + dizhi_score + shensha_score + ten_god_score)
+    
+    # 限制在30-100之间
+    final_score = max(30, min(100, int(total)))
+    
+    # 收集所有因素
+    all_factors = []
+    all_factors.extend(tiangan_desc)
+    all_factors.extend(dizhi_desc)
+    if shensha_result['details']:
+        for sha in shensha_result['details'][:3]:  # 最多3个
+            all_factors.append(sha['desc'])
+    
+    return {
+        'score': final_score,
+        'breakdown': {
+            'base': base_score,
+            'dayun_adjust': dayun_adjust,
+            'liunian': round(liunian_score, 1),
+            'liuyue': round(liuyue_score, 1),
+            'liuri': round(liuri_score, 1),
+            'tiangan': tiangan_score,
+            'dizhi': dizhi_score,
+            'shensha': shensha_score,
+            'ten_god': ten_god_score
+        },
+        'interactions': {
+            'tiangan': tiangan_desc,
+            'dizhi': dizhi_desc
+        },
+        'shensha': shensha_result,
+        'ten_god': ten_god,
+        'factors': all_factors[:5]  # 最多5个关键因素
+    }
 
+
+# ==================== 六大维度计算 ====================
+
+def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen, 
+                             element_analysis, shensha_result):
+    """
+    计算六大维度分数
+    
+    返回: {
+        'career': 85,
+        'wealth': 70,
+        ...
+    }
+    """
+    from v5_config import DIMENSION_MAPPING
+    
+    dimensions = {}
+    
+    # 基准分：基于总分
+    base_dim_score = overall_score
+    
+    # ========== 1. 事业运 ==========
+    career_score = base_dim_score
+    ten_god = calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
+    
+    if ten_god in DIMENSION_MAPPING['career']['core_shishen']:
+        career_score += 10
+    elif ten_god == '伤官' and has_zhengguan_in_bazi(bazi):
+        career_score -= 15  # 伤官见官
+    
+    # 神煞加成
+    if 'career' in shensha_result.get('dimension_boosts', {}):
+        career_score += shensha_result['dimension_boosts']['career']
+    
+    dimensions['career'] = max(0, min(100, int(career_score)))
+    
+    # ========== 2. 财运 ==========
+    wealth_score = base_dim_score
+    
+    if ten_god in DIMENSION_MAPPING['wealth']['core_shishen']:
+        wealth_score += 12
+    elif ten_god in ['比肩', '劫财']:
+        # 检查是否有财
+        if has_wealth_in_bazi(bazi):
+            wealth_score -= 15  # 比劫夺财
+    
+    dimensions['wealth'] = max(0, min(100, int(wealth_score)))
+    
+    # ========== 3. 情感运 ==========
+    romance_score = base_dim_score
+    
+    # 检查日支互动
+    if DIZHI_INTERACTIONS['liu_he'].get(liu_ri['zhi']) == bazi['day_zhi']:
+        romance_score += 12  # 六合日支
+    elif DIZHI_INTERACTIONS['liu_chong'].get(liu_ri['zhi']) == bazi['day_zhi']:
+        romance_score -= 15  # 六冲日支
+    
+    # 神煞加成
+    if 'romance' in shensha_result.get('dimension_boosts', {}):
+        romance_score += shensha_result['dimension_boosts']['romance']
+    
+    dimensions['romance'] = max(0, min(100, int(romance_score)))
+    
+    # ========== 4. 健康运 ==========
+    health_score = base_dim_score
+    
+    # 五行平衡检测
+    strength = element_analysis['strength']
+    for element, score in strength.items():
+        if score > 50:  # 过旺
+            health_score -= 8
+        elif score < 5:  # 过衰
+            health_score -= 6
+    
+    # 关键冲克
+    if liu_ri['zhi'] in ['子', '午'] and bazi['day_zhi'] in ['子', '午']:
+        if DIZHI_INTERACTIONS['liu_chong'].get(liu_ri['zhi']) == bazi['day_zhi']:
+            health_score -= 10  # 子午冲，心脑血管
+    
+    dimensions['health'] = max(0, min(100, int(health_score)))
+    
+    # ========== 5. 学业运 ==========
+    studies_score = base_dim_score
+    
+    if ten_god in DIMENSION_MAPPING['studies']['core_shishen']:
+        studies_score += 10
+    
+    # 神煞加成（文昌等）
+    if 'studies' in shensha_result.get('dimension_boosts', {}):
+        studies_score += shensha_result['dimension_boosts']['studies']
+    
+    dimensions['studies'] = max(0, min(100, int(studies_score)))
+    
+    # ========== 6. 出行运 ==========
+    travel_score = base_dim_score
+    
+    # 驿马星
+    if 'travel' in shensha_result.get('dimension_boosts', {}):
+        travel_score += shensha_result['dimension_boosts']['travel']
+    
+    # 冲年支
+    if DIZHI_INTERACTIONS['liu_chong'].get(liu_ri['zhi']) == bazi['year_zhi']:
+        travel_score += 15
+    
+    # 四长生
+    if liu_ri['zhi'] in DIMENSION_MAPPING['travel']['four_changsheng']:
+        travel_score += 8
+    
+    dimensions['travel'] = max(0, min(100, int(travel_score)))
+    
+    return dimensions
+
+
+# ==================== 辅助函数 ====================
+
+def has_zhengguan_in_bazi(bazi):
+    """检查八字中是否有正官"""
+    day_gan = bazi['day_gan']
+    day_element = WU_XING_MAP[day_gan]
+    
+    # 正官：克我的异性天干
+    ke_element = None
+    for elem, ke_target in WU_XING_KE.items():
+        if ke_target == day_element:
+            ke_element = elem
+            break
+    
+    if not ke_element:
+        return False
+    
+    # 检查天干
+    for gan_key in ['year_gan', 'month_gan', 'hour_gan']:
+        gan = bazi[gan_key]
+        if WU_XING_MAP[gan] == ke_element:
+            # 判断阴阳
+            if is_opposite_yinyang(day_gan, gan):
+                return True
+    
+    return False
+
+
+def has_wealth_in_bazi(bazi):
+    """检查八字中是否有财星"""
+    day_gan = bazi['day_gan']
+    day_element = WU_XING_MAP[day_gan]
+    
+    # 财星：我克的五行
+    wealth_element = WU_XING_KE.get(day_element)
+    
+    if not wealth_element:
+        return False
+    
+    # 检查天干和地支
+    for gan_key in ['year_gan', 'month_gan', 'hour_gan']:
+        if WU_XING_MAP[bazi[gan_key]] == wealth_element:
+            return True
+    
+    for zhi_key in ['year_zhi', 'month_zhi', 'day_zhi', 'hour_zhi']:
+        if WU_XING_MAP[bazi[zhi_key]] == wealth_element:
+            return True
+    
+    return False
+
+
+def is_opposite_yinyang(gan1, gan2):
+    """判断两个天干是否阴阳相异"""
+    gan_yinyang = {
+        '甲': 1, '乙': 0, '丙': 1, '丁': 0, '戊': 1,
+        '己': 0, '庚': 1, '辛': 0, '壬': 1, '癸': 0
+    }
+    return gan_yinyang.get(gan1) != gan_yinyang.get(gan2)
 
 def generate_dimension_scores(base_score, liu_ri_gan):
     """生成各维度评分"""
@@ -1954,19 +3218,50 @@ class handler(BaseHTTPRequestHandler):
             # 3.5. 计算大运
             dayun_info = get_dayun_direction(bazi['year_gan'], gender)
 
-            # 4. 计算运势评分 - V3.1 新算法
-            score_result = calculate_fortune_score_v3_1(
-                yong_shen_result=analysis['yong_shen'],
-                liu_nian=liu_nian,
-                liu_yue=liu_yue,
-                liu_ri=liu_ri,
-                day_gan=bazi['day_gan'],
-                shen_sha_list=[],  # 神煞列表（暂时为空）
-                dayun=dayun_info,        # 大运信息
-                bazi=bazi                # 八字信息（用于调候）
-            )
-            
-            total_score = score_result['score']
+            # 4. 计算运势评分
+            if USE_V5_ALGORITHM:
+                # ========== V5.0 Celestial-Quant 完整流程 ==========
+                # 4.1 五行强度量化
+                element_analysis = calculate_element_strength_v5(bazi)
+                
+                # 4.2 三层用神体系
+                yongshen_v5 = determine_yongshen_tiered_v5(bazi, element_analysis)
+                
+                # 4.3 运势评分
+                score_result_v5 = calculate_fortune_score_v5(
+                    bazi=bazi,
+                    element_analysis=element_analysis,
+                    yongshen=yongshen_v5,
+                    liu_nian=liu_nian,
+                    liu_yue=liu_yue,
+                    liu_ri=liu_ri,
+                    dayun=dayun_info
+                )
+                
+                # 4.4 六大维度
+                dimensions_v5 = calculate_dimensions_v5(
+                    bazi=bazi,
+                    liu_ri=liu_ri,
+                    overall_score=score_result_v5['score'],
+                    yongshen=yongshen_v5,
+                    element_analysis=element_analysis,
+                    shensha_result=score_result_v5['shensha']
+                )
+                
+                total_score = score_result_v5['score']
+            else:
+                # ========== V3.1 保留流程 ==========
+                score_result = calculate_fortune_score_v3_1(
+                    yong_shen_result=analysis['yong_shen'],
+                    liu_nian=liu_nian,
+                    liu_yue=liu_yue,
+                    liu_ri=liu_ri,
+                    day_gan=bazi['day_gan'],
+                    shen_sha_list=[],
+                    dayun=dayun_info,
+                    bazi=bazi
+                )
+                total_score = score_result['score']
 
             # 5. 生成各维度评分
             dimensions = generate_dimension_scores(total_score, liu_ri['gan'])
@@ -2022,10 +3317,47 @@ class handler(BaseHTTPRequestHandler):
                     'dayGan': liu_ri['gan'],
                     'dayZhi': liu_ri['zhi']
                 },
-                'dayun': dayun_info,  # 新增：大运信息
-                'gender': gender,  # 新增：性别信息
-                'todayTenGod': calculate_ten_god(bazi['day_gan'], liu_ri['gan'])  # 基于实际计算
+                'dayun': dayun_info,
+                'gender': gender,
+                'todayTenGod': calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
             }
+            
+            # ========== V5.0 新增响应字段 ==========
+            if USE_V5_ALGORITHM:
+                response.update({
+                    'algorithmVersion': 'v5.0',
+                    'elementAnalysis': {
+                        'strength': element_analysis['strength'],
+                        'dayMasterScore': element_analysis['day_master_score'],
+                        'pattern': element_analysis['pattern'],
+                        'patternDesc': {
+                            'Strong': '身强',
+                            'Weak': '身弱',
+                            'Neutral': '中和',
+                            'Dominant': '专旺',
+                            'Follower': '从格'
+                        }.get(element_analysis['pattern'], element_analysis['pattern'])
+                    },
+                    'yongshenTiers': {
+                        'primary': yongshen_v5['primary'],
+                        'favorable': yongshen_v5['favorable'],
+                        'unfavorable': yongshen_v5['unfavorable'],
+                        'tiers': yongshen_v5['tiers'],
+                        'pattern': yongshen_v5['pattern']
+                    },
+                    'scoreBreakdownV5': score_result_v5['breakdown'],
+                    'interactionsV5': score_result_v5['interactions'],
+                    'factorsV5': score_result_v5['factors'],
+                    'shenShaV5': {
+                        'totalScore': score_result_v5['shensha']['total_score'],
+                        'details': score_result_v5['shensha']['details']
+                    },
+                    'dimensionsV5': dimensions_v5
+                })
+            else:
+                response.update({
+                    'algorithmVersion': 'v3.1'
+                })
 
             # 返回响应
             self.send_response(200)
