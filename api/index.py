@@ -602,11 +602,11 @@ USE_V5_ALGORITHM = True
 ELEMENT_STRENGTH_WEIGHTS = {
     'month_zhi': 40,  # 月令（提纲）权重最大
     'day_zhi': 15,    # 日支
-    'hour_zhi': 15,   # 时支
+    'time_zhi': 15,   # 时支
     'year_zhi': 15,   # 年支
     'year_gan': 5,    # 年干
     'month_gan': 5,   # 月干
-    'hour_gan': 5     # 时干
+    'time_gan': 5     # 时干
     # 日干不计入（日主自身）
 }
 
@@ -1231,13 +1231,13 @@ def check_element_strength_in_bazi(bazi, target_element):
     strength = 0.0
     
     # 检查天干（每个天干贡献0.15）
-    gans = [bazi['year_gan'], bazi['month_gan'], bazi['day_gan'], bazi['hour_gan']]
+    gans = [bazi['year_gan'], bazi['month_gan'], bazi['day_gan'], bazi['time_gan']]
     for gan in gans:
         if WU_XING_MAP.get(gan) == target_element:
             strength += 0.15
     
     # 检查地支（每个地支贡献0.10）
-    zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['hour_zhi']]
+    zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['time_zhi']]
     for zhi in zhis:
         if WU_XING_MAP.get(zhi) == target_element:
             strength += 0.10
@@ -2089,13 +2089,13 @@ def calculate_element_strength_v5(bazi):
         strength[month_element] += ELEMENT_STRENGTH_WEIGHTS['month_zhi']
     
     # 2. 日支、时支、年支（各15%）
-    for branch_key in ['day_zhi', 'hour_zhi', 'year_zhi']:
+    for branch_key in ['day_zhi', 'time_zhi', 'year_zhi']:
         element = WU_XING_MAP.get(bazi[branch_key])
         if element:
             strength[element] += ELEMENT_STRENGTH_WEIGHTS[branch_key]
     
     # 3. 天干（各5%）
-    for stem_key in ['year_gan', 'month_gan', 'hour_gan']:
+    for stem_key in ['year_gan', 'month_gan', 'time_gan']:
         element = WU_XING_MAP.get(bazi[stem_key])
         if element:
             strength[element] += ELEMENT_STRENGTH_WEIGHTS[stem_key]
@@ -2509,7 +2509,7 @@ def calculate_shensha_v5(bazi, liu_ri):
             table = sha_config['table']
             for branch_group, target_zhi in table.items():
                 # 检查是否在这个组
-                bazi_zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['hour_zhi']]
+                bazi_zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['time_zhi']]
                 group_list = list(branch_group)
                 
                 # 简化：检查是否日支在组内
@@ -2680,7 +2680,7 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
     )
     
     # ========== 第6步：地支互动 ==========
-    bazi_zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['hour_zhi']]
+    bazi_zhis = [bazi['year_zhi'], bazi['month_zhi'], bazi['day_zhi'], bazi['time_zhi']]
     dizhi_score, dizhi_desc = check_dizhi_interaction_v5(
         bazi_zhis,
         liu_ri['zhi'],
@@ -2874,7 +2874,7 @@ def has_zhengguan_in_bazi(bazi):
         return False
     
     # 检查天干
-    for gan_key in ['year_gan', 'month_gan', 'hour_gan']:
+    for gan_key in ['year_gan', 'month_gan', 'time_gan']:
         gan = bazi[gan_key]
         if WU_XING_MAP[gan] == ke_element:
             # 判断阴阳
@@ -2895,11 +2895,11 @@ def has_wealth_in_bazi(bazi):
         return False
     
     # 检查天干和地支
-    for gan_key in ['year_gan', 'month_gan', 'hour_gan']:
+    for gan_key in ['year_gan', 'month_gan', 'time_gan']:
         if WU_XING_MAP[bazi[gan_key]] == wealth_element:
             return True
     
-    for zhi_key in ['year_zhi', 'month_zhi', 'day_zhi', 'hour_zhi']:
+    for zhi_key in ['year_zhi', 'month_zhi', 'day_zhi', 'time_zhi']:
         if WU_XING_MAP[bazi[zhi_key]] == wealth_element:
             return True
     
