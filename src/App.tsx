@@ -7,6 +7,7 @@ import DimensionCard from './components/DimensionCard';
 import HistoryDrawer from './components/HistoryDrawer';
 import TrendsView from './components/TrendsView';
 import CalendarView from './components/CalendarView';
+import CalendarWidget from './components/CalendarWidget';
 import Onboarding from './components/Onboarding';
 import ProfileSettings from './components/ProfileSettings';
 import type { UserProfile } from './components/ProfileSettings';
@@ -345,7 +346,7 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', justifyContent: 'center', fontFamily: 'system-ui', color: '#1e293b', userSelect: 'none', overflow: 'hidden' }}>
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
       {/* 首次使用引导 */}
       {showOnboarding && (
         <Onboarding
@@ -354,7 +355,11 @@ export default function App() {
         />
       )}
 
-      <div style={{ width: '100%', maxWidth: '448px', background: '#F5F5F7', height: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+      {/* 响应式布局容器：移动端单列，PC端三栏 */}
+      <div className="w-full max-w-[448px] lg:max-w-7xl mx-auto bg-[#F5F5F7] min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
+        
+        {/* ========== 移动端：单列布局 ========== */}
+        <div className="flex flex-col lg:hidden">
 
         {/* --- 顶部导航 --- */}
         <Header
@@ -585,8 +590,8 @@ export default function App() {
 
 
 
-        {/* --- 底部悬浮按钮 --- */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot">
+        {/* --- 底部悬浮按钮（仅移动端） --- */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot lg:hidden">
            <motion.button
              onClick={handleGenerateImage}
              disabled={isGenerating || !fortune}
@@ -599,7 +604,359 @@ export default function App() {
            </motion.button>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#F5F5F7] to-transparent pointer-events-none z-10"></div>
+        <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#F5F5F7] to-transparent pointer-events-none z-10 lg:hidden"></div>
+        </div>
+        {/* ========== 移动端布局结束 ========== */}
+
+        {/* ========== PC端：三栏布局 ========== */}
+        <div className="hidden lg:contents">
+          {/* 左侧栏：个人信息与日历 (col-span-3) */}
+          <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
+            {/* 个人信息卡片 */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-500 mb-3">个人档案</h3>
+              <div className="space-y-2">
+                <div>
+                  <div className="text-xs text-gray-400">姓名</div>
+                  <div className="text-sm font-bold text-gray-800">{userProfile.name}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">出生日期</div>
+                  <div className="text-sm font-bold text-gray-800">{userProfile.birthDate}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">出生地</div>
+                  <div className="text-sm font-bold text-gray-800">{userProfile.city}</div>
+                </div>
+                <motion.button
+                  onClick={() => setIsSettingsOpen(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full mt-3 bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium"
+                >
+                  编辑档案
+                </motion.button>
+              </div>
+            </div>
+
+            {/* 日历视图（常驻） */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <CalendarWidget
+                currentDate={currentDate}
+                onDateSelect={(date) => setCurrentDate(date)}
+                getHistoryScore={(dateStr) => {
+                  try {
+                    const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+                    const record = history.find((h: HistoryRecord) => h.date === dateStr);
+                    return record ? record.fortune.totalScore : null;
+                  } catch {
+                    return null;
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 中间栏：核心运势内容 (col-span-6) */}
+          <div className="lg:col-span-6 space-y-4">
+            {/* 顶部导航 */}
+            <Header
+              userName={userProfile.name}
+              onSettingsClick={() => setIsSettingsOpen(true)}
+              onHistoryClick={() => setShowHistory(true)}
+              onTrendsClick={() => setShowTrends(true)}
+              onCalendarClick={() => setShowCalendar(true)}
+              onCheckinClick={() => setShowCheckin(true)}
+              onAchievementClick={() => setShowAchievements(true)}
+              onKnowledgeClick={() => setShowKnowledge(true)}
+            />
+
+            {/* 日期选择 */}
+            <DateSelector
+              currentDate={currentDate}
+              weekDay={fortune?.weekDay}
+              lunarStr={fortune?.lunarStr}
+              onPrevDay={() => changeDate(-1)}
+              onNextDay={() => changeDate(1)}
+              onDateChange={setCurrentDate}
+            />
+
+            {/* 核心内容区 */}
+            <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)]">
+              <AnimatePresence mode="wait">
+                {isLoading || !fortune ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-4"
+                  >
+                    <SkeletonFortuneCard />
+                    <SkeletonDimensionCard />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={currentDate.toISOString()}
+                    initial={{ 
+                      opacity: 0,
+                      x: slideDirection === 'right' ? 50 : slideDirection === 'left' ? -50 : 0
+                    }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ 
+                      opacity: 0,
+                      x: slideDirection === 'right' ? -50 : slideDirection === 'left' ? 50 : 0
+                    }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    ref={contentRef}
+                    className="space-y-4"
+                  >
+                    {/* 主运势卡片 */}
+                    <FortuneCard
+                      mainTheme={fortune.mainTheme}
+                      totalScore={fortune.totalScore}
+                      pillars={fortune.pillars}
+                      themeStyle={currentThemeStyle}
+                      showBazi={showBazi}
+                      onToggleBazi={() => setShowBazi(!showBazi)}
+                      yongShen={fortune.yongShen}
+                      liuNian={fortune.liuNian}
+                      todayTenGod={fortune.todayTenGod}
+                    />
+
+                    {/* 反馈按钮 */}
+                    {fortune && (
+                      <motion.button
+                        onClick={() => setShowFeedback(true)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
+                      >
+                        <TrendingUp size={16} />
+                        反馈今日运势准确度
+                      </motion.button>
+                    )}
+
+                    {/* Todo List */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {fortune.todo.map((item, idx) => (
+                        <div key={idx} className={`p-4 rounded-2xl ${item.type === 'up' ? 'bg-white' : 'bg-gray-200/50'} flex flex-col justify-between shadow-sm border border-transparent`}
+                             style={{ backgroundColor: item.type === 'up' ? '#ffffff' : 'rgba(229, 231, 235, 0.5)' }}>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide`}
+                                style={{ backgroundColor: item.type === 'up' ? '#d1fae5' : '#ffe4e6', color: item.type === 'up' ? '#047857' : '#be123c' }}>
+                            {item.label}
+                          </span>
+                          <span className="font-bold text-gray-700 leading-tight text-sm">{item.content}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 八字详情和用神喜忌 */}
+                    {(showBazi || fortune.baziDetail) && (
+                      <div className="space-y-4">
+                        {/* 八字详情 */}
+                        {fortune.baziDetail && (
+                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                              <Sparkles size={14} /> 八字详情
+                            </h3>
+                            <div className="grid grid-cols-4 gap-2 text-center">
+                              <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-xl">
+                                <div className="text-[10px] text-gray-400 mb-1">年柱</div>
+                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.year}</div>
+                              </div>
+                              <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl">
+                                <div className="text-[10px] text-gray-400 mb-1">月柱</div>
+                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.month}</div>
+                              </div>
+                              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-xl">
+                                <div className="text-[10px] text-gray-400 mb-1">日柱</div>
+                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.day}</div>
+                              </div>
+                              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-3 rounded-xl">
+                                <div className="text-[10px] text-gray-400 mb-1">时柱</div>
+                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.hour}</div>
+                              </div>
+                            </div>
+                            <div className="mt-3 text-center">
+                              <span className="text-xs text-gray-400">日主：</span>
+                              <span className="text-sm font-bold text-indigo-600 ml-1">{fortune.baziDetail.dayMaster}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 用神喜忌 */}
+                        {fortune.yongShen && (
+                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                              <TrendingUp size={14} /> 用神喜忌
+                            </h3>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <div className="text-[10px] text-gray-400 mb-2">日主旺衰</div>
+                                <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                                  fortune.yongShen.strength === '身旺' ? 'bg-red-100 text-red-700' :
+                                  fortune.yongShen.strength === '身弱' ? 'bg-blue-100 text-blue-700' :
+                                  'bg-gray-100 text-gray-700'
+                                }`}>
+                                  {fortune.yongShen.strength}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[10px] text-gray-400 mb-2">用神</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {fortune.yongShen.yongShen.map((elem, idx) => (
+                                    <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                      {elem}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[10px] text-gray-400 mb-2">喜神</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {fortune.yongShen.xiShen.map((elem, idx) => (
+                                    <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
+                                      {elem}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-[10px] text-gray-400 mb-2">忌神</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {fortune.yongShen.jiShen.map((elem, idx) => (
+                                    <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                      {elem}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 大运信息 */}
+                        {fortune.daYun && (
+                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                              <Crown size={14} /> 当前大运
+                            </h3>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl">
+                                  <div className="text-2xl font-black">{fortune.daYun.gan_zhi}</div>
+                                </div>
+                                <div>
+                                  <div className="text-xs text-gray-400">起运年龄</div>
+                                  <div className="text-sm font-bold text-gray-800">{fortune.daYun.age}岁</div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-xs text-gray-400">大运周期</div>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {fortune.daYun.start_year} - {fortune.daYun.end_year}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 神煞信息 */}
+                        {fortune.shenSha && fortune.shenSha.length > 0 && (
+                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                              <Sparkles size={14} /> 今日神煞
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {fortune.shenSha.map((ss, idx) => (
+                                <span key={idx} className="px-3 py-1.5 bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                                  {ss}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 六维度运势 */}
+                    <DimensionCard dimensions={fortune.dimensions} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* 右侧栏：成就与快捷操作 (col-span-3) */}
+          <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
+            {/* 成就统计卡片 */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-500 mb-3">成就进度</h3>
+              <motion.button
+                onClick={() => setShowAchievements(true)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium mb-3"
+              >
+                查看全部成就
+              </motion.button>
+              {/* 这里可以显示简化的成就列表 */}
+            </div>
+
+            {/* 快捷操作 */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-500 mb-3">快捷操作</h3>
+              <div className="space-y-2">
+                <motion.button
+                  onClick={() => setShowCheckin(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium"
+                >
+                  每日签到
+                </motion.button>
+                <motion.button
+                  onClick={() => setShowTrends(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-purple-50 text-purple-600 px-3 py-2 rounded-lg text-sm font-medium"
+                >
+                  趋势分析
+                </motion.button>
+                <motion.button
+                  onClick={() => setShowHistory(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-pink-50 text-pink-600 px-3 py-2 rounded-lg text-sm font-medium"
+                >
+                  历史记录
+                </motion.button>
+                <motion.button
+                  onClick={() => setShowKnowledge(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-yellow-50 text-yellow-600 px-3 py-2 rounded-lg text-sm font-medium"
+                >
+                  八字学堂
+                </motion.button>
+              </div>
+            </div>
+
+            {/* 生成日签按钮（PC端） */}
+            <motion.button
+              onClick={handleGenerateImage}
+              disabled={isGenerating || !fortune}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg font-bold transition hover:bg-black disabled:opacity-70"
+            >
+              {isGenerating ? <Loader2 size={18} className="animate-spin"/> : <Share2 size={18} />}
+              {isGenerating ? '生成中...' : '生成日签'}
+            </motion.button>
+          </div>
+        </div>
+        {/* ========== PC端布局结束 ========== */}
 
         {/* --- 图片预览/下载弹窗 --- */}
         {generatedImage && (

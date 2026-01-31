@@ -34,15 +34,15 @@ export default function Header({
   }, []);
 
   return (
-    <div className="flex items-center justify-between px-5 pt-5">
+    <div className="flex items-center justify-between px-5 pt-5 lg:px-0 lg:pt-0">
       <div className="flex items-center gap-2">
         <Sparkles size={20} className="text-yellow-500" />
-        <h1 className="text-xl font-black text-gray-800">
+        <h1 className="text-xl font-black text-gray-800 lg:text-2xl">
           {userName}，今日如何？
         </h1>
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 lg:gap-3">
         {/* 知识库按钮 */}
         <motion.button
           onClick={onKnowledgeClick}

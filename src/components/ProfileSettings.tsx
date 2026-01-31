@@ -119,14 +119,21 @@ export default function ProfileSettings({
               onClick={onClose}
             />
 
-            {/* 设置抽屉 - 从底部滑入 */}
+            {/* 设置抽屉/Modal - 移动端底部抽屉，PC端居中Modal */}
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ y: '100%', scale: 1 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: '100%', scale: 1 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 max-h-[90vh] overflow-hidden flex flex-col"
+              className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:inset-0 lg:flex lg:items-center lg:justify-center lg:p-4 bg-white lg:bg-transparent rounded-t-3xl lg:rounded-3xl shadow-2xl z-50 max-h-[90vh] lg:max-w-2xl lg:w-full overflow-hidden flex flex-col pointer-events-auto"
             >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="bg-white lg:rounded-3xl lg:shadow-2xl lg:w-full lg:max-h-[90vh] flex flex-col overflow-hidden"
+              >
               {/* 头部 */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 <h3 className="text-xl font-bold">个人档案</h3>
@@ -242,6 +249,7 @@ export default function ProfileSettings({
                   已支持 {Object.keys(CITY_LONGITUDE_MAP).length} 个城市，真太阳时校准
                 </p>
               </div>
+              </motion.div>
             </motion.div>
           </>
         )}
