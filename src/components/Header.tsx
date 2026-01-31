@@ -11,7 +11,9 @@ interface HeaderProps {
   onHistoryClick: () => void;
   onTrendsClick: () => void;
   onCalendarClick: () => void;
-  onCheckinClick: () => void; // 新增
+  onCheckinClick: () => void;
+  onAchievementClick: () => void;
+  onKnowledgeClick: () => void;
 }
 
 export default function Header({ 
