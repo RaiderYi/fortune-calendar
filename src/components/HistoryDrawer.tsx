@@ -1,15 +1,17 @@
-import { X, Clock, TrendingUp, Trash2 } from 'lucide-react';
+import { X, Clock, TrendingUp, Trash2, BarChart3 } from 'lucide-react';
 import { getHistory, clearHistory, formatHistoryDate, getHistoryStats, HistoryRecord } from '../utils/historyStorage';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updateAchievementProgress } from '../utils/achievementStorage';
 
 interface HistoryDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectDate: (date: Date) => void;
+  onCompareClick?: () => void; // 新增
 }
 
-export default function HistoryDrawer({ isOpen, onClose, onSelectDate }: HistoryDrawerProps) {
+export default function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompareClick }: HistoryDrawerProps) {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [stats, setStats] = useState<ReturnType<typeof getHistoryStats>>(null);
 
@@ -18,6 +20,11 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate }: History
     if (isOpen) {
       setHistory(getHistory());
       setStats(getHistoryStats());
+
+      // 更新成就进度（查看历史记录）
+      const viewCount = parseInt(localStorage.getItem('history_view_count') || '0') + 1;
+      localStorage.setItem('history_view_count', viewCount.toString());
+      updateAchievementProgress('history_clear', viewCount);
     }
   }, [isOpen]);
 
@@ -162,7 +169,21 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate }: History
 
         {/* 底部操作 */}
         {history.length > 0 && (
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 space-y-2">
+            {onCompareClick && (
+              <motion.button
+                onClick={() => {
+                  onCompareClick();
+                  onClose();
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+              >
+                <BarChart3 size={18} />
+                运势对比
+              </motion.button>
+            )}
             <button
               onClick={handleClearAll}
               className="w-full bg-red-50 text-red-600 font-bold py-3 rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-2"

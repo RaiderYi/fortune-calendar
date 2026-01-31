@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Briefcase, Coins, Heart, Zap, BookOpen, Map, ChevronRight
 } from 'lucide-react';
 import DimensionDetail, { DimensionType, DimensionAnalysis } from './DimensionDetail';
+import { updateAchievementProgress } from '../utils/achievementStorage';
 
 interface DimensionCardProps {
   dimensions: { [key in DimensionType]: DimensionAnalysis };
@@ -11,6 +12,26 @@ interface DimensionCardProps {
 
 export default function DimensionCard({ dimensions }: DimensionCardProps) {
   const [selectedDimension, setSelectedDimension] = useState<DimensionType | null>(null);
+  const [viewedDimensions, setViewedDimensions] = useState<Set<DimensionType>>(new Set());
+
+  // 当选择维度时，更新已查看的维度集合
+  useEffect(() => {
+    if (selectedDimension) {
+      setViewedDimensions(prev => {
+        const newSet = new Set(prev);
+        newSet.add(selectedDimension);
+        
+        // 更新成就进度（查看所有维度详情）
+        if (newSet.size === 6) {
+          updateAchievementProgress('dimension_all', 6);
+        } else {
+          updateAchievementProgress('dimension_all', newSet.size);
+        }
+        
+        return newSet;
+      });
+    }
+  }, [selectedDimension]);
 
   // 获取对应图标
   const getIcon = (type: DimensionType) => {

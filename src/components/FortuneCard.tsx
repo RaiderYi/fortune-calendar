@@ -1,4 +1,6 @@
-import { Crown, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { Crown, Eye, EyeOff, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FortuneCardProps {
   mainTheme: {
@@ -19,6 +21,19 @@ interface FortuneCardProps {
   };
   showBazi: boolean;
   onToggleBazi: () => void;
+  yongShen?: {
+    strength: string;
+    yongShen: string[];
+    xiShen: string[];
+    jiShen: string[];
+  };
+  liuNian?: {
+    yearGan: string;
+    yearZhi: string;
+    dayGan: string;
+    dayZhi: string;
+  };
+  todayTenGod?: string;
 }
 
 export default function FortuneCard({
@@ -27,8 +42,61 @@ export default function FortuneCard({
   pillars,
   themeStyle,
   showBazi,
-  onToggleBazi
+  onToggleBazi,
+  yongShen,
+  liuNian,
+  todayTenGod,
 }: FortuneCardProps) {
+  const [showDeepAnalysis, setShowDeepAnalysis] = useState(false);
+
+  // 生成深度解读内容
+  const generateDeepAnalysis = () => {
+    const analysis: string[] = [];
+
+    // 运势形成原因
+    if (liuNian && todayTenGod) {
+      analysis.push(`今日流日为${liuNian.dayGan}${liuNian.dayZhi}，十神为${todayTenGod}。`);
+    }
+
+    if (yongShen) {
+      analysis.push(`您的八字${yongShen.strength}，用神为${yongShen.yongShen.join('、')}。`);
+      
+      if (liuNian) {
+        const dayGanElement = getElementFromGan(liuNian.dayGan);
+        if (yongShen.yongShen.includes(dayGanElement)) {
+          analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的用神相合，运势较为顺畅。`);
+        } else if (yongShen.jiShen.includes(dayGanElement)) {
+          analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的忌神相冲，需谨慎行事。`);
+        }
+      }
+    }
+
+    // 分数解读
+    if (totalScore >= 80) {
+      analysis.push(`综合评分${totalScore}分，属于上等运势，适合推进重要事务，把握机会。`);
+    } else if (totalScore >= 60) {
+      analysis.push(`综合评分${totalScore}分，运势平稳，按部就班即可，保持积极心态。`);
+    } else {
+      analysis.push(`综合评分${totalScore}分，运势较弱，建议谨慎决策，多听取他人意见。`);
+    }
+
+    return analysis;
+  };
+
+  // 从天干获取五行
+  const getElementFromGan = (gan: string): string => {
+    const ganToElement: Record<string, string> = {
+      '甲': '木', '乙': '木',
+      '丙': '火', '丁': '火',
+      '戊': '土', '己': '土',
+      '庚': '金', '辛': '金',
+      '壬': '水', '癸': '水',
+    };
+    return ganToElement[gan] || '';
+  };
+
+  const deepAnalysis = generateDeepAnalysis();
+
   return (
     <div
       className="mt-4 rounded-[2rem] p-6 shadow-lg relative overflow-hidden group"
@@ -86,9 +154,46 @@ export default function FortuneCard({
         </div>
 
         {/* 主题描述 */}
-        <p className="text-sm font-medium opacity-90 leading-relaxed bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
+        <p className="text-sm font-medium opacity-90 leading-relaxed bg-white/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner mb-3">
           "{mainTheme.description}"
         </p>
+
+        {/* 深度解读按钮 */}
+        <motion.button
+          onClick={() => setShowDeepAnalysis(!showDeepAnalysis)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border border-white/20 hover:bg-white/40 transition"
+        >
+          <Info size={14} />
+          {showDeepAnalysis ? '收起深度解读' : '查看深度解读'}
+          {showDeepAnalysis ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        </motion.button>
+
+        {/* 深度解读内容 */}
+        <AnimatePresence>
+          {showDeepAnalysis && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 bg-white/30 backdrop-blur-md p-4 rounded-2xl border border-white/20 space-y-3">
+                <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
+                  <Info size={14} />
+                  运势形成原因
+                </h4>
+                {deepAnalysis.map((item, idx) => (
+                  <p key={idx} className="text-xs leading-relaxed opacity-90">
+                    {item}
+                  </p>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

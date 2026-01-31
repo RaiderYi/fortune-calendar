@@ -10,6 +10,12 @@ import CalendarView from './components/CalendarView';
 import Onboarding from './components/Onboarding';
 import ProfileSettings from './components/ProfileSettings';
 import type { UserProfile } from './components/ProfileSettings';
+import CheckinModal from './components/CheckinModal';
+import AchievementView from './components/AchievementView';
+import FortuneCompare from './components/FortuneCompare';
+import KnowledgeBase from './components/KnowledgeBase';
+import FeedbackModal from './components/FeedbackModal';
+import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
@@ -145,6 +151,11 @@ export default function App() {
   const [showHistory, setShowHistory] = useState(false); // 历史记录抽屉
   const [showTrends, setShowTrends] = useState(false); // 趋势视图
   const [showCalendar, setShowCalendar] = useState(false); // 日历视图
+  const [showCheckin, setShowCheckin] = useState(false); // 签到弹窗
+  const [showAchievements, setShowAchievements] = useState(false); // 成就展示
+  const [showCompare, setShowCompare] = useState(false); // 运势对比
+  const [showKnowledge, setShowKnowledge] = useState(false); // 知识库
+  const [showFeedback, setShowFeedback] = useState(false); // 反馈弹窗
 
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -191,6 +202,26 @@ export default function App() {
         if (res.ok) {
           const backendData = await res.json();
           setFortune({ ...backendData, dateObj: currentDate });
+
+          // 更新成就进度（查询运势）
+          try {
+            const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+            const queryCount = history.length + 1;
+            updateAchievements({
+              query_10: queryCount,
+              query_50: queryCount,
+              query_100: queryCount,
+            });
+            
+            // 检查是否有新解锁的成就
+            const newUnlocks = checkNewUnlocks();
+            if (newUnlocks.length > 0) {
+              // 可以显示成就解锁通知
+              console.log('新解锁成就:', newUnlocks);
+            }
+          } catch (error) {
+            console.error('更新成就失败:', error);
+          }
 
           // 保存到历史记录
           const historyRecord: HistoryRecord = {
@@ -332,6 +363,9 @@ export default function App() {
           onHistoryClick={() => setShowHistory(true)}
           onTrendsClick={() => setShowTrends(true)}
           onCalendarClick={() => setShowCalendar(true)}
+          onCheckinClick={() => setShowCheckin(true)}
+          onAchievementClick={() => setShowAchievements(true)}
+          onKnowledgeClick={() => setShowKnowledge(true)}
         />
 
         {/* --- 日期选择 --- */}
@@ -382,7 +416,23 @@ export default function App() {
                   themeStyle={currentThemeStyle}
                   showBazi={showBazi}
                   onToggleBazi={() => setShowBazi(!showBazi)}
+                  yongShen={fortune.yongShen}
+                  liuNian={fortune.liuNian}
+                  todayTenGod={fortune.todayTenGod}
                 />
+
+                {/* 反馈按钮 */}
+                {fortune && (
+                  <motion.button
+                    onClick={() => setShowFeedback(true)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
+                  >
+                    <TrendingUp size={16} />
+                    反馈今日运势准确度
+                  </motion.button>
+                )}
 
               {/* Todo List */}
               <div className="grid grid-cols-2 gap-3 mt-4">
@@ -598,6 +648,7 @@ export default function App() {
             setCurrentDate(date);
             setShowHistory(false);
           }}
+          onCompareClick={() => setShowCompare(true)}
         />
 
         {/* 趋势视图 */}
@@ -627,6 +678,55 @@ export default function App() {
               } catch {
                 return null;
               }
+            }}
+          />
+        )}
+
+        {/* 签到弹窗 */}
+        <CheckinModal
+          isOpen={showCheckin}
+          onClose={() => setShowCheckin(false)}
+          onCheckinSuccess={(record) => {
+            // 更新签到相关成就
+            updateAchievements({
+              checkin_3: record.consecutiveDays,
+              checkin_7: record.consecutiveDays,
+              checkin_30: record.consecutiveDays,
+              checkin_100: record.consecutiveDays,
+            });
+          }}
+        />
+
+        {/* 成就展示 */}
+        <AchievementView
+          isOpen={showAchievements}
+          onClose={() => setShowAchievements(false)}
+        />
+
+        {/* 运势对比 */}
+        <FortuneCompare
+          isOpen={showCompare}
+          onClose={() => setShowCompare(false)}
+          onSelectDate={(date) => {
+            setCurrentDate(date);
+            setShowCompare(false);
+          }}
+        />
+
+        {/* 知识库 */}
+        <KnowledgeBase
+          isOpen={showKnowledge}
+          onClose={() => setShowKnowledge(false)}
+        />
+
+        {/* 反馈弹窗 */}
+        {fortune && (
+          <FeedbackModal
+            isOpen={showFeedback}
+            onClose={() => setShowFeedback(false)}
+            date={fortune.dateStr}
+            onFeedbackSubmit={() => {
+              // 反馈提交后的操作
             }}
           />
         )}

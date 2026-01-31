@@ -1,6 +1,7 @@
 import { X, TrendingUp, TrendingDown, Minus, Calendar, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { updateAchievementProgress } from '../utils/achievementStorage';
 import { 
   getRecentTrends, 
   getDimensionTrends, 
@@ -40,6 +41,11 @@ export default function TrendsView({ isOpen, onClose, onSelectDate }: TrendsView
       setDimensionData(dimensions);
       setAnalysis(trendAnalysis);
       setTopDays(best);
+
+      // 更新成就进度（查看趋势分析）
+      const viewCount = parseInt(localStorage.getItem('trends_view_count') || '0') + 1;
+      localStorage.setItem('trends_view_count', viewCount.toString());
+      updateAchievementProgress('trends_view', viewCount);
     }
   }, [isOpen, days]);
 
