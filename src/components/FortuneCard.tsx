@@ -144,7 +144,7 @@ export default function FortuneCard({
         <div className="mb-3">
           <button
             onClick={onToggleBazi}
-            className="text-[10px] opacity-50 hover:opacity-100 transition flex items-center gap-1.5 bg-black/5 px-2 py-1 rounded hover:bg-black/10 w-fit"
+            className="text-[10px] opacity-50 hover:opacity-100 transition flex items-center gap-1.5 bg-black/5 dark:bg-white/10 px-2 py-1 rounded hover:bg-black/10 dark:hover:bg-white/20 w-fit"
           >
             {showBazi ? <EyeOff size={10} /> : <Eye size={10} />}
             {showBazi

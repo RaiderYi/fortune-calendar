@@ -10,6 +10,7 @@ import { getCurrentLocation, isGeolocationSupported } from '../utils/geolocation
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
 import CitySelector from './CitySelector';
+import { useToast } from '../contexts/ToastContext';
 
 export interface UserProfile {
   name: string;
@@ -33,6 +34,7 @@ export default function ProfileSettings({
   profile,
   onSave
 }: ProfileSettingsProps) {
+  const { showToast } = useToast();
   const [editProfile, setEditProfile] = useState<UserProfile>(profile);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -51,6 +53,7 @@ export default function ProfileSettings({
   const handleSave = () => {
     onSave(editProfile);
     onClose();
+    showToast('个人档案已保存', 'success');
   };
 
   // 处理日期选择
@@ -86,9 +89,11 @@ export default function ProfileSettings({
           city: location.city,
           longitude: location.longitude.toFixed(2)
         });
+        showToast('定位成功', 'success');
       }
     } catch (error) {
       console.error('定位失败:', error);
+      showToast('定位失败，请手动选择城市', 'error');
     }
   };
 
