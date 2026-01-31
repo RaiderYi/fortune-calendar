@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { CITY_LONGITUDE_MAP } from './utils/cityData';
+import { getCurrentLocation, isGeolocationSupported } from './utils/geolocation';
 // 常量与配置
 // ==========================================
 
@@ -583,7 +584,31 @@ export default function App() {
                   </div>
                   {/* 新增：出生城市/经度 */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-500 mb-1">出生城市 (真太阳时校准)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-sm font-bold text-gray-500">出生城市 (真太阳时校准)</label>
+                      {isGeolocationSupported() && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const location = await getCurrentLocation();
+                              if (location.city) {
+                                setEditProfile({
+                                  ...editProfile,
+                                  city: location.city,
+                                  longitude: location.longitude.toFixed(2)
+                                });
+                              }
+                            } catch (error) {
+                              console.error('定位失败:', error);
+                            }
+                          }}
+                          className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 px-2 py-1 rounded hover:bg-indigo-50 transition"
+                        >
+                          <MapPin size={14} />
+                          自动定位
+                        </button>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <select
                         value={editProfile.city}
