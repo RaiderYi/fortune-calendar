@@ -164,7 +164,7 @@ export default function TodayPage({
                       <span className="text-xs text-gray-400 dark:text-gray-500">日主：</span>
                       <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 ml-1">{fortune.baziDetail.dayMaster}</span>
                     </div>
-                  </div>
+                  </CollapsibleSection>
                 )}
 
                 {/* 用神喜忌 */}
@@ -236,12 +236,13 @@ export default function TodayPage({
                           <div className="text-sm font-bold text-gray-800 dark:text-gray-200">{fortune.daYun.age}岁</div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xs text-gray-400 dark:text-gray-500">大运周期</div>
-                        <div className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                          {fortune.daYun.start_year} - {fortune.daYun.end_year}
+                        <div className="text-right">
+                          <div className="text-xs text-gray-400 dark:text-gray-500">大运周期</div>
+                          <div className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                            {fortune.daYun.start_year} - {fortune.daYun.end_year}
                           </div>
                         </div>
+                      </div>
                     </CollapsibleSection>
                   )}
 

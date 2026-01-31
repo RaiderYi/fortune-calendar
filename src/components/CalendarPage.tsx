@@ -9,7 +9,6 @@ import CalendarWidget from './CalendarWidget';
 import HistoryDrawer from './HistoryDrawer';
 import TrendsView from './TrendsView';
 import FortuneCompare from './FortuneCompare';
-import type { HistoryRecord } from '../utils/historyStorage';
 
 interface CalendarPageProps {
   currentDate: Date;

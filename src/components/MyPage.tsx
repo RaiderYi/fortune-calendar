@@ -2,7 +2,6 @@
 // 我的页面组件
 // ==========================================
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Award, BookOpen, MessageSquare, Settings, Trophy, Target } from 'lucide-react';
 import { getCheckinStats } from '../utils/checkinStorage';
