@@ -105,27 +105,27 @@ export default function CalendarWidget({
           onClick={handlePrevMonth}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
         >
-          <ChevronLeft size={16} className="text-gray-600" />
+          <ChevronLeft size={16} className="text-gray-600 dark:text-gray-400" />
         </motion.button>
-        <div className="text-sm font-bold text-gray-800">
+        <div className="text-sm font-bold text-gray-800 dark:text-gray-200">
           {viewDate.getFullYear()}年 {monthNames[viewDate.getMonth()]}
         </div>
         <motion.button
           onClick={handleNextMonth}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
         >
-          <ChevronRight size={16} className="text-gray-600" />
+          <ChevronRight size={16} className="text-gray-600 dark:text-gray-400" />
         </motion.button>
       </div>
 
       {/* 星期标题 */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {weekDays.map((day) => (
-          <div key={day} className="text-center text-xs font-bold text-gray-400 py-1">
+          <div key={day} className="text-center text-xs font-bold text-gray-400 dark:text-gray-500 py-1">
             {day}
           </div>
         ))}
@@ -143,12 +143,12 @@ export default function CalendarWidget({
               whileTap={{ scale: 0.9 }}
               className={`aspect-square rounded-lg text-xs flex flex-col items-center justify-center transition ${
                 !day.isCurrentMonth
-                  ? 'text-gray-300'
+                  ? 'text-gray-300 dark:text-gray-700'
                   : day.isToday
-                  ? 'bg-indigo-600 text-white font-bold'
+                  ? 'bg-indigo-600 dark:bg-indigo-500 text-white font-bold'
                   : isSelected
-                  ? 'bg-indigo-100 text-indigo-700 font-bold'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-bold'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               <span>{day.date.getDate()}</span>

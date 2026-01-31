@@ -105,11 +105,11 @@ export default function DateSelector({
             aria-label="选择日期"
           />
           <div className="flex items-center gap-1 group-hover:opacity-70 transition-opacity">
-            <span className="text-2xl font-black font-mono tracking-tighter">
+            <span className="text-2xl font-black font-mono tracking-tighter text-gray-800 dark:text-gray-200">
               {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
             </span>
             {/* 仅用于视觉提示的小图标 */}
-            <CalendarIcon size={14} className="text-gray-300" />
+            <CalendarIcon size={14} className="text-gray-300 dark:text-gray-600" />
           </div>
           
           {/* 快捷菜单按钮 */}
@@ -120,14 +120,14 @@ export default function DateSelector({
             }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute right-0 top-0 p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-0 top-0 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label="快捷菜单"
           >
             <MoreVertical size={14} />
           </motion.button>
 
           {(weekDay || lunarStr) && (
-            <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full mt-1">
+            <span className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full mt-1">
               {weekDay && lunarStr ? `${weekDay} · ${lunarStr}` : weekDay || lunarStr}
             </span>
           )}

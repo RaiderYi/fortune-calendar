@@ -13,6 +13,7 @@ import {
   getCheckinCalendar,
   type CheckinRecord,
 } from '../utils/checkinStorage';
+import { useToast } from '../contexts/ToastContext';
 
 interface CheckinModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function CheckinModal({
   onClose,
   onCheckinSuccess,
 }: CheckinModalProps) {
+  const { showToast } = useToast();
   const [stats, setStats] = useState(getCheckinStats());
   const [calendar, setCalendar] = useState(getCheckinCalendar());
   const [isCheckingIn, setIsCheckingIn] = useState(false);
@@ -50,6 +52,7 @@ export default function CheckinModal({
         setStats(getCheckinStats());
         setCalendar(getCheckinCalendar());
         onCheckinSuccess?.(result);
+        showToast(`签到成功！已连续签到 ${result.consecutiveDays} 天`, 'success');
       }
     }, 500);
   };

@@ -75,7 +75,7 @@ export default function DimensionCard({ dimensions }: DimensionCardProps) {
               onClick={() => setSelectedDimension(key)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4 cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-start gap-4 cursor-pointer hover:shadow-md transition-shadow"
             >
               {/* 图标 */}
               <div
@@ -91,7 +91,7 @@ export default function DimensionCard({ dimensions }: DimensionCardProps) {
               {/* 内容 */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h4 className="font-bold text-gray-800 text-base">
+                  <h4 className="font-bold text-gray-800 dark:text-gray-200 text-base">
                     {getLabel(key)}
                   </h4>
                   <span

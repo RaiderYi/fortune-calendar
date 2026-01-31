@@ -11,6 +11,7 @@ import {
   getFeedbackStats,
   type FeedbackRecord,
 } from '../utils/feedbackStorage';
+import { useToast } from '../contexts/ToastContext';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function FeedbackModal({
   date,
   onFeedbackSubmit,
 }: FeedbackModalProps) {
+  const { showToast } = useToast();
   const [selectedAccuracy, setSelectedAccuracy] = useState<'accurate' | 'inaccurate' | 'partial' | null>(null);
   const [comment, setComment] = useState('');
   const [stats, setStats] = useState(getFeedbackStats());
@@ -61,6 +63,7 @@ export default function FeedbackModal({
     setSubmitted(true);
     setStats(getFeedbackStats());
     onFeedbackSubmit?.();
+    showToast('反馈已提交，感谢您的反馈！', 'success');
     
     // 更新成就（反馈相关）
     try {

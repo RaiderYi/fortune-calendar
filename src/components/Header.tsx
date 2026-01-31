@@ -1,7 +1,8 @@
-import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen } from 'lucide-react';
+import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isCheckedInToday, getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
+import { useTheme } from '../contexts/ThemeContext';
 import { useState, useEffect } from 'react';
 
 interface HeaderProps {
@@ -23,6 +24,7 @@ export default function Header({
   onAchievementClick,
   onKnowledgeClick
 }: HeaderProps) {
+  const { effectiveTheme, toggleTheme } = useTheme();
   const [checkedIn, setCheckedIn] = useState(isCheckedInToday());
   const [checkinStats, setCheckinStats] = useState(getCheckinStats());
   const [achievementStats, setAchievementStats] = useState(getAchievementStats());
@@ -37,7 +39,7 @@ export default function Header({
     <div className="flex items-center justify-between px-5 pt-5 lg:px-0 lg:pt-0">
       <div className="flex items-center gap-2">
         <Sparkles size={20} className="text-yellow-500" />
-        <h1 className="text-xl font-black text-gray-800 lg:text-2xl">
+        <h1 className="text-xl font-black text-gray-800 dark:text-gray-200 lg:text-2xl">
           {userName}，今日如何？
         </h1>
       </div>
@@ -59,10 +61,10 @@ export default function Header({
           onClick={onAchievementClick}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 hover:bg-gray-100 rounded-full transition relative"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition relative"
           aria-label="成就系统"
         >
-          <Trophy size={20} className="text-gray-600" />
+          <Trophy size={20} className="text-gray-600 dark:text-gray-300" />
           {achievementStats.unlocked > 0 && (
             <motion.div
               initial={{ scale: 0 }}
@@ -80,11 +82,11 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className={`p-2 rounded-full transition relative ${
-            checkedIn ? 'bg-indigo-100 hover:bg-indigo-200' : 'hover:bg-gray-100'
+            checkedIn ? 'bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
           }`}
           aria-label="每日签到"
         >
-          <Award size={20} className={checkedIn ? 'text-indigo-600' : 'text-gray-600'} />
+          <Award size={20} className={checkedIn ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300'} />
           {checkedIn && (
             <motion.div
               initial={{ scale: 0 }}
@@ -99,10 +101,10 @@ export default function Header({
           onClick={onCalendarClick}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
           aria-label="运势日历"
         >
-          <Calendar size={20} className="text-gray-600" />
+          <Calendar size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
         
         {/* 趋势按钮 */}
@@ -110,10 +112,10 @@ export default function Header({
           onClick={onTrendsClick}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
           aria-label="趋势分析"
         >
-          <TrendingUp size={20} className="text-gray-600" />
+          <TrendingUp size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
         
         {/* 历史按钮 */}
@@ -121,21 +123,36 @@ export default function Header({
           onClick={onHistoryClick}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
           aria-label="历史记录"
         >
-          <Clock size={20} className="text-gray-600" />
+          <Clock size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
         
+        {/* 深色模式切换 */}
+        <motion.button
+          onClick={toggleTheme}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
+          aria-label="切换主题"
+        >
+          {effectiveTheme === 'dark' ? (
+            <Sun size={20} className="text-gray-600 dark:text-gray-300" />
+          ) : (
+            <Moon size={20} className="text-gray-600" />
+          )}
+        </motion.button>
+
         {/* 设置按钮 */}
         <motion.button
           onClick={onSettingsClick}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
           aria-label="设置"
         >
-          <Settings size={20} className="text-gray-600" />
+          <Settings size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
       </div>
     </div>
