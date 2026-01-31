@@ -83,81 +83,90 @@ export default function DateSelector({
   }, [showQuickMenu]);
 
   return (
-    <div className="flex items-center justify-between px-6 py-2 relative">
-      <motion.button
-        onClick={onPrevDay}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="text-gray-400 hover:text-gray-800 p-2"
-        aria-label="前一天"
-      >
-        <ChevronLeft />
-      </motion.button>
-
-      <div className="flex flex-col items-center relative group cursor-pointer flex-1">
-        {/* 隐形的原生日期选择器覆盖在文字上 */}
-        <input
-          type="date"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-          onChange={handleDateInput}
-          value={formattedDateValue}
-          aria-label="选择日期"
-        />
-        <div className="flex items-center gap-1 group-hover:opacity-70 transition-opacity">
-          <span className="text-2xl font-black font-mono tracking-tighter">
-            {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
-          </span>
-          {/* 仅用于视觉提示的小图标 */}
-          <CalendarIcon size={14} className="text-gray-300" />
-        </div>
-        
-        {/* 快捷菜单按钮 */}
+    <div className="flex flex-col px-6 py-2 relative">
+      <div className="flex items-center justify-between">
         <motion.button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowQuickMenu(!showQuickMenu);
-          }}
+          onClick={onPrevDay}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="absolute right-0 top-0 p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="快捷菜单"
+          className="text-gray-400 hover:text-gray-800 p-2"
+          aria-label="前一天"
         >
-          <MoreVertical size={14} />
+          <ChevronLeft />
         </motion.button>
 
-        {(weekDay || lunarStr) && (
-          <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full mt-1">
-            {weekDay && lunarStr ? `${weekDay} · ${lunarStr}` : weekDay || lunarStr}
-          </span>
-        )}
-      </div>
-
-      <motion.button
-        onClick={onNextDay}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="text-gray-400 hover:text-gray-800 p-2"
-        aria-label="后一天"
-      >
-        <ChevronRight />
-      </motion.button>
-
-      {/* 一键回到今天按钮 */}
-      <AnimatePresence>
-        {!isToday && (
+        <div className="flex flex-col items-center relative group cursor-pointer flex-1">
+          {/* 隐形的原生日期选择器覆盖在文字上 */}
+          <input
+            type="date"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            onChange={handleDateInput}
+            value={formattedDateValue}
+            aria-label="选择日期"
+          />
+          <div className="flex items-center gap-1 group-hover:opacity-70 transition-opacity">
+            <span className="text-2xl font-black font-mono tracking-tighter">
+              {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
+            </span>
+            {/* 仅用于视觉提示的小图标 */}
+            <CalendarIcon size={14} className="text-gray-300" />
+          </div>
+          
+          {/* 快捷菜单按钮 */}
           <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            onClick={handleGoToToday}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQuickMenu(!showQuickMenu);
+            }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 z-20"
-            aria-label="回到今天"
+            className="absolute right-0 top-0 p-1 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="快捷菜单"
           >
-            <Home size={12} />
-            今天
+            <MoreVertical size={14} />
           </motion.button>
+
+          {(weekDay || lunarStr) && (
+            <span className="text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full mt-1">
+              {weekDay && lunarStr ? `${weekDay} · ${lunarStr}` : weekDay || lunarStr}
+            </span>
+          )}
+        </div>
+
+        <motion.button
+          onClick={onNextDay}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="text-gray-400 hover:text-gray-800 p-2"
+          aria-label="后一天"
+        >
+          <ChevronRight />
+        </motion.button>
+      </div>
+
+      {/* 一键回到今天按钮 - 移到下方居中 */}
+      <AnimatePresence>
+        {!isToday && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex justify-center mt-2"
+          >
+            <motion.button
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              onClick={handleGoToToday}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1"
+              aria-label="回到今天"
+            >
+              <Home size={12} />
+              今天
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
 

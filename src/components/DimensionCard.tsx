@@ -1,21 +1,16 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
-  Briefcase, Coins, Heart, Zap, BookOpen, Map
+  Briefcase, Coins, Heart, Zap, BookOpen, Map, ChevronRight
 } from 'lucide-react';
-
-type DimensionType = 'career' | 'wealth' | 'romance' | 'health' | 'academic' | 'travel';
-
-interface DimensionAnalysis {
-  score: number;
-  level: '吉' | '平' | '凶' | '大吉';
-  tag: string;
-  inference: string;
-}
+import DimensionDetail, { DimensionType, DimensionAnalysis } from './DimensionDetail';
 
 interface DimensionCardProps {
   dimensions: { [key in DimensionType]: DimensionAnalysis };
 }
 
 export default function DimensionCard({ dimensions }: DimensionCardProps) {
+  const [selectedDimension, setSelectedDimension] = useState<DimensionType | null>(null);
 
   // 获取对应图标
   const getIcon = (type: DimensionType) => {
@@ -54,9 +49,12 @@ export default function DimensionCard({ dimensions }: DimensionCardProps) {
           const isBad = item.level === '凶';
 
           return (
-            <div
+            <motion.div
               key={key}
-              className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4"
+              onClick={() => setSelectedDimension(key)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-start gap-4 cursor-pointer hover:shadow-md transition-shadow"
             >
               {/* 图标 */}
               <div
@@ -103,11 +101,22 @@ export default function DimensionCard({ dimensions }: DimensionCardProps) {
                 >
                   {item.score}
                 </span>
+                <ChevronRight size={16} className="text-gray-400 mt-1" />
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
+
+      {/* 维度详情 */}
+      {selectedDimension && (
+        <DimensionDetail
+          isOpen={selectedDimension !== null}
+          onClose={() => setSelectedDimension(null)}
+          dimensionType={selectedDimension}
+          dimension={dimensions[selectedDimension]}
+        />
+      )}
     </div>
   );
 }

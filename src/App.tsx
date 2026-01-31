@@ -56,7 +56,7 @@ type DimensionType = 'career' | 'wealth' | 'romance' | 'health' | 'academic' | '
 
 interface DimensionAnalysis {
   score: number;
-  level: '吉' | '平' | '凶';
+  level: '吉' | '平' | '凶' | '大吉';
   tag: string;
   inference: string;
 }
