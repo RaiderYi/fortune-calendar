@@ -8,6 +8,8 @@ import HistoryDrawer from './components/HistoryDrawer';
 import TrendsView from './components/TrendsView';
 import CalendarView from './components/CalendarView';
 import Onboarding from './components/Onboarding';
+import ProfileSettings from './components/ProfileSettings';
+import type { UserProfile } from './components/ProfileSettings';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
@@ -18,7 +20,6 @@ import {
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { CITY_LONGITUDE_MAP } from './utils/cityData';
-import { getCurrentLocation, isGeolocationSupported } from './utils/geolocation';
 // 常量与配置
 // ==========================================
 
@@ -122,15 +123,6 @@ interface DailyFortune {
   todayTenGod?: string;
 }
 
-interface UserProfile {
-  name: string;
-  birthDate: string;
-  birthTime: string;
-  city: string;      // 新增：城市
-  longitude: string; // 新增：经度 (用string方便输入框处理)
-  gender: 'male' | 'female'; // 新增：性别
-}
-
 // ==========================================
 // 主组件
 // ==========================================
@@ -167,7 +159,6 @@ export default function App() {
       gender: 'male' // 新增：默认性别为男
     };
   });
-  const [editProfile, setEditProfile] = useState<UserProfile>(userProfile);
 
   // 截图相关
   const contentRef = useRef<HTMLDivElement>(null);
@@ -288,21 +279,9 @@ export default function App() {
 
 
   // --- 保存设置 ---
-  const handleSaveSettings = () => {
-    setUserProfile(editProfile);
-    localStorage.setItem('user_profile', JSON.stringify(editProfile));
-    setIsSettingsOpen(false);
-  };
-
-  // --- 城市选择处理 ---
-  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const city = e.target.value;
-    const lng = CHINA_CITIES[city];
-    setEditProfile({
-      ...editProfile,
-      city: city,
-      longitude: lng ? lng.toString() : editProfile.longitude
-    });
+  const handleSaveSettings = (profile: UserProfile) => {
+    setUserProfile(profile);
+    localStorage.setItem('user_profile', JSON.stringify(profile));
   };
 
   // --- 日期切换 ---
@@ -349,7 +328,7 @@ export default function App() {
         {/* --- 顶部导航 --- */}
         <Header
           userName={userProfile.name}
-          onSettingsClick={() => { setEditProfile(userProfile); setIsSettingsOpen(true); }}
+          onSettingsClick={() => setIsSettingsOpen(true)}
           onHistoryClick={() => setShowHistory(true)}
           onTrendsClick={() => setShowTrends(true)}
           onCalendarClick={() => setShowCalendar(true)}
@@ -603,117 +582,13 @@ export default function App() {
           </div>
         )}
 
-        {/* --- 设置弹窗 --- */}
-        {isSettingsOpen && (
-          <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
-             <div className="bg-white w-full rounded-3xl p-6 shadow-2xl scale-in-center">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold">个人档案</h3>
-                  <motion.button
-                    onClick={() => setIsSettingsOpen(false)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="p-1 hover:bg-gray-100 rounded-full"
-                  >
-                    <X size={24} className="text-gray-500"/>
-                  </motion.button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-500 mb-1">昵称</label>
-                    <input type="text" value={editProfile.name} onChange={e => setEditProfile({...editProfile, name: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-500 mb-1">出生日期</label>
-                    <input type="date" value={editProfile.birthDate} onChange={e => setEditProfile({...editProfile, birthDate: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-500 mb-1">出生时间</label>
-                    <input type="time" value={editProfile.birthTime} onChange={e => setEditProfile({...editProfile, birthTime: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                  </div>
-                  {/* 新增：性别选择 */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-500 mb-1">性别 (影响大运排序)</label>
-                    <select
-                      value={editProfile.gender}
-                      onChange={e => setEditProfile({...editProfile, gender: e.target.value as 'male' | 'female'})}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
-                    >
-                      <option value="male">男</option>
-                      <option value="female">女</option>
-                    </select>
-                  </div>
-                  {/* 新增：出生城市/经度 */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-sm font-bold text-gray-500">出生城市 (真太阳时校准)</label>
-                      {isGeolocationSupported() && (
-                        <motion.button
-                          onClick={async () => {
-                            try {
-                              const location = await getCurrentLocation();
-                              if (location.city) {
-                                setEditProfile({
-                                  ...editProfile,
-                                  city: location.city,
-                                  longitude: location.longitude.toFixed(2)
-                                });
-                              }
-                            } catch (error) {
-                              console.error('定位失败:', error);
-                            }
-                          }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 px-2 py-1 rounded hover:bg-indigo-50 transition"
-                        >
-                          <MapPin size={14} />
-                          自动定位
-                        </motion.button>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <select
-                        value={editProfile.city}
-                        onChange={handleCityChange}
-                        className="w-2/3 bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
-                      >
-                        <option value="">选择城市</option>
-                        {Object.keys(CHINA_CITIES)
-                          .sort((a, b) => a.localeCompare(b, 'zh-CN'))
-                          .map(city => (
-                            <option key={city} value={city}>{city}</option>
-                          ))}
-                      </select>
-                      <div className="w-1/3 relative">
-                         <input
-                           type="text"
-                           value={editProfile.longitude}
-                           onChange={e => setEditProfile({...editProfile, longitude: e.target.value})}
-                           placeholder="经度"
-                           className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
-                         />
-                         <span className="absolute right-3 top-3 text-xs text-gray-400">°E</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <motion.button
-                    onClick={handleSaveSettings}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition"
-                  >
-                    保存并重排运势
-                  </motion.button>
-                  <p className="text-center text-[10px] text-gray-400 mt-3">已支持 {Object.keys(CHINA_CITIES).length} 个城市，真太阳时校准</p>
-                </div>
-             </div>
-          </div>
-        )}
+        {/* --- 设置组件 --- */}
+        <ProfileSettings
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          profile={userProfile}
+          onSave={handleSaveSettings}
+        />
 
         {/* 历史记录抽屉 */}
         <HistoryDrawer
