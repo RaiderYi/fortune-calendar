@@ -1,4 +1,5 @@
 import { Settings, Sparkles, Clock, TrendingUp, Calendar } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface HeaderProps {
   userName: string;
@@ -26,40 +27,48 @@ export default function Header({
       
       <div className="flex items-center gap-2">
         {/* 日历按钮 */}
-        <button 
+        <motion.button
           onClick={onCalendarClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 rounded-full transition"
           aria-label="运势日历"
         >
           <Calendar size={20} className="text-gray-600" />
-        </button>
+        </motion.button>
         
         {/* 趋势按钮 */}
-        <button 
+        <motion.button
           onClick={onTrendsClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 rounded-full transition"
           aria-label="趋势分析"
         >
           <TrendingUp size={20} className="text-gray-600" />
-        </button>
+        </motion.button>
         
         {/* 历史按钮 */}
-        <button 
+        <motion.button
           onClick={onHistoryClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 rounded-full transition"
           aria-label="历史记录"
         >
           <Clock size={20} className="text-gray-600" />
-        </button>
+        </motion.button>
         
         {/* 设置按钮 */}
-        <button 
+        <motion.button
           onClick={onSettingsClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 rounded-full transition"
           aria-label="设置"
         >
           <Settings size={20} className="text-gray-600" />
-        </button>
+        </motion.button>
       </div>
     </div>
   );

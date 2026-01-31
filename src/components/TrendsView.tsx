@@ -1,5 +1,6 @@
 import { X, TrendingUp, TrendingDown, Minus, Calendar, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   getRecentTrends, 
   getDimensionTrends, 
@@ -42,46 +43,55 @@ export default function TrendsView({ isOpen, onClose, onSelectDate }: TrendsView
     }
   }, [isOpen, days]);
 
-  if (!isOpen) return null;
-
-  // 数据不足提示
-  if (trendData.length < 2) {
-    return (
-      <>
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center">
-            <Calendar size={64} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-800 mb-2">数据不足</h3>
-            <p className="text-gray-600 mb-6">
-              至少需要查询 2 天的运势才能生成趋势图哦！
-            </p>
-            <button
-              onClick={onClose}
-              className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition"
-            >
-              继续查询运势
-            </button>
-          </div>
-        </div>
-      </>
-    );
-  }
-
   return (
-    <>
-      {/* 遮罩层 */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* 遮罩层 */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+            onClick={onClose}
+          />
 
-      {/* 主内容 */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-auto">
-        <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          {/* 数据不足提示 */}
+          {trendData.length < 2 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center">
+                <Calendar size={64} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 mb-2">数据不足</h3>
+                <p className="text-gray-600 mb-6">
+                  至少需要查询 2 天的运势才能生成趋势图哦！
+                </p>
+                <button
+                  onClick={onClose}
+                  className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition"
+                >
+                  继续查询运势
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <>
+
+              {/* 主内容 */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-auto"
+              >
+                <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           {/* 头部 */}
           <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-3xl z-10">
             <div className="flex items-center justify-between mb-4">
@@ -290,8 +300,12 @@ export default function TrendsView({ isOpen, onClose, onSelectDate }: TrendsView
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </>
+      )}
+    </AnimatePresence>
   );
 }

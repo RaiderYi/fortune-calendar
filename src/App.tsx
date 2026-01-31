@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
@@ -6,8 +7,10 @@ import DimensionCard from './components/DimensionCard';
 import HistoryDrawer from './components/HistoryDrawer';
 import TrendsView from './components/TrendsView';
 import CalendarView from './components/CalendarView';
+import Onboarding from './components/Onboarding';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
+import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
@@ -138,6 +141,11 @@ export default function App() {
   const [showBazi, setShowBazi] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    const completed = localStorage.getItem('onboarding_completed');
+    return !completed;
+  });
 
   // UI 状态
   const [currentThemeStyle, setCurrentThemeStyle] = useState(SAFE_THEMES['default']);
@@ -299,12 +307,14 @@ export default function App() {
 
   // --- 日期切换 ---
   const changeDate = (days: number) => {
+    setSlideDirection(days > 0 ? 'right' : 'left');
     setIsAnimating(true);
     setTimeout(() => {
       const newDate = new Date(currentDate);
       newDate.setDate(newDate.getDate() + days);
       setCurrentDate(newDate);
       setIsAnimating(false);
+      setTimeout(() => setSlideDirection(null), 300);
     }, 200);
   };
 
@@ -312,8 +322,28 @@ export default function App() {
   // 格式化日期为 YYYY-MM-DD 供 input 使用
   const formattedDateValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
 
+  // 完成引导
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('onboarding_completed', 'true');
+    setShowOnboarding(false);
+  };
+
+  // 跳过引导
+  const handleOnboardingSkip = () => {
+    localStorage.setItem('onboarding_completed', 'true');
+    setShowOnboarding(false);
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: '#f9fafb', display: 'flex', justifyContent: 'center', fontFamily: 'system-ui', color: '#1e293b', userSelect: 'none', overflow: 'hidden' }}>
+      {/* 首次使用引导 */}
+      {showOnboarding && (
+        <Onboarding
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
       <div style={{ width: '100%', maxWidth: '448px', background: '#F5F5F7', height: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
 
         {/* --- 顶部导航 --- */}
@@ -336,24 +366,44 @@ export default function App() {
         />
 
         {/* --- 核心内容区 --- */}
-        <div className={`flex-1 overflow-y-auto px-5 pb-24 transition-opacity duration-200 ${isAnimating ? 'opacity-50' : 'opacity-100'}`}>
-          {isLoading || !fortune ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-400 gap-3">
-              <Loader2 className="animate-spin" size={32} />
-              <span className="text-sm">大师正在排盘...</span>
-            </div>
-          ) : (
-            // 截图区域容器
-            <div ref={contentRef} style={{ paddingBottom: '24px', background: '#F5F5F7', paddingLeft: '4px', paddingRight: '4px' }}>
-              {/* 主运势卡片 */}
-              <FortuneCard
-                mainTheme={fortune.mainTheme}
-                totalScore={fortune.totalScore}
-                pillars={fortune.pillars}
-                themeStyle={currentThemeStyle}
-                showBazi={showBazi}
-                onToggleBazi={() => setShowBazi(!showBazi)}
-              />
+        <div className="flex-1 overflow-y-auto px-5 pb-24 relative">
+          <AnimatePresence mode="wait">
+            {isLoading || !fortune ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4"
+              >
+                <SkeletonFortuneCard />
+                <SkeletonDimensionCard />
+              </motion.div>
+            ) : (
+              <motion.div
+                key={currentDate.toISOString()}
+                initial={{ 
+                  opacity: 0,
+                  x: slideDirection === 'right' ? 50 : slideDirection === 'left' ? -50 : 0
+                }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ 
+                  opacity: 0,
+                  x: slideDirection === 'right' ? -50 : slideDirection === 'left' ? 50 : 0
+                }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                ref={contentRef}
+                style={{ paddingBottom: '24px', background: '#F5F5F7', paddingLeft: '4px', paddingRight: '4px' }}
+              >
+                {/* 主运势卡片 */}
+                <FortuneCard
+                  mainTheme={fortune.mainTheme}
+                  totalScore={fortune.totalScore}
+                  pillars={fortune.pillars}
+                  themeStyle={currentThemeStyle}
+                  showBazi={showBazi}
+                  onToggleBazi={() => setShowBazi(!showBazi)}
+                />
 
               {/* Todo List */}
               <div className="grid grid-cols-2 gap-3 mt-4">
@@ -499,22 +549,25 @@ export default function App() {
               )}
               {/* 六维度运势 */}
               <DimensionCard dimensions={fortune.dimensions} />
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
 
 
         {/* --- 底部悬浮按钮 --- */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot">
-           <button
+           <motion.button
              onClick={handleGenerateImage}
              disabled={isGenerating || !fortune}
-             className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl shadow-slate-300 font-bold active:scale-95 transition hover:bg-black hover:scale-105 disabled:opacity-70"
+             whileHover={{ scale: 1.05 }}
+             whileTap={{ scale: 0.95 }}
+             className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl shadow-slate-300 font-bold transition hover:bg-black disabled:opacity-70"
            >
              {isGenerating ? <Loader2 size={18} className="animate-spin"/> : <Share2 size={18} />}
              {isGenerating ? '生成中...' : '生成日签'}
-           </button>
+           </motion.button>
         </div>
 
         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#F5F5F7] to-transparent pointer-events-none z-10"></div>
@@ -528,19 +581,23 @@ export default function App() {
              <div className="mt-6 flex flex-col items-center gap-3">
                <p className="text-white/80 text-sm font-medium">长按图片保存，或点击下方按钮</p>
                <div className="flex gap-4">
-                 <button
+                 <motion.button
                    onClick={() => setGeneratedImage(null)}
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
                    className="bg-white/10 text-white px-6 py-3 rounded-full font-bold backdrop-blur-md border border-white/20"
                  >
                    关闭
-                 </button>
-                 <a
+                 </motion.button>
+                 <motion.a
                    href={generatedImage}
                    download={`运势日签-${fortune?.dateStr}.png`}
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
                    className="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
                  >
                    <Download size={18} /> 保存图片
-                 </a>
+                 </motion.a>
                </div>
              </div>
           </div>
@@ -552,9 +609,14 @@ export default function App() {
              <div className="bg-white w-full rounded-3xl p-6 shadow-2xl scale-in-center">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold">个人档案</h3>
-                  <button onClick={() => setIsSettingsOpen(false)} className="p-1 hover:bg-gray-100 rounded-full">
+                  <motion.button
+                    onClick={() => setIsSettingsOpen(false)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-1 hover:bg-gray-100 rounded-full"
+                  >
                     <X size={24} className="text-gray-500"/>
-                  </button>
+                  </motion.button>
                 </div>
 
                 <div className="space-y-4">
@@ -587,7 +649,7 @@ export default function App() {
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-sm font-bold text-gray-500">出生城市 (真太阳时校准)</label>
                       {isGeolocationSupported() && (
-                        <button
+                        <motion.button
                           onClick={async () => {
                             try {
                               const location = await getCurrentLocation();
@@ -602,11 +664,13 @@ export default function App() {
                               console.error('定位失败:', error);
                             }
                           }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700 px-2 py-1 rounded hover:bg-indigo-50 transition"
                         >
                           <MapPin size={14} />
                           自动定位
-                        </button>
+                        </motion.button>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -637,7 +701,14 @@ export default function App() {
                 </div>
 
                 <div className="mt-8">
-                  <button onClick={handleSaveSettings} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition">保存并重排运势</button>
+                  <motion.button
+                    onClick={handleSaveSettings}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition"
+                  >
+                    保存并重排运势
+                  </motion.button>
                   <p className="text-center text-[10px] text-gray-400 mt-3">已支持 {Object.keys(CHINA_CITIES).length} 个城市，真太阳时校准</p>
                 </div>
              </div>

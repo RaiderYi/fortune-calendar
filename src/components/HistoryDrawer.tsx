@@ -1,6 +1,7 @@
 import { X, Clock, TrendingUp, Trash2 } from 'lucide-react';
 import { getHistory, clearHistory, formatHistoryDate, getHistoryStats, HistoryRecord } from '../utils/historyStorage';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface HistoryDrawerProps {
   isOpen: boolean;
@@ -38,18 +39,28 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate }: History
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <>
-      {/* 遮罩层 */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* 遮罩层 */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+            onClick={onClose}
+          />
 
-      {/* 抽屉 */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
+          {/* 抽屉 */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col"
+          >
         {/* 头部 */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 pb-8">
           <div className="flex items-center justify-between mb-4">
@@ -161,7 +172,9 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate }: History
             </button>
           </div>
         )}
-      </div>
-    </>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
