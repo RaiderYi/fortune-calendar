@@ -4,8 +4,9 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Award, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp } from 'lucide-react';
+import { User, Award, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail } from 'lucide-react';
 import LifeMap from './LifeMap';
+import ContactModal from './ContactModal';
 import { getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
 import type { UserProfile } from './ProfileSettings';
@@ -28,6 +29,7 @@ export default function MyPage({
   onFeedbackClick,
 }: MyPageProps) {
   const [showLifeMap, setShowLifeMap] = useState(false);
+  const [showContact, setShowContact] = useState(false);
   const checkinStats = getCheckinStats();
   const achievementStats = getAchievementStats();
 
@@ -68,6 +70,13 @@ export default function MyPage({
       icon: MessageSquare,
       color: 'purple',
       onClick: onFeedbackClick,
+    },
+    {
+      id: 'contact',
+      label: '联系我们',
+      icon: Mail,
+      color: 'blue',
+      onClick: () => setShowContact(true),
     },
     {
       id: 'lifemap',
@@ -162,6 +171,12 @@ export default function MyPage({
         isOpen={showLifeMap}
         onClose={() => setShowLifeMap(false)}
         userProfile={userProfile}
+      />
+
+      {/* 联系我们 */}
+      <ContactModal
+        isOpen={showContact}
+        onClose={() => setShowContact(false)}
       />
     </div>
   );
