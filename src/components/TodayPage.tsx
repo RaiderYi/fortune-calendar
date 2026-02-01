@@ -234,17 +234,28 @@ export default function TodayPage({
                     icon={<TrendingUp size={14} />}
                     defaultExpanded={true}
                     headerAction={
-                      onCustomYongShenChange ? (
+                      onCustomYongShenChange && !isEditingYongShen ? (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setIsEditingYongShen(!isEditingYongShen);
+                            setIsEditingYongShen(true);
                             setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
                           }}
-                          className="text-xs px-3 py-1.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg cursor-pointer font-medium transition-colors shadow-sm whitespace-nowrap"
+                          className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                           type="button"
                         >
-                          {isEditingYongShen ? '取消' : '编辑用神'}
+                          ✏️ 编辑用神
+                        </button>
+                      ) : onCustomYongShenChange && isEditingYongShen ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditingYongShen(false);
+                          }}
+                          className="text-sm px-4 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md whitespace-nowrap"
+                          type="button"
+                        >
+                          取消
                         </button>
                       ) : undefined
                     }
@@ -266,6 +277,19 @@ export default function TodayPage({
                           <div className="flex items-center gap-2">
                             {fortune.yongShen.isCustom && (
                               <span className="text-[10px] px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full font-medium">自定义</span>
+                            )}
+                            {onCustomYongShenChange && !isEditingYongShen && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsEditingYongShen(true);
+                                  setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
+                                }}
+                                className="text-xs px-3 py-1.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg cursor-pointer font-medium transition-colors shadow-sm"
+                                type="button"
+                              >
+                                编辑用神
+                              </button>
                             )}
                           </div>
                         </div>
