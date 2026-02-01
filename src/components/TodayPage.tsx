@@ -245,30 +245,32 @@ export default function TodayPage({
                           {fortune.yongShen.strength}
                         </div>
                       </div>
-                      <div>
+                      <div className="col-span-2">
                         <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 flex items-center justify-between">
                           <TermButton term="用神" className="text-gray-400 dark:text-gray-500" />
-                          {fortune.yongShen.isCustom && (
-                            <span className="text-[9px] text-orange-500 dark:text-orange-400">自定义</span>
-                          )}
-                          {onCustomYongShenChange && (
-                            <button
-                              onClick={() => {
-                                setIsEditingYongShen(!isEditingYongShen);
-                                setEditYongShenValue(fortune.yongShen.yongShen[0] || '');
-                              }}
-                              className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
-                            >
-                              {isEditingYongShen ? '取消' : '编辑'}
-                            </button>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {fortune.yongShen.isCustom && (
+                              <span className="text-[9px] text-orange-500 dark:text-orange-400">自定义</span>
+                            )}
+                            {onCustomYongShenChange && (
+                              <button
+                                onClick={() => {
+                                  setIsEditingYongShen(!isEditingYongShen);
+                                  setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
+                                }}
+                                className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline px-1"
+                              >
+                                {isEditingYongShen ? '取消' : '编辑'}
+                              </button>
+                            )}
+                          </div>
                         </div>
                         {isEditingYongShen && onCustomYongShenChange ? (
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2">
                             <select
                               value={editYongShenValue}
                               onChange={(e) => setEditYongShenValue(e.target.value)}
-                              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex-1"
+                              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-full"
                             >
                               <option value="">选择用神</option>
                               <option value="木">木</option>
@@ -277,38 +279,45 @@ export default function TodayPage({
                               <option value="金">金</option>
                               <option value="水">水</option>
                             </select>
-                            <button
-                              onClick={() => {
-                                if (editYongShenValue && onCustomYongShenChange) {
-                                  onCustomYongShenChange(editYongShenValue);
-                                  setIsEditingYongShen(false);
-                                }
-                              }}
-                              className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
-                            >
-                              保存
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (onCustomYongShenChange) {
-                                  onCustomYongShenChange(null);
-                                  setIsEditingYongShen(false);
-                                }
-                              }}
-                              className="px-2 py-1 bg-gray-500 text-white rounded text-xs"
-                            >
-                              重置
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  if (editYongShenValue && onCustomYongShenChange) {
+                                    onCustomYongShenChange(editYongShenValue);
+                                    setIsEditingYongShen(false);
+                                  }
+                                }}
+                                disabled={!editYongShenValue}
+                                className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
+                              >
+                                保存
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (onCustomYongShenChange) {
+                                    onCustomYongShenChange(null);
+                                    setIsEditingYongShen(false);
+                                  }
+                                }}
+                                className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition"
+                              >
+                                重置
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-1">
-                            {fortune.yongShen.yongShen.map((elem, idx) => (
-                              <TermButton
-                                key={idx}
-                                term={elem}
-                                className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold"
-                              />
-                            ))}
+                            {fortune.yongShen.yongShen && fortune.yongShen.yongShen.length > 0 ? (
+                              fortune.yongShen.yongShen.map((elem, idx) => (
+                                <TermButton
+                                  key={idx}
+                                  term={elem}
+                                  className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold"
+                                />
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-400 dark:text-gray-500">暂无</span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -317,13 +326,17 @@ export default function TodayPage({
                           <TermButton term="喜神" className="text-gray-400 dark:text-gray-500" />
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          {fortune.yongShen.xiShen.map((elem, idx) => (
-                            <TermButton
-                              key={idx}
-                              term={elem}
-                              className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-bold"
-                            />
-                          ))}
+                          {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
+                            fortune.yongShen.xiShen.map((elem, idx) => (
+                              <TermButton
+                                key={idx}
+                                term={elem}
+                                className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-bold"
+                              />
+                            ))
+                          ) : (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">暂无</span>
+                          )}
                         </div>
                       </div>
                       <div>
@@ -331,13 +344,17 @@ export default function TodayPage({
                           <TermButton term="忌神" className="text-gray-400 dark:text-gray-500" />
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          {fortune.yongShen.jiShen.map((elem, idx) => (
-                            <TermButton
-                              key={idx}
-                              term={elem}
-                              className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-bold"
-                            />
-                          ))}
+                          {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
+                            fortune.yongShen.jiShen.map((elem, idx) => (
+                              <TermButton
+                                key={idx}
+                                term={elem}
+                                className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-bold"
+                              />
+                            ))
+                          ) : (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">暂无</span>
+                          )}
                         </div>
                       </div>
                     </div>

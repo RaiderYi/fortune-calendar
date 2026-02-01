@@ -90,7 +90,8 @@ interface YongShen {
   yongShen: string[];
   xiShen: string[];
   jiShen: string[];
-  tenGods: string[];
+  tenGods?: string[];
+  isCustom?: boolean; // 标记是否为自定义用神
 }
 
 interface DaYun {
@@ -284,7 +285,7 @@ export default function App() {
       }
     };
     fetchFortune();
-  }, [currentDate, userProfile]);
+  }, [currentDate, userProfile, customYongShen]); // 添加 customYongShen 依赖，当用神改变时重新获取数据
 
   // --- 截图逻辑（使用html-to-image，完美支持lab颜色）---
   const handleGenerateImage = async () => {
