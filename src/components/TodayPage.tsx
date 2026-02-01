@@ -250,7 +250,7 @@ export default function TodayPage({
                           <TermButton term="用神" className="text-gray-400 dark:text-gray-500" />
                           <div className="flex items-center gap-2">
                             {fortune.yongShen.isCustom && (
-                              <span className="text-[9px] text-orange-500 dark:text-orange-400">自定义</span>
+                              <span className="text-[10px] px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full font-medium">自定义</span>
                             )}
                             {onCustomYongShenChange && (
                               <button
@@ -259,10 +259,10 @@ export default function TodayPage({
                                   setIsEditingYongShen(!isEditingYongShen);
                                   setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
                                 }}
-                                className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline px-1 cursor-pointer"
+                                className="text-[11px] px-2 py-1 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md cursor-pointer font-medium transition-colors shadow-sm"
                                 type="button"
                               >
-                                {isEditingYongShen ? '取消' : '编辑'}
+                                {isEditingYongShen ? '取消' : '编辑用神'}
                               </button>
                             )}
                           </div>
