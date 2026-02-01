@@ -42,7 +42,7 @@ interface TodayPageProps {
   onToggleBazi: () => void;
   currentThemeStyle: { bg: string; text: string };
   onFeedbackClick: () => void;
-  onAIClick: () => void;
+  onAIClick: (question?: string) => void;
   onGenerateImage: () => void;
   isGenerating: boolean;
   contentRef: React.RefObject<HTMLDivElement>;
@@ -177,6 +177,15 @@ export default function TodayPage({
                       <span className="text-xs text-gray-400 dark:text-gray-500">日主：</span>
                       <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 ml-1">{fortune.baziDetail.dayMaster}</span>
                     </div>
+                    <motion.button
+                      onClick={() => onAIClick('请详细分析我的八字命理，包括四柱的含义、五行平衡、用神喜忌以及对我性格和运势的影响。')}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="mt-4 w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition shadow-lg"
+                    >
+                      <Sparkles size={16} />
+                      AI 深度解读八字
+                    </motion.button>
                   </CollapsibleSection>
                 )}
 
@@ -279,7 +288,10 @@ export default function TodayPage({
               )}
 
             {/* 六维度运势 */}
-            <DimensionCard dimensions={fortune.dimensions} />
+            <DimensionCard 
+              dimensions={fortune.dimensions}
+              onAIClick={(question) => onAIClick(question)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

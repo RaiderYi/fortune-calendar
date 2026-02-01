@@ -13,6 +13,7 @@ interface AIDeductionProps {
   isOpen: boolean;
   onClose: () => void;
   baziContext: BaziContext;
+  initialQuestion?: string; // 预设问题，打开时自动发送
 }
 
 // 快捷问题列表
@@ -29,6 +30,7 @@ export default function AIDeduction({
   isOpen,
   onClose,
   baziContext,
+  initialQuestion,
 }: AIDeductionProps) {
   const { showToast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -36,23 +38,16 @@ export default function AIDeduction({
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const hasSentInitialQuestion = useRef(false);
 
   // 滚动到底部
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
-      // 重置消息（可选：保留历史）
-      // setMessages([]);
-    }
-  }, [isOpen, messages]);
-
   // 发送消息
-  const sendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+  const sendMessage = async (content: string, skipValidation = false) => {
+    if ((!content.trim() || isLoading) && !skipValidation) return;
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -88,6 +83,56 @@ export default function AIDeduction({
       setIsLoading(false);
     }
   };
+
+  // 处理预设问题
+  useEffect(() => {
+    if (isOpen && initialQuestion && !hasSentInitialQuestion.current && messages.length === 0) {
+      hasSentInitialQuestion.current = true;
+      // 延迟一下，确保UI已经渲染
+      const timer = setTimeout(async () => {
+        const userMessage: ChatMessage = {
+          role: 'user',
+          content: initialQuestion,
+        };
+        setMessages([userMessage]);
+        setIsLoading(true);
+
+        try {
+          const response = await chatWithAI([userMessage], baziContext);
+          if (response.success && response.message) {
+            const assistantMessage: ChatMessage = {
+              role: 'assistant',
+              content: response.message,
+            };
+            setMessages([userMessage, assistantMessage]);
+          } else {
+            throw new Error(response.error || 'AI 响应失败');
+          }
+        } catch (error) {
+          console.error('AI 聊天错误:', error);
+          showToast('AI 咨询失败，请稍后重试', 'error');
+          const errorMessage: ChatMessage = {
+            role: 'assistant',
+            content: '抱歉，我暂时无法回答您的问题。请稍后再试。',
+          };
+          setMessages([userMessage, errorMessage]);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (!isOpen) {
+      // 关闭时重置
+      hasSentInitialQuestion.current = false;
+      setMessages([]);
+    }
+  }, [isOpen, initialQuestion, baziContext, showToast]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
 
   // 处理快捷问题
   const handleQuickQuestion = (question: QuickQuestion) => {

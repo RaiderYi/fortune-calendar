@@ -3,7 +3,7 @@
 // ==========================================
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp, AlertCircle, CheckCircle2, Info } from 'lucide-react';
+import { X, Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp, AlertCircle, CheckCircle2, Info, Sparkles } from 'lucide-react';
 
 export type DimensionType = 'career' | 'wealth' | 'romance' | 'health' | 'academic' | 'travel';
 
@@ -19,6 +19,7 @@ interface DimensionDetailProps {
   onClose: () => void;
   dimensionType: DimensionType;
   dimension: DimensionAnalysis;
+  onAIClick?: (question: string) => void; // AI咨询回调
 }
 
 // 维度配置
@@ -179,7 +180,8 @@ export default function DimensionDetail({
   isOpen,
   onClose,
   dimensionType,
-  dimension
+  dimension,
+  onAIClick
 }: DimensionDetailProps) {
   const config = DIMENSION_CONFIG[dimensionType];
   const Icon = config.icon;
@@ -189,6 +191,26 @@ export default function DimensionDetail({
   const description = isGood ? config.descriptions.good : isBad ? config.descriptions.bad : config.descriptions.normal;
   const suggestions = isGood ? config.suggestions.good : isBad ? config.suggestions.bad : config.suggestions.normal;
   const warnings = isGood ? config.warnings.good : isBad ? config.warnings.bad : config.warnings.normal;
+
+  // 根据维度类型生成默认问题
+  const getDefaultQuestion = (type: DimensionType): string => {
+    const questions: Record<DimensionType, string> = {
+      career: '请详细分析我的事业发展，包括今日运势对事业的影响、适合的行动方向以及需要注意的事项。',
+      wealth: '请详细分析我的财运状况，包括今日财运走势、投资理财建议以及需要注意的财务风险。',
+      romance: '请详细分析我的感情运势，包括今日感情状态、人际关系建议以及需要注意的情感问题。',
+      health: '请详细分析我的健康注意事项，包括今日健康运势、养生建议以及需要预防的健康问题。',
+      academic: '请详细分析我的学业运势，包括今日学习状态、考试运程以及提升学业的方法建议。',
+      travel: '请详细分析我的出行运势，包括今日出行适宜性、注意事项以及出行建议。',
+    };
+    return questions[type];
+  };
+
+  const handleAIClick = () => {
+    if (onAIClick) {
+      onAIClick(getDefaultQuestion(dimensionType));
+      onClose(); // 关闭维度详情，打开AI咨询
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -325,6 +347,19 @@ export default function DimensionDetail({
                   <p>• 0-49分：凶 - 运势较弱，谨慎行事</p>
                 </div>
               </div>
+
+              {/* AI 深度分析按钮 */}
+              {onAIClick && (
+                <motion.button
+                  onClick={handleAIClick}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition shadow-lg mt-4"
+                >
+                  <Sparkles size={18} />
+                  AI 深度分析
+                </motion.button>
+              )}
             </div>
           </motion.div>
         </>

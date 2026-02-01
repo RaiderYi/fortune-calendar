@@ -8,9 +8,10 @@ import { updateAchievementProgress } from '../utils/achievementStorage';
 
 interface DimensionCardProps {
   dimensions: { [key in DimensionType]: DimensionAnalysis };
+  onAIClick?: (question: string) => void; // AI咨询回调
 }
 
-export default function DimensionCard({ dimensions }: DimensionCardProps) {
+export default function DimensionCard({ dimensions, onAIClick }: DimensionCardProps) {
   const [selectedDimension, setSelectedDimension] = useState<DimensionType | null>(null);
   const [viewedDimensions, setViewedDimensions] = useState<Set<DimensionType>>(new Set());
 
@@ -136,6 +137,7 @@ export default function DimensionCard({ dimensions }: DimensionCardProps) {
           onClose={() => setSelectedDimension(null)}
           dimensionType={selectedDimension}
           dimension={dimensions[selectedDimension]}
+          onAIClick={onAIClick}
         />
       )}
     </div>

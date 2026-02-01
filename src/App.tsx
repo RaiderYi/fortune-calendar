@@ -165,6 +165,7 @@ export default function App() {
   const [showKnowledge, setShowKnowledge] = useState(false); // 知识库
   const [showFeedback, setShowFeedback] = useState(false); // 反馈弹窗
   const [showAIDeduction, setShowAIDeduction] = useState(false); // AI 推演
+  const [aiInitialQuestion, setAiInitialQuestion] = useState<string | undefined>(undefined); // AI 预设问题
   const [currentTab, setCurrentTab] = useState<TabType>('today'); // 当前 Tab
 
   // 用户数据状态
@@ -392,7 +393,10 @@ export default function App() {
                   setShowKnowledge(true);
                   setCurrentTab('my');
                 }}
-                onAIClick={() => setShowAIDeduction(true)}
+                onAIClick={() => {
+                  setAiInitialQuestion(undefined);
+                  setShowAIDeduction(true);
+                }}
               />
 
               {/* --- 日期选择 --- */}
@@ -427,7 +431,10 @@ export default function App() {
                   onToggleBazi={() => setShowBazi(!showBazi)}
                   currentThemeStyle={currentThemeStyle}
                   onFeedbackClick={() => setShowFeedback(true)}
-                  onAIClick={() => setShowAIDeduction(true)}
+                  onAIClick={() => {
+                  setAiInitialQuestion(undefined);
+                  setShowAIDeduction(true);
+                }}
                   onGenerateImage={handleGenerateImage}
                   isGenerating={isGenerating}
                   contentRef={contentRef}
@@ -541,7 +548,10 @@ export default function App() {
               onCheckinClick={() => setShowCheckin(true)}
               onAchievementClick={() => setShowAchievements(true)}
               onKnowledgeClick={() => setShowKnowledge(true)}
-              onAIClick={() => setShowAIDeduction(true)}
+              onAIClick={() => {
+                setAiInitialQuestion(undefined);
+                setShowAIDeduction(true);
+              }}
             />
 
             {/* 日期选择 */}
@@ -813,6 +823,15 @@ export default function App() {
                 >
                   八字学堂
                 </motion.button>
+                <motion.button
+                  onClick={() => setShowAIDeduction(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 shadow-lg"
+                >
+                  <Sparkles size={16} />
+                  AI 命理咨询
+                </motion.button>
               </div>
             </div>
 
@@ -965,7 +984,10 @@ export default function App() {
         {fortune && (
           <AIDeduction
             isOpen={showAIDeduction}
-            onClose={() => setShowAIDeduction(false)}
+            onClose={() => {
+              setShowAIDeduction(false);
+              setAiInitialQuestion(undefined); // 关闭时清除预设问题
+            }}
             baziContext={{
               baziDetail: fortune.baziDetail,
               yongShen: fortune.yongShen,
@@ -974,6 +996,7 @@ export default function App() {
               totalScore: fortune.totalScore,
               liuNian: fortune.liuNian,
             }}
+            initialQuestion={aiInitialQuestion}
           />
         )}
 
