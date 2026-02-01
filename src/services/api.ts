@@ -37,3 +37,29 @@ export async function chatWithAI(
     throw error;
   }
 }
+
+/**
+ * 获取AI生成的今日锦囊
+ */
+export async function getTodayWisdom(baziContext: AIChatRequest['baziContext']): Promise<string> {
+  try {
+    const response = await chatWithAI(
+      [
+        {
+          role: 'user',
+          content: '请根据我的今日运势，生成一句富有哲理、治愈或实用的今日金句（一句话，30字以内，不要包含"今日"、"今天"等时间词）。',
+        },
+      ],
+      baziContext
+    );
+
+    if (response.success && response.message) {
+      // 清理可能的引号或多余格式
+      return response.message.replace(/^["']|["']$/g, '').trim();
+    }
+    return '';
+  } catch (error) {
+    console.error('获取今日锦囊失败:', error);
+    return '';
+  }
+}

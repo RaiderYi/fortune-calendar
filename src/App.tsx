@@ -21,6 +21,8 @@ import BottomNav, { type TabType } from './components/BottomNav';
 import TodayPage from './components/TodayPage';
 import CalendarPage from './components/CalendarPage';
 import MyPage from './components/MyPage';
+import DailySignThemeSelector, { type DailySignTheme } from './components/DailySignThemeSelector';
+import TimeEnergyBall from './components/TimeEnergyBall';
 import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
@@ -186,6 +188,8 @@ export default function App() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [dailySignTheme, setDailySignTheme] = useState<DailySignTheme>('minimal');
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
 
   // --- 核心：调用后端接口 ---
   useEffect(() => {
@@ -289,14 +293,28 @@ export default function App() {
       const originalShowBazi = showBazi;
       if (!showBazi) setShowBazi(true);
       
+      // 应用主题样式
+      const themeClass = `daily-sign-theme-${dailySignTheme}`;
+      contentRef.current.classList.add(themeClass);
+      
       // 等待DOM更新
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      // 根据主题设置背景色
+      let backgroundColor = '#F5F5F7';
+      if (dailySignTheme === 'zen') {
+        backgroundColor = '#faf8f3'; // 米白色，类似宣纸
+      } else if (dailySignTheme === 'minimal') {
+        backgroundColor = '#ffffff'; // 纯白
+      } else if (dailySignTheme === 'oracle') {
+        backgroundColor = '#1a1a2e'; // 深色神秘
+      }
 
       // 使用 html-to-image（原生支持所有现代CSS颜色）
       const dataUrl = await toPng(contentRef.current, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: '#F5F5F7',
+        backgroundColor,
         filter: (node) => {
           // 过滤不需要截图的元素
           if (node.classList) {
@@ -306,6 +324,9 @@ export default function App() {
         },
       });
 
+      // 移除主题样式
+      contentRef.current.classList.remove(themeClass);
+      
       setGeneratedImage(dataUrl);
       setShowBazi(originalShowBazi);
       showToast('日签生成成功！', 'success');
@@ -411,6 +432,14 @@ export default function App() {
             </>
           )}
 
+          {/* 时辰能量球 */}
+          {currentTab === 'today' && fortune && (
+            <TimeEnergyBall
+              currentTime={new Date()}
+              dayMaster={fortune.baziDetail?.dayMaster}
+            />
+          )}
+
           {/* --- Tab 内容区 --- */}
           <AnimatePresence mode="wait">
             {currentTab === 'today' && (
@@ -438,6 +467,18 @@ export default function App() {
                   onGenerateImage={handleGenerateImage}
                   isGenerating={isGenerating}
                   contentRef={contentRef}
+                  dailySignTheme={dailySignTheme}
+                  onThemeChange={setDailySignTheme}
+                  showThemeSelector={showThemeSelector}
+                  onToggleThemeSelector={() => setShowThemeSelector(!showThemeSelector)}
+                  baziContext={fortune ? {
+                    baziDetail: fortune.baziDetail,
+                    yongShen: fortune.yongShen,
+                    dimensions: fortune.dimensions,
+                    mainTheme: fortune.mainTheme,
+                    totalScore: fortune.totalScore,
+                    liuNian: fortune.liuNian,
+                  } : undefined}
                 />
               </motion.div>
             )}

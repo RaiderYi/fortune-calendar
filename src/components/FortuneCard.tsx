@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Crown, Eye, EyeOff, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Crown, Eye, EyeOff, ChevronDown, ChevronUp, Info, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getTodayWisdom } from '../services/api';
+import type { BaziContext } from '../types';
 
 interface FortuneCardProps {
   mainTheme: {
@@ -34,6 +36,7 @@ interface FortuneCardProps {
     dayZhi: string;
   };
   todayTenGod?: string;
+  baziContext?: BaziContext; // 用于AI锦囊生成
 }
 
 export default function FortuneCard({
@@ -46,8 +49,31 @@ export default function FortuneCard({
   yongShen,
   liuNian,
   todayTenGod,
+  baziContext,
 }: FortuneCardProps) {
   const [showDeepAnalysis, setShowDeepAnalysis] = useState(false);
+  const [wisdomTip, setWisdomTip] = useState<string>('');
+  const [isLoadingWisdom, setIsLoadingWisdom] = useState(false);
+
+  // 获取AI今日锦囊
+  useEffect(() => {
+    if (baziContext && !wisdomTip && !isLoadingWisdom) {
+      setIsLoadingWisdom(true);
+      getTodayWisdom(baziContext)
+        .then((tip) => {
+          if (tip) {
+            setWisdomTip(tip);
+          }
+        })
+        .catch(() => {
+          // 失败时使用默认锦囊
+          setWisdomTip('');
+        })
+        .finally(() => {
+          setIsLoadingWisdom(false);
+        });
+    }
+  }, [baziContext]);
 
   // 生成深度解读内容
   const generateDeepAnalysis = () => {
@@ -109,6 +135,28 @@ export default function FortuneCard({
 
       {/* 主内容 */}
       <div className="relative z-10" style={{ color: themeStyle.text }}>
+        {/* AI 今日锦囊 */}
+        {wisdomTip && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/30 shadow-sm"
+          >
+            <div className="flex items-start gap-2">
+              <Sparkles size={16} className="mt-0.5 flex-shrink-0 opacity-80" />
+              <p className="text-sm font-medium leading-relaxed flex-1 italic">
+                {wisdomTip}
+              </p>
+            </div>
+          </motion.div>
+        )}
+        {isLoadingWisdom && (
+          <div className="mb-4 bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/30 flex items-center gap-2">
+            <Loader2 size={14} className="animate-spin opacity-60" />
+            <span className="text-xs opacity-60">AI 正在生成今日锦囊...</span>
+          </div>
+        )}
+
         {/* 顶部：标签 + 分数 */}
         <div className="flex justify-between items-start mb-6">
           <div className="inline-flex items-center gap-1 bg-white/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 shadow-sm">

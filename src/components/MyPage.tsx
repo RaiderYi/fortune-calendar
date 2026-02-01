@@ -2,8 +2,10 @@
 // 我的页面组件
 // ==========================================
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Award, BookOpen, MessageSquare, Settings, Trophy, Target } from 'lucide-react';
+import { User, Award, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp } from 'lucide-react';
+import LifeMap from './LifeMap';
 import { getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
 import type { UserProfile } from './ProfileSettings';
@@ -25,6 +27,7 @@ export default function MyPage({
   onKnowledgeClick,
   onFeedbackClick,
 }: MyPageProps) {
+  const [showLifeMap, setShowLifeMap] = useState(false);
   const checkinStats = getCheckinStats();
   const achievementStats = getAchievementStats();
 
@@ -65,6 +68,13 @@ export default function MyPage({
       icon: MessageSquare,
       color: 'purple',
       onClick: onFeedbackClick,
+    },
+    {
+      id: 'lifemap',
+      label: '人生大图景',
+      icon: TrendingUp,
+      color: 'purple',
+      onClick: () => setShowLifeMap(true),
     },
     {
       id: 'settings',
@@ -146,6 +156,13 @@ export default function MyPage({
           })}
         </div>
       </div>
+
+      {/* 人生大图景 */}
+      <LifeMap
+        isOpen={showLifeMap}
+        onClose={() => setShowLifeMap(false)}
+        userProfile={userProfile}
+      />
     </div>
   );
 }

@@ -25,3 +25,26 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* 日签主题样式 */
+.daily-sign-theme-zen {
+  font-family: 'KaiTi', '楷体', 'STKaiti', serif !important;
+}
+
+.daily-sign-theme-zen .font-black {
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.daily-sign-theme-minimal {
+  /* 极简风格，保持默认样式 */
+}
+
+.daily-sign-theme-oracle {
+  font-family: 'Times New Roman', serif !important;
+}
+
+.daily-sign-theme-oracle .rounded-\[2rem\] {
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}

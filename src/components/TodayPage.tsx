@@ -6,8 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FortuneCard from './FortuneCard';
 import DimensionCard from './DimensionCard';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './SkeletonLoader';
+import { useState } from 'react';
 import { TrendingUp, Sparkles, Crown, Loader2, Share2 } from 'lucide-react';
 import CollapsibleSection from './CollapsibleSection';
+import BaziTermTooltip from './BaziTermTooltip';
 
 // DailyFortune 类型定义（与 App.tsx 保持一致）
 interface DailyFortune {
@@ -46,6 +48,11 @@ interface TodayPageProps {
   onGenerateImage: () => void;
   isGenerating: boolean;
   contentRef: React.RefObject<HTMLDivElement>;
+  dailySignTheme?: 'zen' | 'minimal' | 'oracle';
+  onThemeChange?: (theme: 'zen' | 'minimal' | 'oracle') => void;
+  showThemeSelector?: boolean;
+  onToggleThemeSelector?: () => void;
+  baziContext?: any;
 }
 
 export default function TodayPage({
@@ -61,7 +68,24 @@ export default function TodayPage({
   onGenerateImage,
   isGenerating,
   contentRef,
+  dailySignTheme = 'minimal',
+  onThemeChange,
+  showThemeSelector = false,
+  onToggleThemeSelector,
+  baziContext,
 }: TodayPageProps) {
+  const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
+
+  // 使术语可点击
+  const TermButton = ({ term, className = '' }: { term: string; className?: string }) => (
+    <button
+      onClick={() => setSelectedTerm(term)}
+      className={`${className} hover:opacity-80 transition cursor-pointer`}
+    >
+      {term}
+    </button>
+  );
+
   return (
     <div className="flex-1 overflow-y-auto px-5 pb-24 relative">
       <AnimatePresence mode="wait">
@@ -103,6 +127,14 @@ export default function TodayPage({
               yongShen={fortune.yongShen}
               liuNian={fortune.liuNian}
               todayTenGod={fortune.todayTenGod}
+              baziContext={{
+                baziDetail: fortune.baziDetail,
+                yongShen: fortune.yongShen,
+                dimensions: fortune.dimensions,
+                mainTheme: fortune.mainTheme,
+                totalScore: fortune.totalScore,
+                liuNian: fortune.liuNian,
+              }}
             />
 
             {/* AI 咨询和反馈按钮 */}
@@ -208,32 +240,44 @@ export default function TodayPage({
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">用神</div>
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
+                          <TermButton term="用神" className="text-gray-400 dark:text-gray-500" />
+                        </div>
                         <div className="flex flex-wrap gap-1">
                           {fortune.yongShen.yongShen.map((elem, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold">
-                              {elem}
-                            </span>
+                            <TermButton
+                              key={idx}
+                              term={elem}
+                              className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold"
+                            />
                           ))}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">喜神</div>
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
+                          <TermButton term="喜神" className="text-gray-400 dark:text-gray-500" />
+                        </div>
                         <div className="flex flex-wrap gap-1">
                           {fortune.yongShen.xiShen.map((elem, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-bold">
-                              {elem}
-                            </span>
+                            <TermButton
+                              key={idx}
+                              term={elem}
+                              className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-bold"
+                            />
                           ))}
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">忌神</div>
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
+                          <TermButton term="忌神" className="text-gray-400 dark:text-gray-500" />
+                        </div>
                         <div className="flex flex-wrap gap-1">
                           {fortune.yongShen.jiShen.map((elem, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-bold">
-                              {elem}
-                            </span>
+                            <TermButton
+                              key={idx}
+                              term={elem}
+                              className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-bold"
+                            />
                           ))}
                         </div>
                       </div>
@@ -277,9 +321,11 @@ export default function TodayPage({
                     >
                     <div className="flex flex-wrap gap-2">
                       {fortune.shenSha.map((ss, idx) => (
-                        <span key={idx} className="px-3 py-1.5 bg-gradient-to-r from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-bold border border-purple-200 dark:border-purple-800">
-                          {ss}
-                        </span>
+                        <TermButton
+                          key={idx}
+                          term={ss}
+                          className="px-3 py-1.5 bg-gradient-to-r from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-bold border border-purple-200 dark:border-purple-800"
+                        />
                         ))}
                       </div>
                     </CollapsibleSection>
@@ -298,6 +344,16 @@ export default function TodayPage({
 
       {/* 底部悬浮按钮 */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-20 no-screenshot lg:hidden">
+        {onToggleThemeSelector && (
+          <motion.button
+            onClick={onToggleThemeSelector}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 font-bold transition hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            <Sparkles size={18} />
+          </motion.button>
+        )}
         <motion.button
           onClick={onGenerateImage}
           disabled={isGenerating || !fortune}
@@ -309,6 +365,23 @@ export default function TodayPage({
           {isGenerating ? '生成中...' : '生成日签'}
         </motion.button>
       </div>
+
+      {/* 主题选择器 */}
+      {showThemeSelector && onThemeChange && (
+        <DailySignThemeSelector
+          selectedTheme={dailySignTheme}
+          onThemeChange={onThemeChange}
+          onClose={() => onToggleThemeSelector?.()}
+        />
+      )}
+
+      {/* 术语解释浮窗 */}
+      <BaziTermTooltip
+        term={selectedTerm || ''}
+        isOpen={!!selectedTerm}
+        onClose={() => setSelectedTerm(null)}
+        baziContext={baziContext}
+      />
 
       <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#F5F5F7] dark:from-slate-900 to-transparent pointer-events-none z-10 lg:hidden"></div>
     </div>
