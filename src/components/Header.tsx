@@ -14,6 +14,7 @@ interface HeaderProps {
   onCheckinClick: () => void;
   onAchievementClick: () => void;
   onKnowledgeClick: () => void;
+  onAIClick: () => void;
 }
 
 export default function Header({ 
@@ -24,7 +25,8 @@ export default function Header({
   onCalendarClick,
   onCheckinClick,
   onAchievementClick,
-  onKnowledgeClick
+  onKnowledgeClick,
+  onAIClick
 }: HeaderProps) {
   const { effectiveTheme, toggleTheme } = useTheme();
   const [checkedIn, setCheckedIn] = useState(isCheckedInToday());
@@ -47,15 +49,27 @@ export default function Header({
       </div>
       
       <div className="flex items-center gap-2 lg:gap-3">
+        {/* AI 咨询按钮 */}
+        <motion.button
+          onClick={onAIClick}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-full transition shadow-lg"
+          aria-label="AI 命理咨询"
+          title="AI 深度推演"
+        >
+          <Sparkles size={20} className="text-white" />
+        </motion.button>
+
         {/* 知识库按钮 */}
         <motion.button
           onClick={onKnowledgeClick}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 hover:bg-gray-100 rounded-full transition"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
           aria-label="八字学堂"
         >
-          <BookOpen size={20} className="text-gray-600" />
+          <BookOpen size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
 
         {/* 成就按钮 */}

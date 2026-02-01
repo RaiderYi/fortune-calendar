@@ -392,6 +392,7 @@ export default function App() {
                   setShowKnowledge(true);
                   setCurrentTab('my');
                 }}
+                onAIClick={() => setShowAIDeduction(true)}
               />
 
               {/* --- 日期选择 --- */}
@@ -540,6 +541,7 @@ export default function App() {
               onCheckinClick={() => setShowCheckin(true)}
               onAchievementClick={() => setShowAchievements(true)}
               onKnowledgeClick={() => setShowKnowledge(true)}
+              onAIClick={() => setShowAIDeduction(true)}
             />
 
             {/* 日期选择 */}
