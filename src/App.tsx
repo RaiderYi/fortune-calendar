@@ -190,6 +190,7 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [dailySignTheme, setDailySignTheme] = useState<DailySignTheme>('minimal');
   const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [customYongShen, setCustomYongShen] = useState<string | null>(null); // 用户自定义用神
 
   // --- 核心：调用后端接口 ---
   useEffect(() => {
@@ -210,7 +211,8 @@ export default function App() {
             birthDate: userProfile.birthDate,
             birthTime: userProfile.birthTime,
             longitude: userProfile.longitude, // 传递经度给后端计算真太阳时
-            gender: userProfile.gender // 新增：传递性别给后端
+            gender: userProfile.gender, // 新增：传递性别给后端
+            customYongShen: customYongShen // 新增：传递用户自定义用神
           }),
         });
 
@@ -467,6 +469,8 @@ export default function App() {
                   onGenerateImage={handleGenerateImage}
                   isGenerating={isGenerating}
                   contentRef={contentRef}
+                  customYongShen={customYongShen}
+                  onCustomYongShenChange={setCustomYongShen}
                   dailySignTheme={dailySignTheme}
                   onThemeChange={setDailySignTheme}
                   showThemeSelector={showThemeSelector}

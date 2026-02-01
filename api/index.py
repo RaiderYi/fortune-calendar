@@ -2140,6 +2140,57 @@ def calculate_element_strength_v5(bazi):
 
 # ==================== Phase 1.2: 三层用神体系 ====================
 
+def _create_custom_yongshen(custom_yongshen, bazi):
+    """
+    根据用户自定义用神创建用神对象
+    custom_yongshen: 可以是字符串（单个用神）或列表（多个用神）
+    返回格式与 determine_yongshen_tiered_v5 一致
+    """
+    from .core.constants import WU_XING_MAP, WU_XING_SHENG, WU_XING_KE
+    
+    # 处理输入：如果是字符串，转换为列表
+    if isinstance(custom_yongshen, str):
+        yong_shen_list = [custom_yongshen]
+    elif isinstance(custom_yongshen, list):
+        yong_shen_list = custom_yongshen
+    else:
+        # 如果格式不正确，使用默认值
+        day_element = WU_XING_MAP.get(bazi['day_gan'], '木')
+        yong_shen_list = [day_element]
+    
+    # 验证用神有效性（必须是五行之一）
+    valid_elements = ['木', '火', '土', '金', '水']
+    yong_shen_list = [e for e in yong_shen_list if e in valid_elements]
+    
+    if not yong_shen_list:
+        # 如果验证后为空，使用日主五行
+        day_element = WU_XING_MAP.get(bazi['day_gan'], '木')
+        yong_shen_list = [day_element]
+    
+    # 推导喜神和忌神
+    xi_shen = []
+    ji_shen = []
+    all_elements = ['木', '火', '土', '金', '水']
+    
+    for element in all_elements:
+        if element in yong_shen_list:
+            continue
+        elif any(WU_XING_SHENG.get(element) == yong for yong in yong_shen_list):
+            xi_shen.append(element)
+        else:
+            if any(WU_XING_KE.get(element) == yong for yong in yong_shen_list):
+                ji_shen.append(element)
+    
+    return {
+        'primary': yong_shen_list[0],
+        'secondary': yong_shen_list[1:] if len(yong_shen_list) > 1 else [],
+        'favorable': yong_shen_list,
+        'unfavorable': ji_shen,
+        'xi_shen': xi_shen,
+        'ji_shen': ji_shen,
+        'strategies': [f"用户自定义用神: {', '.join(yong_shen_list)}"]
+    }
+
 def determine_yongshen_tiered_v5(bazi, element_analysis):
     """
     三层优先级用神体系
@@ -3291,6 +3342,7 @@ class handler(BaseHTTPRequestHandler):
             birth_time_str = data.get('birthTime', '12:00')
             longitude_str = data.get('longitude', '116.4')
             gender = data.get('gender', 'male')  # 新增：性别参数（male/female）
+            custom_yongshen = data.get('customYongShen')  # 新增：用户自定义用神
 
             # 转换经度为浮点数
             try:
@@ -3320,8 +3372,13 @@ class handler(BaseHTTPRequestHandler):
                 # 4.1 五行强度量化
                 element_analysis = calculate_element_strength_v5(bazi)
                 
-                # 4.2 三层用神体系
-                yongshen_v5 = determine_yongshen_tiered_v5(bazi, element_analysis)
+                # 4.2 三层用神体系（如果用户提供了自定义用神，则使用自定义用神）
+                if custom_yongshen:
+                    # 使用用户自定义用神
+                    yongshen_v5 = _create_custom_yongshen(custom_yongshen, bazi)
+                else:
+                    # 使用系统计算的用神
+                    yongshen_v5 = determine_yongshen_tiered_v5(bazi, element_analysis)
                 
                 # 4.3 运势评分
                 score_result_v5 = calculate_fortune_score_v5(
@@ -3398,9 +3455,10 @@ class handler(BaseHTTPRequestHandler):
                 },
                 'yongShen': {
                     'strength': analysis['strength']['level'],
-                    'yongShen': [analysis['yong_shen']['primary']],
-                    'xiShen': analysis['yong_shen']['xi_shen'],
-                    'jiShen': analysis['yong_shen']['ji_shen']
+                    'yongShen': [yongshen_v5['primary']] if USE_V5_ALGORITHM else [analysis['yong_shen']['primary']],
+                    'xiShen': yongshen_v5.get('xi_shen', []) if USE_V5_ALGORITHM else analysis['yong_shen']['xi_shen'],
+                    'jiShen': yongshen_v5.get('ji_shen', []) if USE_V5_ALGORITHM else analysis['yong_shen']['ji_shen'],
+                    'isCustom': bool(custom_yongshen)  # 标记是否为自定义用神
                 },
                 'liuNian': {
                     'year': liu_nian['gan_zhi'],

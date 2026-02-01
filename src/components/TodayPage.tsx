@@ -53,6 +53,8 @@ interface TodayPageProps {
   showThemeSelector?: boolean;
   onToggleThemeSelector?: () => void;
   baziContext?: any;
+  customYongShen?: string | null;
+  onCustomYongShenChange?: (yongShen: string | null) => void;
 }
 
 export default function TodayPage({
@@ -73,8 +75,12 @@ export default function TodayPage({
   showThemeSelector = false,
   onToggleThemeSelector,
   baziContext,
+  customYongShen,
+  onCustomYongShenChange,
 }: TodayPageProps) {
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
+  const [isEditingYongShen, setIsEditingYongShen] = useState(false);
+  const [editYongShenValue, setEditYongShenValue] = useState('');
 
   // 使术语可点击
   const TermButton = ({ term, className = '' }: { term: string; className?: string }) => (
@@ -240,18 +246,71 @@ export default function TodayPage({
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">
+                        <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 flex items-center justify-between">
                           <TermButton term="用神" className="text-gray-400 dark:text-gray-500" />
+                          {fortune.yongShen.isCustom && (
+                            <span className="text-[9px] text-orange-500 dark:text-orange-400">自定义</span>
+                          )}
+                          {onCustomYongShenChange && (
+                            <button
+                              onClick={() => {
+                                setIsEditingYongShen(!isEditingYongShen);
+                                setEditYongShenValue(fortune.yongShen.yongShen[0] || '');
+                              }}
+                              className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
+                            >
+                              {isEditingYongShen ? '取消' : '编辑'}
+                            </button>
+                          )}
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                          {fortune.yongShen.yongShen.map((elem, idx) => (
-                            <TermButton
-                              key={idx}
-                              term={elem}
-                              className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold"
-                            />
-                          ))}
-                        </div>
+                        {isEditingYongShen && onCustomYongShenChange ? (
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={editYongShenValue}
+                              onChange={(e) => setEditYongShenValue(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 flex-1"
+                            >
+                              <option value="">选择用神</option>
+                              <option value="木">木</option>
+                              <option value="火">火</option>
+                              <option value="土">土</option>
+                              <option value="金">金</option>
+                              <option value="水">水</option>
+                            </select>
+                            <button
+                              onClick={() => {
+                                if (editYongShenValue && onCustomYongShenChange) {
+                                  onCustomYongShenChange(editYongShenValue);
+                                  setIsEditingYongShen(false);
+                                }
+                              }}
+                              className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                            >
+                              保存
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (onCustomYongShenChange) {
+                                  onCustomYongShenChange(null);
+                                  setIsEditingYongShen(false);
+                                }
+                              }}
+                              className="px-2 py-1 bg-gray-500 text-white rounded text-xs"
+                            >
+                              重置
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {fortune.yongShen.yongShen.map((elem, idx) => (
+                              <TermButton
+                                key={idx}
+                                term={elem}
+                                className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">

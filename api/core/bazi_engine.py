@@ -20,31 +20,32 @@ class EnhancedStrengthAnalyzer:
         self.day_element = WU_XING_MAP[self.day_gan]
 
     def analyze(self):
-        """综合分析日主旺衰"""
-        # 1. 月令分析 (35%)
+        """综合分析日主旺衰 - 优化版五维分析"""
+        # 优化后的权重分配：月令权重提升，通根次之，透干和合化刑冲适当调整
+        # 1. 月令分析 (40%) - 提升权重，月令是判断旺衰的最重要因素
         yue_ling_score, yue_ling_detail = self._analyze_yue_ling()
-        # 2. 通根分析 (25%)
+        # 2. 通根分析 (30%) - 提升权重，通根是日主力量的基础
         gen_score, gen_detail = self._analyze_gen()
-        # 3. 透干分析 (20%)
+        # 3. 透干分析 (20%) - 保持权重
         tou_gan_score, tou_gan_detail = self._analyze_tou_gan()
-        # 4. 合化分析 (10%)
+        # 4. 合化分析 (5%) - 降低权重，合化影响相对较小
         he_hua_score, he_hua_detail = self._analyze_he_hua()
-        # 5. 刑冲分析 (10%)
+        # 5. 刑冲分析 (5%) - 降低权重，刑冲影响相对较小
         xing_chong_score, xing_chong_detail = self._analyze_xing_chong()
 
         # 加权计算总分
         total_score = (
-            yue_ling_score * 0.35 +
-            gen_score * 0.25 +
+            yue_ling_score * 0.40 +
+            gen_score * 0.30 +
             tou_gan_score * 0.20 +
-            he_hua_score * 0.10 +
-            xing_chong_score * 0.10
+            he_hua_score * 0.05 +
+            xing_chong_score * 0.05
         )
 
-        # 判断旺衰等级
-        if total_score >= 0.65:
+        # 优化后的旺衰等级判断，使边界更清晰
+        if total_score >= 0.70:
             level = '身旺'
-        elif total_score <= 0.35:
+        elif total_score <= 0.30:
             level = '身弱'
         else:
             level = '中和'
@@ -170,27 +171,46 @@ class EnhancedYongShenDeriver:
         self.month_zhi = bazi['month_zhi']
 
     def derive(self):
-        """多层次用神推导"""
+        """多层次用神推导 - 优化版，增加冲突检测和优先级排序"""
         strategies = []
         yong_shen_list = []
+        yong_shen_priorities = {}  # 记录每个用神的优先级
 
-        # 第一层：调候用神
+        # 第一层：调候用神（优先级最高）
         tiao_hou = self._derive_tiao_hou()
         if tiao_hou:
-            yong_shen_list.append(tiao_hou['element'])
+            element = tiao_hou['element']
+            yong_shen_list.append(element)
+            yong_shen_priorities[element] = 100  # 调候优先级最高
             strategies.append(f"调候: {tiao_hou['reason']}")
 
-        # 第二层：扶抑用神
-        fu_yi = self._derive_fu_yi()
-        yong_shen_list.extend(fu_yi['elements'])
-        strategies.append(f"扶抑: {fu_yi['reason']}")
-
-        # 第三层：通关用神
+        # 第二层：通关用神（优先级中等）
         tong_guan = self._derive_tong_guan()
         if tong_guan:
             if tong_guan not in yong_shen_list:
                 yong_shen_list.append(tong_guan)
+                yong_shen_priorities[tong_guan] = 80
+            else:
+                # 如果已存在，提升其优先级
+                yong_shen_priorities[tong_guan] = max(yong_shen_priorities.get(tong_guan, 0), 80)
             strategies.append(f"通关: 需要{tong_guan}化解冲克")
+
+        # 第三层：扶抑用神（优先级较低）
+        fu_yi = self._derive_fu_yi()
+        for element in fu_yi['elements']:
+            if element not in yong_shen_list:
+                # 检查冲突：如果与已有用神相克，则跳过
+                if not self._check_conflict(element, yong_shen_list):
+                    yong_shen_list.append(element)
+                    yong_shen_priorities[element] = 60
+        if fu_yi['elements']:
+            strategies.append(f"扶抑: {fu_yi['reason']}")
+
+        # 按优先级排序用神列表
+        yong_shen_list = sorted(yong_shen_list, key=lambda x: yong_shen_priorities.get(x, 0), reverse=True)
+
+        # 验证用神有效性
+        yong_shen_list = self._validate_yongshen(yong_shen_list)
 
         # 推导喜神和忌神
         xi_shen, ji_shen = self._derive_xi_ji(yong_shen_list)
@@ -198,8 +218,10 @@ class EnhancedYongShenDeriver:
         return {
             'primary': yong_shen_list[0] if yong_shen_list else self.day_element,
             'secondary': yong_shen_list[1:3] if len(yong_shen_list) > 1 else [],
+            'favorable': yong_shen_list,  # 添加favorable字段，用于打分
             'xi_shen': xi_shen,
             'ji_shen': ji_shen,
+            'unfavorable': ji_shen,  # 添加unfavorable字段，用于打分
             'strategies': strategies
         }
 
@@ -243,8 +265,73 @@ class EnhancedYongShenDeriver:
         }
 
     def _derive_tong_guan(self):
-        """通关用神"""
+        """通关用神 - 优化版，检测五行战局"""
+        # 检查四柱中是否有明显的冲克关系
+        all_zhis = [self.bazi['year_zhi'], self.bazi['month_zhi'], 
+                    self.bazi['day_zhi'], self.bazi['time_zhi']]
+        all_gans = [self.bazi['year_gan'], self.bazi['month_gan'],
+                    self.bazi['day_gan'], self.bazi['time_gan']]
+        
+        # 统计各五行出现次数
+        element_count = {}
+        for zhi in all_zhis:
+            wang_element = YUE_LING_WANG.get(zhi)
+            if wang_element:
+                element_count[wang_element] = element_count.get(wang_element, 0) + 1
+        
+        for gan in all_gans:
+            gan_element = WU_XING_MAP.get(gan)
+            if gan_element:
+                element_count[gan_element] = element_count.get(gan_element, 0) + 0.5
+        
+        # 找出出现次数最多的两个五行
+        sorted_elements = sorted(element_count.items(), key=lambda x: x[1], reverse=True)
+        if len(sorted_elements) >= 2:
+            first_elem, first_count = sorted_elements[0]
+            second_elem, second_count = sorted_elements[1]
+            
+            # 如果两个五行力量相近且相克，需要通关
+            if abs(first_count - second_count) < 1.0:
+                if WU_XING_KE.get(first_elem) == second_elem or WU_XING_KE.get(second_elem) == first_elem:
+                    # 找到通关五行
+                    mediator = None
+                    for elem, sheng_to in WU_XING_SHENG.items():
+                        if sheng_to == first_elem and WU_XING_SHENG.get(second_elem) == elem:
+                            mediator = elem
+                            break
+                        elif sheng_to == second_elem and WU_XING_SHENG.get(first_elem) == elem:
+                            mediator = elem
+                            break
+                    
+                    if mediator:
+                        return mediator
+        
         return None
+    
+    def _check_conflict(self, new_element, existing_list):
+        """检查新用神是否与已有用神冲突（相克）"""
+        for existing in existing_list:
+            if WU_XING_KE.get(new_element) == existing or WU_XING_KE.get(existing) == new_element:
+                return True
+        return False
+    
+    def _validate_yongshen(self, yong_shen_list):
+        """验证用神有效性，去除无效用神"""
+        valid_list = []
+        for element in yong_shen_list:
+            # 用神不能是日主本身（除非特殊情况）
+            if element == self.day_element and len(yong_shen_list) > 1:
+                continue
+            # 用神不能与日主相克
+            if WU_XING_KE.get(element) == self.day_element:
+                continue
+            valid_list.append(element)
+        
+        # 如果验证后为空，至少保留第一个
+        if not valid_list and yong_shen_list:
+            valid_list = [yong_shen_list[0]]
+        
+        return valid_list
 
     def _derive_xi_ji(self, yong_shen_list):
         """推导喜神和忌神"""

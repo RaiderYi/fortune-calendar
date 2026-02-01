@@ -294,25 +294,25 @@ MEDIATOR_ELEMENTS = {
 }
 
 FORTUNE_WEIGHTS_V5 = {
-    'base_score': 60,
+    'base_score': 55,  # 降低基础分，使评分范围更合理
     'dayun_adjust': {
-        'favorable': +10,
-        'unfavorable': -10,
+        'favorable': +8,   # 降低大运调整幅度，使评分更稳定
+        'unfavorable': -8,
         'neutral': 0
     },
     'liunian': {
-        'weight': 0.10,
-        'stem_ratio': 0.60,
-        'branch_ratio': 0.40
+        'weight': 0.12,  # 略微提升流年权重
+        'stem_ratio': 0.65,  # 提升天干权重
+        'branch_ratio': 0.35
     },
     'liuyue': {
-        'weight': 0.20,
+        'weight': 0.18,  # 略微降低流月权重
         'stem_only': True
     },
     'liuri': {
-        'weight': 0.70,
-        'stem_ratio': 0.60,
-        'branch_ratio': 0.40
+        'weight': 0.70,  # 保持流日权重（最重要）
+        'stem_ratio': 0.65,  # 提升天干权重
+        'branch_ratio': 0.35
     }
 }
 

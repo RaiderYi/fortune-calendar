@@ -106,124 +106,159 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
 
 
 def _calculate_liunian_score(liu_nian, yongshen):
-    """计算流年影响"""
+    """计算流年影响 - 优化版，减少随机性，提高准确性"""
     liunian_weight = FORTUNE_WEIGHTS_V5['liunian']['weight']
+    stem_ratio = FORTUNE_WEIGHTS_V5['liunian']['stem_ratio']
+    branch_ratio = FORTUNE_WEIGHTS_V5['liunian']['branch_ratio']
+    
     nian_gan_element = WU_XING_MAP.get(liu_nian['gan'])
     nian_gan_bonus = 0
 
-    if nian_gan_element == yongshen.get('primary'):
-        nian_gan_bonus = 8 + random.randint(-2, 2)
-    elif nian_gan_element in yongshen.get('favorable', []):
-        nian_gan_bonus = 5 + random.randint(-1, 1)
-    elif nian_gan_element in yongshen.get('unfavorable', []):
-        nian_gan_bonus = -6 + random.randint(-1, 1)
+    # 优化：使用favorable和unfavorable列表，减少随机性
+    favorable_list = yongshen.get('favorable', [])
+    unfavorable_list = yongshen.get('unfavorable', [])
+    primary = yongshen.get('primary')
+
+    if nian_gan_element == primary:
+        nian_gan_bonus = 9 + random.randint(-1, 1)  # 减少随机范围
+    elif nian_gan_element in favorable_list:
+        nian_gan_bonus = 6 + random.randint(-1, 1)
+    elif nian_gan_element in unfavorable_list:
+        nian_gan_bonus = -7 + random.randint(-1, 0)
+    else:
+        nian_gan_bonus = random.randint(-2, 2)
 
     nian_zhi_element = WU_XING_MAP.get(liu_nian['zhi'])
     nian_zhi_bonus = 0
 
-    if nian_zhi_element == yongshen.get('primary'):
-        nian_zhi_bonus = 5 + random.randint(-1, 1)
-    elif nian_zhi_element in yongshen.get('favorable', []):
-        nian_zhi_bonus = 3 + random.randint(0, 1)
-    elif nian_zhi_element in yongshen.get('unfavorable', []):
-        nian_zhi_bonus = -4 + random.randint(-1, 0)
+    if nian_zhi_element == primary:
+        nian_zhi_bonus = 6 + random.randint(-1, 1)
+    elif nian_zhi_element in favorable_list:
+        nian_zhi_bonus = 4 + random.randint(0, 1)
+    elif nian_zhi_element in unfavorable_list:
+        nian_zhi_bonus = -5 + random.randint(-1, 0)
+    else:
+        nian_zhi_bonus = random.randint(-1, 1)
 
-    return (nian_gan_bonus * 0.6 + nian_zhi_bonus * 0.4) * (liunian_weight / 0.1)
+    return (nian_gan_bonus * stem_ratio + nian_zhi_bonus * branch_ratio) * (liunian_weight / 0.12)
 
 
 def _calculate_liuyue_score(liu_yue, yongshen):
-    """计算流月影响"""
+    """计算流月影响 - 优化版，减少随机性，提高准确性"""
     liuyue_weight = FORTUNE_WEIGHTS_V5['liuyue']['weight']
     yue_gan_element = WU_XING_MAP.get(liu_yue['gan'])
 
-    if yue_gan_element == yongshen.get('primary'):
-        liuyue_score = 12 + random.randint(-2, 3)
-    elif yue_gan_element in yongshen.get('favorable', []):
-        liuyue_score = 7 + random.randint(-2, 2)
-    elif yue_gan_element in yongshen.get('unfavorable', []):
-        liuyue_score = -8 + random.randint(-1, 1)
-    else:
-        liuyue_score = random.randint(-3, 3)
+    favorable_list = yongshen.get('favorable', [])
+    unfavorable_list = yongshen.get('unfavorable', [])
+    primary = yongshen.get('primary')
 
-    return liuyue_score * (liuyue_weight / 0.2)
+    if yue_gan_element == primary:
+        liuyue_score = 13 + random.randint(-2, 2)  # 减少随机范围
+    elif yue_gan_element in favorable_list:
+        liuyue_score = 8 + random.randint(-1, 1)
+    elif yue_gan_element in unfavorable_list:
+        liuyue_score = -9 + random.randint(-1, 1)
+    else:
+        liuyue_score = random.randint(-2, 2)  # 减少随机范围
+
+    return liuyue_score * (liuyue_weight / 0.18)
 
 
 def _calculate_liuri_score(liu_ri, yongshen):
-    """计算流日影响"""
+    """计算流日影响 - 优化版，减少随机性，提高准确性"""
     liuri_weight = FORTUNE_WEIGHTS_V5['liuri']['weight']
+    stem_ratio = FORTUNE_WEIGHTS_V5['liuri']['stem_ratio']
+    branch_ratio = FORTUNE_WEIGHTS_V5['liuri']['branch_ratio']
+    
     ri_gan_element = WU_XING_MAP.get(liu_ri['gan'])
     ri_gan_bonus = 0
 
-    if ri_gan_element == yongshen.get('primary'):
-        ri_gan_bonus = 35 + random.randint(-4, 5)
-    elif ri_gan_element in yongshen.get('favorable', []):
-        ri_gan_bonus = 20 + random.randint(-3, 3)
-    elif ri_gan_element in yongshen.get('unfavorable', []):
-        ri_gan_bonus = -18 + random.randint(-2, 2)
+    favorable_list = yongshen.get('favorable', [])
+    unfavorable_list = yongshen.get('unfavorable', [])
+    primary = yongshen.get('primary')
+
+    if ri_gan_element == primary:
+        ri_gan_bonus = 38 + random.randint(-3, 3)  # 减少随机范围，提高基础值
+    elif ri_gan_element in favorable_list:
+        ri_gan_bonus = 22 + random.randint(-2, 2)
+    elif ri_gan_element in unfavorable_list:
+        ri_gan_bonus = -20 + random.randint(-2, 1)
     else:
-        ri_gan_bonus = random.randint(-5, 5)
+        ri_gan_bonus = random.randint(-4, 4)
 
     ri_zhi_element = WU_XING_MAP.get(liu_ri['zhi'])
     ri_zhi_bonus = 0
 
-    if ri_zhi_element == yongshen.get('primary'):
-        ri_zhi_bonus = 25 + random.randint(-3, 4)
-    elif ri_zhi_element in yongshen.get('favorable', []):
-        ri_zhi_bonus = 15 + random.randint(-2, 2)
-    elif ri_zhi_element in yongshen.get('unfavorable', []):
-        ri_zhi_bonus = -12 + random.randint(-2, 1)
+    if ri_zhi_element == primary:
+        ri_zhi_bonus = 27 + random.randint(-2, 2)
+    elif ri_zhi_element in favorable_list:
+        ri_zhi_bonus = 17 + random.randint(-1, 1)
+    elif ri_zhi_element in unfavorable_list:
+        ri_zhi_bonus = -14 + random.randint(-1, 1)
     else:
-        ri_zhi_bonus = random.randint(-4, 4)
+        ri_zhi_bonus = random.randint(-3, 3)
 
-    return (ri_gan_bonus * 0.6 + ri_zhi_bonus * 0.4) * (liuri_weight / 0.7)
+    return (ri_gan_bonus * stem_ratio + ri_zhi_bonus * branch_ratio) * (liuri_weight / 0.70)
 
 
 def _check_tiangan_interaction(gan1, gan2, yongshen, is_weak):
-    """检测天干互动"""
+    """检测天干互动 - 优化版，提高判断准确性"""
     score = 0
     descriptions = []
 
     gan1_element = WU_XING_MAP.get(gan1)
     gan2_element = WU_XING_MAP.get(gan2)
+    
+    favorable_list = yongshen.get('favorable', [])
+    unfavorable_list = yongshen.get('unfavorable', [])
 
     # 检查相生
     if WU_XING_SHENG.get(gan2_element) == gan1_element:
-        if gan2_element in yongshen.get('favorable', []):
-            score += 3
+        if gan2_element in favorable_list:
+            score += 4  # 提升相生助力分数
             descriptions.append("天干相生，喜神助力")
-        else:
-            score -= 2
+        elif gan2_element in unfavorable_list:
+            score -= 3  # 提升相生忌神的负面影响
             descriptions.append("天干相生，生助忌神")
+        else:
+            score += 1
+            descriptions.append("天干相生，温和助力")
 
     # 检查相克
     if WU_XING_KE.get(gan2_element) == gan1_element:
-        if gan2_element in yongshen.get('unfavorable', []):
-            score -= 2
-            descriptions.append("天干受克，忌神来袭")
-        else:
-            score += 3
+        if gan2_element in unfavorable_list:
+            score += 3  # 提升克制忌神的正面影响
             descriptions.append("天干相克，克制忌神")
+        elif gan2_element in favorable_list:
+            score -= 3  # 提升受克于喜神的负面影响
+            descriptions.append("天干受克，喜神受损")
+        else:
+            score -= 1
+            descriptions.append("天干相克，轻微影响")
 
     # 检查比和
     if gan1_element == gan2_element:
         if is_weak:
-            score += 2
+            score += 3  # 身弱时比和更有利
             descriptions.append("天干比和，同类相助")
         else:
-            score -= 3
+            score -= 4  # 身旺时比和更不利
             descriptions.append("天干比和，竞争夺利")
 
     return score, descriptions
 
 
 def _check_dizhi_interaction(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
-    """检测地支互动"""
+    """检测地支互动 - 优化版，提高判断准确性"""
     score = 0
     descriptions = []
 
     # 检查六冲
     liu_chong_table = DIZHI_INTERACTIONS['liu_chong']
     liu_chong_scores = DIZHI_INTERACTIONS['liu_chong_scores']
+    
+    favorable_list = yongshen.get('favorable', [])
+    unfavorable_list = yongshen.get('unfavorable', [])
 
     for bazi_zhi in bazi_zhis:
         if liu_chong_table.get(liu_ri_zhi) == bazi_zhi:
@@ -232,12 +267,15 @@ def _check_dizhi_interaction(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
                 descriptions.append(f"六冲日支（{liu_ri_zhi}冲{bazi_zhi}），动荡不安")
             else:
                 zhi_element = WU_XING_MAP.get(bazi_zhi)
-                if zhi_element in yongshen.get('unfavorable', []):
+                if zhi_element in unfavorable_list:
                     score += liu_chong_scores['clash_favorable']
                     descriptions.append(f"六冲去忌神（{liu_ri_zhi}冲{bazi_zhi}），变动中求吉")
-                else:
+                elif zhi_element in favorable_list:
                     score += liu_chong_scores['clash_unfavorable']
                     descriptions.append(f"六冲用神（{liu_ri_zhi}冲{bazi_zhi}），防备突发")
+                else:
+                    score += liu_chong_scores.get('clash_neutral', -2)
+                    descriptions.append(f"六冲（{liu_ri_zhi}冲{bazi_zhi}），有变动")
 
     return score, descriptions
 
@@ -277,7 +315,8 @@ def _calculate_shensha(bazi, liu_ri):
                 for dim, boost in sha_config['dimension_boost'].items():
                     dimension_boosts[dim] = dimension_boosts.get(dim, 0) + boost
 
-    total_score = max(-25, min(25, total_score))
+    # 优化：限制神煞影响范围，使其更合理
+    total_score = max(-20, min(20, total_score))  # 缩小影响范围，使评分更稳定
 
     return {
         'total_score': total_score,
