@@ -232,7 +232,7 @@ export default function TodayPage({
                   <CollapsibleSection
                     title="用神喜忌"
                     icon={<TrendingUp size={14} />}
-                    defaultExpanded={false}
+                    defaultExpanded={true}
                   >
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -254,11 +254,13 @@ export default function TodayPage({
                             )}
                             {onCustomYongShenChange && (
                               <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation(); // 防止触发 CollapsibleSection 的折叠
                                   setIsEditingYongShen(!isEditingYongShen);
                                   setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
                                 }}
-                                className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline px-1"
+                                className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline px-1 cursor-pointer"
+                                type="button"
                               >
                                 {isEditingYongShen ? '取消' : '编辑'}
                               </button>
@@ -266,10 +268,14 @@ export default function TodayPage({
                           </div>
                         </div>
                         {isEditingYongShen && onCustomYongShenChange ? (
-                          <div className="flex flex-col gap-2">
+                          <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
                             <select
                               value={editYongShenValue}
-                              onChange={(e) => setEditYongShenValue(e.target.value)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setEditYongShenValue(e.target.value);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
                               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 w-full"
                             >
                               <option value="">选择用神</option>
@@ -281,7 +287,8 @@ export default function TodayPage({
                             </select>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   if (editYongShenValue && onCustomYongShenChange) {
                                     onCustomYongShenChange(editYongShenValue);
                                     setIsEditingYongShen(false);
@@ -289,17 +296,20 @@ export default function TodayPage({
                                 }}
                                 disabled={!editYongShenValue}
                                 className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
+                                type="button"
                               >
                                 保存
                               </button>
                               <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   if (onCustomYongShenChange) {
                                     onCustomYongShenChange(null);
                                     setIsEditingYongShen(false);
                                   }
                                 }}
                                 className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition"
+                                type="button"
                               >
                                 重置
                               </button>

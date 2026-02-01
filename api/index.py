@@ -2168,17 +2168,24 @@ def _create_custom_yongshen(custom_yongshen, bazi):
         yong_shen_list = [day_element]
     
     # 推导喜神和忌神
+    # 喜神：生用神的元素（能生用神的）
+    # 忌神：克用神的元素（能克用神的）
     xi_shen = []
     ji_shen = []
     all_elements = ['木', '火', '土', '金', '水']
     
     for element in all_elements:
         if element in yong_shen_list:
-            continue
-        elif any(WU_XING_SHENG.get(element) == yong for yong in yong_shen_list):
-            xi_shen.append(element)
-        else:
-            if any(WU_XING_KE.get(element) == yong for yong in yong_shen_list):
+            continue  # 用神本身不是喜神或忌神
+        
+        # 检查这个元素是否能生用神（喜神）
+        if any(WU_XING_SHENG.get(element) == yong for yong in yong_shen_list):
+            if element not in xi_shen:
+                xi_shen.append(element)
+        
+        # 检查这个元素是否能克用神（忌神）
+        elif any(WU_XING_KE.get(element) == yong for yong in yong_shen_list):
+            if element not in ji_shen:
                 ji_shen.append(element)
     
     return {
