@@ -2354,11 +2354,41 @@ def determine_yongshen_tiered_v5(bazi, element_analysis):
             favorable_strengths = {elem: strength[elem] for elem in favorable}
             primary_yongshen = min(favorable_strengths, key=favorable_strengths.get)
     
+    # 推导喜神和忌神
+    # 喜神：生用神的元素（能生用神的）
+    # 忌神：克用神的元素（能克用神的）
+    xi_shen = []
+    ji_shen = []
+    all_elements = ['木', '火', '土', '金', '水']
+    
+    # 构建用神列表（包括主用神和次用神）
+    yong_shen_list = [primary_yongshen] if primary_yongshen else []
+    # 将其他favorable元素也加入用神列表（作为次用神）
+    for elem in favorable:
+        if elem != primary_yongshen and elem not in yong_shen_list:
+            yong_shen_list.append(elem)
+    
+    for element in all_elements:
+        if element in yong_shen_list:
+            continue  # 用神本身不是喜神或忌神
+        
+        # 检查这个元素是否能生用神（喜神）
+        if any(WU_XING_SHENG.get(element) == yong for yong in yong_shen_list):
+            if element not in xi_shen:
+                xi_shen.append(element)
+        
+        # 检查这个元素是否能克用神（忌神）
+        elif any(WU_XING_KE.get(element) == yong for yong in yong_shen_list):
+            if element not in ji_shen:
+                ji_shen.append(element)
+    
     return {
         'tiers': tiers,
         'primary': primary_yongshen,
         'favorable': favorable,
         'unfavorable': unfavorable,
+        'xi_shen': xi_shen,
+        'ji_shen': ji_shen,
         'pattern': pattern
     }
 
