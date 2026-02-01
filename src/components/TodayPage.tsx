@@ -42,6 +42,7 @@ interface TodayPageProps {
   onToggleBazi: () => void;
   currentThemeStyle: { bg: string; text: string };
   onFeedbackClick: () => void;
+  onAIClick: () => void;
   onGenerateImage: () => void;
   isGenerating: boolean;
   contentRef: React.RefObject<HTMLDivElement>;
@@ -56,6 +57,7 @@ export default function TodayPage({
   onToggleBazi,
   currentThemeStyle,
   onFeedbackClick,
+  onAIClick,
   onGenerateImage,
   isGenerating,
   contentRef,
@@ -103,17 +105,28 @@ export default function TodayPage({
               todayTenGod={fortune.todayTenGod}
             />
 
-            {/* 反馈按钮 */}
+            {/* AI 咨询和反馈按钮 */}
             {fortune && (
-              <motion.button
-                onClick={onFeedbackClick}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-4 w-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
-              >
-                <TrendingUp size={16} />
-                反馈今日运势准确度
-              </motion.button>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <motion.button
+                  onClick={onAIClick}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition shadow-lg"
+                >
+                  <Sparkles size={16} />
+                  AI 深度咨询
+                </motion.button>
+                <motion.button
+                  onClick={onFeedbackClick}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
+                >
+                  <TrendingUp size={16} />
+                  反馈准确度
+                </motion.button>
+              </div>
             )}
 
             {/* Todo List */}

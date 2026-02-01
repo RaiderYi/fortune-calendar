@@ -16,6 +16,7 @@ import AchievementView from './components/AchievementView';
 import FortuneCompare from './components/FortuneCompare';
 import KnowledgeBase from './components/KnowledgeBase';
 import FeedbackModal from './components/FeedbackModal';
+import AIDeduction from './components/AIDeduction';
 import BottomNav, { type TabType } from './components/BottomNav';
 import TodayPage from './components/TodayPage';
 import CalendarPage from './components/CalendarPage';
@@ -163,6 +164,7 @@ export default function App() {
   const [showCompare, setShowCompare] = useState(false); // 运势对比
   const [showKnowledge, setShowKnowledge] = useState(false); // 知识库
   const [showFeedback, setShowFeedback] = useState(false); // 反馈弹窗
+  const [showAIDeduction, setShowAIDeduction] = useState(false); // AI 推演
   const [currentTab, setCurrentTab] = useState<TabType>('today'); // 当前 Tab
 
   // 用户数据状态
@@ -424,6 +426,7 @@ export default function App() {
                   onToggleBazi={() => setShowBazi(!showBazi)}
                   currentThemeStyle={currentThemeStyle}
                   onFeedbackClick={() => setShowFeedback(true)}
+                  onAIClick={() => setShowAIDeduction(true)}
                   onGenerateImage={handleGenerateImage}
                   isGenerating={isGenerating}
                   contentRef={contentRef}
@@ -952,6 +955,22 @@ export default function App() {
             date={fortune.dateStr}
             onFeedbackSubmit={() => {
               // 反馈提交后的操作
+            }}
+          />
+        )}
+
+        {/* AI 命理深度推演 */}
+        {fortune && (
+          <AIDeduction
+            isOpen={showAIDeduction}
+            onClose={() => setShowAIDeduction(false)}
+            baziContext={{
+              baziDetail: fortune.baziDetail,
+              yongShen: fortune.yongShen,
+              dimensions: fortune.dimensions,
+              mainTheme: fortune.mainTheme,
+              totalScore: fortune.totalScore,
+              liuNian: fortune.liuNian,
             }}
           />
         )}
