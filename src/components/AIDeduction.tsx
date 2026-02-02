@@ -8,6 +8,7 @@ import { X, Send, Bot, User, Loader2, Sparkles, TrendingUp, Briefcase, Coins, He
 import { chatWithAI } from '../services/api';
 import type { ChatMessage, BaziContext, QuickQuestion } from '../types';
 import { useToast } from '../contexts/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 interface AIDeductionProps {
   isOpen: boolean;
@@ -16,15 +17,7 @@ interface AIDeductionProps {
   initialQuestion?: string; // 预设问题，打开时自动发送
 }
 
-// 快捷问题列表
-const QUICK_QUESTIONS: QuickQuestion[] = [
-  { id: 'wealth', text: '详解今日财运', icon: '💰' },
-  { id: 'career', text: '事业发展建议', icon: '💼' },
-  { id: 'romance', text: '感情运势分析', icon: '💕' },
-  { id: 'health', text: '健康注意事项', icon: '🏥' },
-  { id: 'personality', text: '解析我的性格', icon: '🔮' },
-  { id: 'avoid', text: '今日避坑指南', icon: '⚠️' },
-];
+// 快捷问题列表 - 将在组件内动态生成以支持 i18n
 
 export default function AIDeduction({
   isOpen,
@@ -32,6 +25,7 @@ export default function AIDeduction({
   baziContext,
   initialQuestion,
 }: AIDeductionProps) {
+  const { t } = useTranslation('ui');
   const { showToast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -39,6 +33,16 @@ export default function AIDeduction({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasSentInitialQuestion = useRef(false);
+
+  // 快捷问题列表（支持 i18n）
+  const QUICK_QUESTIONS: QuickQuestion[] = [
+    { id: 'wealth', text: t('aiDeduction.quickQuestions.wealth'), icon: '💰' },
+    { id: 'career', text: t('aiDeduction.quickQuestions.career'), icon: '💼' },
+    { id: 'romance', text: t('aiDeduction.quickQuestions.romance'), icon: '💕' },
+    { id: 'health', text: t('aiDeduction.quickQuestions.health'), icon: '🏥' },
+    { id: 'personality', text: t('aiDeduction.quickQuestions.personality'), icon: '🔮' },
+    { id: 'avoid', text: t('aiDeduction.quickQuestions.avoid'), icon: '⚠️' },
+  ];
 
   // 滚动到底部
   const scrollToBottom = () => {
@@ -69,14 +73,14 @@ export default function AIDeduction({
         };
         setMessages([...newMessages, assistantMessage]);
       } else {
-        throw new Error(response.error || 'AI 响应失败');
+        throw new Error(response.error || t('aiDeduction.error'));
       }
     } catch (error) {
       console.error('AI 聊天错误:', error);
-      showToast('AI 咨询失败，请稍后重试', 'error');
+      showToast(t('aiDeduction.error'), 'error');
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: '抱歉，我暂时无法回答您的问题。请稍后再试。',
+        content: t('aiDeduction.errorMessage'),
       };
       setMessages([...newMessages, errorMessage]);
     } finally {
@@ -106,14 +110,14 @@ export default function AIDeduction({
             };
             setMessages([userMessage, assistantMessage]);
           } else {
-            throw new Error(response.error || 'AI 响应失败');
+            throw new Error(response.error || t('aiDeduction.error'));
           }
         } catch (error) {
           console.error('AI 聊天错误:', error);
-          showToast('AI 咨询失败，请稍后重试', 'error');
+          showToast(t('aiDeduction.error'), 'error');
           const errorMessage: ChatMessage = {
             role: 'assistant',
-            content: '抱歉，我暂时无法回答您的问题。请稍后再试。',
+            content: t('aiDeduction.errorMessage'),
           };
           setMessages([userMessage, errorMessage]);
         } finally {
@@ -188,10 +192,10 @@ export default function AIDeduction({
                 <div className="text-center py-8">
                   <Bot size={48} className="mx-auto mb-4 text-indigo-500" />
                   <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">
-                    欢迎使用 AI 命理咨询
+                    {t('aiDeduction.welcome')}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    我已经了解了您的八字信息，可以为您提供专业的命理分析
+                    {t('aiDeduction.description')}
                   </p>
 
                   {/* 快捷问题 */}
@@ -249,7 +253,7 @@ export default function AIDeduction({
                 >
                   <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-3 flex items-center gap-2">
                     <Loader2 size={16} className="animate-spin text-indigo-500" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">AI 正在思考...</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{t('aiDeduction.error', { defaultValue: 'AI is thinking...' })}</span>
                   </div>
                 </motion.div>
               )}
@@ -265,7 +269,7 @@ export default function AIDeduction({
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="输入您的问题..."
+                  placeholder={t('aiDeduction.sendPlaceholder')}
                   rows={1}
                   className="flex-1 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
                   style={{ minHeight: '44px', maxHeight: '120px' }}

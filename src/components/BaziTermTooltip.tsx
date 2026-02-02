@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, BookOpen } from 'lucide-react';
 import { chatWithAI } from '../services/api';
 import type { BaziContext } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface BaziTermTooltipProps {
   term: string;
@@ -29,6 +30,8 @@ export default function BaziTermTooltip({
   onClose,
   baziContext,
 }: BaziTermTooltipProps) {
+  const { t, i18n } = useTranslation();
+  const isEnglish = i18n.language === 'en';
   const [explanation, setExplanation] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,11 +46,15 @@ export default function BaziTermTooltip({
   const fetchExplanation = async () => {
     setIsLoading(true);
     try {
+      const prompt = isEnglish
+        ? `Please explain the meaning of the Bazi term "${term}" in modern, easy-to-understand language, and its significance in real life. Requirements: 1. Keep it concise (within 100 words); 2. Use modern language, avoid overly mystical expressions; 3. You can include real-life examples.`
+        : `请用现代、通俗易懂的语言解释八字术语"${term}"的含义，以及它在实际生活中的意义。要求：1. 解释要简洁明了（100字以内）；2. 用现代语言，避免过于玄学的表述；3. 可以结合生活实例说明。`;
+      
       const response = await chatWithAI(
         [
           {
             role: 'user',
-            content: `请用现代、通俗易懂的语言解释八字术语"${term}"的含义，以及它在实际生活中的意义。要求：1. 解释要简洁明了（100字以内）；2. 用现代语言，避免过于玄学的表述；3. 可以结合生活实例说明。`,
+            content: prompt,
           },
         ],
         baziContext || {}
@@ -59,7 +66,7 @@ export default function BaziTermTooltip({
         setExplanation(getDefaultExplanation(term));
       }
     } catch (error) {
-      console.error('获取术语解释失败:', error);
+      console.error('Failed to fetch term explanation:', error);
       setExplanation(getDefaultExplanation(term));
     } finally {
       setIsLoading(false);
@@ -100,7 +107,10 @@ export default function BaziTermTooltip({
       '害': '害是地支之间的相害关系，代表伤害、不利，有害的年份需要谨慎。',
     };
 
-    return explanations[t] || `"${t}"是八字命理中的术语，具体含义需要结合完整的八字分析。`;
+    const defaultMsg = isEnglish
+      ? `"${t}" is a term in Bazi fortune telling. Its specific meaning needs to be analyzed in the context of a complete Bazi chart.`
+      : `"${t}"是八字命理中的术语，具体含义需要结合完整的八字分析。`;
+    return explanations[t] || defaultMsg;
   };
 
   if (!isOpen) return null;

@@ -1,0 +1,55 @@
+{
+  "dimensions": {
+    "career": "Career",
+    "wealth": "Wealth",
+    "romance": "Romance",
+    "health": "Health",
+    "study": "Study",
+    "travel": "Travel"
+  },
+  "levels": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "average": "Average",
+    "poor": "Poor",
+    "veryPoor": "Very Poor"
+  },
+  "suggestions": {
+    "favorable": "Favorable",
+    "unfavorable": "Unfavorable",
+    "title": "Daily Suggestions",
+    "good": "Do",
+    "bad": "Avoid"
+  },
+  "themes": {
+    "relaxed": "Relaxed",
+    "wealthy": "Wealthy",
+    "romantic": "Romantic",
+    "energetic": "Energetic",
+    "focused": "Focused",
+    "adventurous": "Adventurous"
+  },
+  "score": {
+    "title": "Overall Fortune",
+    "today": "Today's Fortune",
+    "total": "Total Score",
+    "points": "pts"
+  },
+  "trend": {
+    "rising": "Rising",
+    "falling": "Falling",
+    "stable": "Stable"
+  },
+  "calendar": {
+    "lunarDate": "Lunar Date",
+    "solarTerm": "Solar Term",
+    "constellation": "Zodiac Sign",
+    "zodiac": "Chinese Zodiac"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "checkFortune": "Check Fortune",
+    "compareFortune": "Compare Fortune",
+    "shareResult": "Share Result"
+  }
+}

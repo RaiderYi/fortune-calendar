@@ -1,0 +1,99 @@
+{
+  "terms": {
+    "yongShen": "Yong Shen (Favorable Element)",
+    "xiShen": "Xi Shen (Supporting Element)",
+    "jiShen": "Ji Shen (Unfavorable Element)",
+    "daYun": "Grand Cycle",
+    "liuNian": "Annual Cycle",
+    "liuYue": "Monthly Cycle",
+    "liuRi": "Daily Cycle",
+    "liuShi": "Hourly Cycle",
+    "shiShen": "Ten Gods",
+    "wuXing": "Five Elements",
+    "tianGan": "Heavenly Stems",
+    "diZhi": "Earthly Branches",
+    "shenSha": "Spiritual Stars",
+    "taoHua": "Peach Blossom",
+    "yangRen": "Blade",
+    "kongWang": "Void",
+    "chong": "Clash",
+    "he": "Combine",
+    "xing": "Punish",
+    "hai": "Harm",
+    "po": "Break",
+    "riZhu": "Day Pillar",
+    "riYuan": "Day Master"
+  },
+  "elements": {
+    "wood": "Wood",
+    "fire": "Fire",
+    "earth": "Earth",
+    "metal": "Metal",
+    "water": "Water"
+  },
+  "strength": {
+    "strong": "Strong",
+    "weak": "Weak",
+    "veryStrong": "Very Strong",
+    "veryWeak": "Very Weak",
+    "balanced": "Balanced"
+  },
+  "pillars": {
+    "year": "Year Pillar",
+    "month": "Month Pillar",
+    "day": "Day Pillar",
+    "hour": "Hour Pillar"
+  },
+  "stems": {
+    "jia": "Jia (Wood+)",
+    "yi": "Yi (Wood-)",
+    "bing": "Bing (Fire+)",
+    "ding": "Ding (Fire-)",
+    "wu": "Wu (Earth+)",
+    "ji": "Ji (Earth-)",
+    "geng": "Geng (Metal+)",
+    "xin": "Xin (Metal-)",
+    "ren": "Ren (Water+)",
+    "gui": "Gui (Water-)"
+  },
+  "branches": {
+    "zi": "Zi (Rat)",
+    "chou": "Chou (Ox)",
+    "yin": "Yin (Tiger)",
+    "mao": "Mao (Rabbit)",
+    "chen": "Chen (Dragon)",
+    "si": "Si (Snake)",
+    "wu": "Wu (Horse)",
+    "wei": "Wei (Goat)",
+    "shen": "Shen (Monkey)",
+    "you": "You (Rooster)",
+    "xu": "Xu (Dog)",
+    "hai": "Hai (Pig)"
+  },
+  "tenGods": {
+    "biJian": "Companion",
+    "jieCai": "Rob Wealth",
+    "shiShen": "Eating God",
+    "shangGuan": "Hurting Officer",
+    "zhengCai": "Direct Wealth",
+    "pianCai": "Indirect Wealth",
+    "zhengGuan": "Direct Officer",
+    "qiSha": "Seven Killings",
+    "zhengYin": "Direct Seal",
+    "pianYin": "Indirect Seal"
+  },
+  "analysis": {
+    "dayMasterAnalysis": "Day Master Analysis",
+    "fiveElementsBalance": "Five Elements Balance",
+    "yongShenAnalysis": "Yong Shen Analysis",
+    "luckyElements": "Lucky Elements",
+    "unluckyElements": "Unlucky Elements"
+  },
+  "edit": {
+    "editYongShen": "Edit Yong Shen",
+    "customYongShen": "Custom Yong Shen",
+    "resetToDefault": "Reset to Default",
+    "saveChanges": "Save Changes",
+    "selectElement": "Select Element"
+  }
+}

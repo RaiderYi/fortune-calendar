@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen, Info, ChevronRight, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface KnowledgeBaseProps {
   isOpen: boolean;
@@ -19,84 +20,67 @@ interface KnowledgeItem {
   examples?: string[];
 }
 
-const KNOWLEDGE_ITEMS: KnowledgeItem[] = [
-  {
-    id: 'bazi_basic',
-    title: '什么是八字？',
-    category: 'basic',
-    content: '八字，又称四柱，是中国传统命理学的基础。它由出生年、月、日、时的天干地支组成，共八个字，故称"八字"。',
-    examples: ['例如：1995年8月15日9时30分出生，对应的八字可能是：乙亥 甲申 戊午 丁巳'],
-  },
-  {
-    id: 'tiangan_dizhi',
-    title: '天干地支',
-    category: 'basic',
-    content: '天干有十个：甲、乙、丙、丁、戊、己、庚、辛、壬、癸。地支有十二个：子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥。天干地支按顺序两两组合，形成六十个干支组合，称为"六十甲子"。',
-  },
-  {
-    id: 'wuxing',
-    title: '五行',
-    category: 'basic',
-    content: '五行包括：金、木、水、火、土。每个天干地支都对应一个五行属性。五行之间存在相生相克的关系：相生（木生火、火生土、土生金、金生水、水生木），相克（木克土、土克水、水克火、火克金、金克木）。',
-  },
-  {
-    id: 'shishen',
-    title: '十神',
-    category: 'terms',
-    content: '十神是根据日主（日柱天干）与其他天干的关系来定义的：比肩、劫财、食神、伤官、偏财、正财、七杀、正官、偏印、正印。十神反映了日主与其他干支的相互作用关系。',
-  },
-  {
-    id: 'yongshen',
-    title: '用神',
-    category: 'terms',
-    content: '用神是八字分析中的核心概念，指对日主最有利的五行。通过分析日主的旺衰和五行平衡，找出能够平衡八字、增强运势的五行元素。',
-  },
-  {
-    id: 'dayun',
-    title: '大运',
-    category: 'advanced',
-    content: '大运是人生中每十年一个阶段的运势变化。根据出生时间和性别，从月柱开始顺排或逆排，每十年换一次大运。大运对人生各个阶段的影响非常重要。',
-  },
-  {
-    id: 'liunian',
-    title: '流年',
-    category: 'advanced',
-    content: '流年是指当前年份的天干地支。流年与八字、大运相互作用，形成当年的运势。流年对短期运势的影响最为直接。',
-  },
-  {
-    id: 'shensha',
-    title: '神煞',
-    category: 'terms',
-    content: '神煞是八字中的特殊组合，包括吉神和凶煞。常见的神煞有：天乙贵人、桃花、驿马、华盖等。神煞可以补充说明运势的某些特征。',
-  },
-  {
-    id: 'zhengtaiyangshi',
-    title: '真太阳时',
-    category: 'basic',
-    content: '真太阳时是根据当地经度计算出的真实太阳时间，与标准时间（北京时间）不同。由于中国幅员辽阔，不同地区的真太阳时差异较大，因此需要根据出生地经度进行校准，才能准确计算八字。',
-  },
-  {
-    id: 'jiezhi',
-    title: '节气',
-    category: 'basic',
-    content: '节气是农历中的重要概念，一年有24个节气。在八字计算中，立春是划分年份的重要节点。立春之前属于上一年，立春之后才属于新年。',
-  },
+// 知识条目 ID 列表
+const KNOWLEDGE_ITEM_IDS = [
+  'bazi_basic',
+  'tiangan_dizhi',
+  'wuxing',
+  'shishen',
+  'yongshen',
+  'dayun',
+  'liunian',
+  'shensha',
+  'zhengtaiyangshi',
+  'jiezhi',
 ];
 
-const CATEGORIES = [
-  { id: 'all', name: '全部', icon: BookOpen },
-  { id: 'basic', name: '基础', icon: Info },
-  { id: 'terms', name: '术语', icon: Sparkles },
-  { id: 'advanced', name: '进阶', icon: ChevronRight },
-];
+const CATEGORY_IDS = ['all', 'basic', 'terms', 'advanced'];
 
 export default function KnowledgeBase({ isOpen, onClose }: KnowledgeBaseProps) {
+  const { t } = useTranslation(['ui', 'knowledge']);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
+  // 从翻译文件构建知识条目
+  const getKnowledgeItems = (): KnowledgeItem[] => {
+    return KNOWLEDGE_ITEM_IDS.map(id => {
+      const categoryMap: Record<string, 'basic' | 'advanced' | 'terms'> = {
+        'bazi_basic': 'basic',
+        'tiangan_dizhi': 'basic',
+        'wuxing': 'basic',
+        'zhengtaiyangshi': 'basic',
+        'jiezhi': 'basic',
+        'shishen': 'terms',
+        'yongshen': 'terms',
+        'shensha': 'terms',
+        'dayun': 'advanced',
+        'liunian': 'advanced',
+      };
+      
+      const item = t(`knowledge:items.${id}`, { returnObjects: true }) as any;
+      return {
+        id,
+        title: item?.title || id,
+        category: categoryMap[id] || 'basic',
+        content: item?.content || '',
+        examples: item?.examples || [],
+      };
+    });
+  };
+
+  const knowledgeItems = getKnowledgeItems();
   const filteredItems = selectedCategory === 'all'
-    ? KNOWLEDGE_ITEMS
-    : KNOWLEDGE_ITEMS.filter(item => item.category === selectedCategory);
+    ? knowledgeItems
+    : knowledgeItems.filter(item => item.category === selectedCategory);
+
+  const selectedItem = selectedItemId ? knowledgeItems.find(item => item.id === selectedItemId) : null;
+
+  const CATEGORIES = [
+    { id: 'all', name: t('ui:knowledgeBase.categories.all'), icon: BookOpen },
+    { id: 'basic', name: t('ui:knowledgeBase.categories.basic'), icon: Info },
+    { id: 'terms', name: t('ui:knowledgeBase.categories.terms'), icon: Sparkles },
+    { id: 'advanced', name: t('ui:knowledgeBase.categories.advanced'), icon: ChevronRight },
+  ];
 
   return (
     <AnimatePresence>
@@ -135,8 +119,8 @@ export default function KnowledgeBase({ isOpen, onClose }: KnowledgeBaseProps) {
                     <BookOpen size={24} />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">八字学堂</h2>
-                    <p className="text-white/90 text-sm">了解传统命理知识</p>
+                    <h2 className="text-2xl font-bold">{t('ui:menu.knowledge')}</h2>
+                    <p className="text-white/90 text-sm">{t('ui:menu.knowledge', { defaultValue: 'Learn traditional fortune telling knowledge' })}</p>
                   </div>
                 </div>
                 <motion.button
@@ -183,11 +167,11 @@ export default function KnowledgeBase({ isOpen, onClose }: KnowledgeBaseProps) {
                   className="space-y-4"
                 >
                   <button
-                    onClick={() => setSelectedItem(null)}
+                    onClick={() => setSelectedItemId(null)}
                     className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-4"
                   >
                     <ChevronRight size={16} className="rotate-180" />
-                    返回列表
+                    {t('common:buttons.back', { defaultValue: 'Back to List' })}
                   </button>
                   <h3 className="text-2xl font-bold text-gray-800">{selectedItem.title}</h3>
                   <div className="bg-gray-50 rounded-xl p-4">
@@ -197,7 +181,7 @@ export default function KnowledgeBase({ isOpen, onClose }: KnowledgeBaseProps) {
                   </div>
                   {selectedItem.examples && selectedItem.examples.length > 0 && (
                     <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
-                      <h4 className="font-bold text-indigo-800 mb-2">示例</h4>
+                      <h4 className="font-bold text-indigo-800 mb-2">{t('common:status.examples', { defaultValue: 'Examples' })}</h4>
                       {selectedItem.examples.map((example, idx) => (
                         <p key={idx} className="text-indigo-700 text-sm mb-1">
                           {example}
@@ -212,7 +196,7 @@ export default function KnowledgeBase({ isOpen, onClose }: KnowledgeBaseProps) {
                   {filteredItems.map((item) => (
                     <motion.button
                       key={item.id}
-                      onClick={() => setSelectedItem(item)}
+                      onClick={() => setSelectedItemId(item.id)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="w-full bg-gray-50 hover:bg-gray-100 rounded-xl p-4 text-left border-2 border-transparent hover:border-indigo-200 transition-all"

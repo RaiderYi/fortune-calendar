@@ -1,0 +1,155 @@
+{
+  "pages": {
+    "today": "Today's Fortune",
+    "calendar": "Calendar",
+    "my": "My"
+  },
+  "header": {
+    "title": "Fortune Calendar",
+    "subtitle": "Discover your daily fortune",
+    "greeting": ", how's today?",
+    "aiConsult": "AI Fortune Consulting",
+    "aiDeepAnalysis": "AI Deep Analysis",
+    "baziAcademy": "Bazi Academy",
+    "achievements": "Achievements",
+    "checkin": "Daily Check-in",
+    "fortuneCalendar": "Fortune Calendar",
+    "trendAnalysis": "Trend Analysis",
+    "history": "History",
+    "toggleTheme": "Toggle Theme",
+    "settings": "Settings"
+  },
+  "menu": {
+    "profile": "Profile",
+    "checkin": "Daily Check-in",
+    "achievements": "Achievements",
+    "knowledge": "Bazi Academy",
+    "feedback": "Feedback",
+    "contact": "Contact Us",
+    "lifemap": "Life Map",
+    "settings": "Settings",
+    "compare": "Compare Fortune",
+    "history": "History",
+    "aiDeduction": "AI Deduction"
+  },
+  "forms": {
+    "name": "Name",
+    "birthDate": "Birth Date",
+    "birthTime": "Birth Time",
+    "city": "Birth City",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "longitude": "Longitude"
+  },
+  "modals": {
+    "contact": "Contact Us",
+    "lifemap": "Life Map",
+    "settings": "Settings",
+    "feedback": "Feedback",
+    "checkin": "Daily Check-in",
+    "achievements": "Achievements"
+  },
+  "sections": {
+    "yongShenXiJi": "Yong Shen & Xi Ji",
+    "dayunForecast": "Grand Cycle Forecast",
+    "baziInfo": "Bazi Information",
+    "dailySuggestions": "Daily Suggestions",
+    "fortuneDimensions": "Fortune Dimensions",
+    "quickActions": "Quick Actions",
+    "aiWisdom": "AI Daily Wisdom"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "If you have any questions or suggestions, feel free to contact us:",
+    "email": "Email",
+    "copyEmail": "Copy Email",
+    "sendEmail": "Send Email",
+    "copied": "Email copied!"
+  },
+  "lifemap": {
+    "title": "Life Map",
+    "description": "Explore your fortune trends for the next decade",
+    "score": "Score",
+    "year": "Year"
+  },
+  "timeEnergy": {
+    "title": "Time Energy Ball",
+    "currentHour": "Current Hour",
+    "energy": "Energy"
+  },
+  "dailySign": {
+    "title": "Daily Sign",
+    "generate": "Generate Daily Sign",
+    "share": "Share Sign",
+    "themes": {
+      "zen": "Zen",
+      "minimal": "Minimal",
+      "oracle": "Oracle"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to Fortune Calendar",
+    "step1": "Set up your birth information",
+    "step2": "Explore daily fortune",
+    "step3": "Learn about Bazi astrology",
+    "complete": "Get Started"
+  },
+  "todayPage": {
+    "aiDeepConsult": "AI Deep Consultation",
+    "feedbackAccuracy": "Feedback Accuracy",
+    "baziDetails": "Bazi Details",
+    "yearPillar": "Year Pillar",
+    "monthPillar": "Month Pillar",
+    "dayPillar": "Day Pillar",
+    "hourPillar": "Hour Pillar",
+    "dayMaster": "Day Master:",
+    "aiDeepAnalysis": "AI Deep Bazi Analysis",
+    "yongShenXiJi": "Yong Shen & Xi Ji",
+    "editYongShen": "Edit Yong Shen",
+    "cancel": "Cancel",
+    "dayMasterStrength": "Day Master Strength",
+    "custom": "Custom",
+    "selectYongShen": "Select Yong Shen",
+    "save": "Save",
+    "reset": "Reset",
+    "noData": "No data",
+    "currentDayun": "Current Grand Cycle",
+    "startAge": "Starting Age",
+    "yearsOld": "years old",
+    "dayunCycle": "Grand Cycle Period",
+    "todayShenSha": "Today's Spiritual Stars",
+    "viewBaziPassword": "View Today's Bazi Code",
+    "generating": "Generating...",
+    "generateSign": "Generate Daily Sign",
+    "aiConsultPrompt": "Please provide a detailed analysis of my Bazi, including the meaning of the four pillars, five elements balance, Yong Shen preferences, and their impact on my personality and fortune."
+  },
+  "fortuneCard": {
+    "aiGeneratingWisdom": "AI is generating today's wisdom...",
+    "points": "pts",
+    "viewBaziPassword": "View Today's Bazi Code"
+  },
+  "aiDeduction": {
+    "welcome": "Welcome to AI Fortune Consulting",
+    "description": "I have understood your Bazi information and can provide professional fortune analysis",
+    "quickQuestions": {
+      "wealth": "Detailed Wealth Analysis",
+      "career": "Career Development Advice",
+      "romance": "Romance Fortune Analysis",
+      "health": "Health Precautions",
+      "personality": "Analyze My Personality",
+      "avoid": "Today's Avoidance Guide"
+    },
+    "error": "AI consultation failed, please try again later",
+    "errorMessage": "Sorry, I cannot answer your question at the moment. Please try again later.",
+    "sendPlaceholder": "Enter your question..."
+  },
+  "knowledgeBase": {
+    "categories": {
+      "all": "All",
+      "basic": "Basic",
+      "terms": "Terms",
+      "advanced": "Advanced"
+    }
+  }
+}

@@ -1,12 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
-  <!-- 首页 - 最高优先级 -->
+  <!-- 首页 - 中文版本 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/?lang=zh</loc>
+    <lastmod>2025-01-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/" />
+  </url>
+  
+  <!-- 首页 - 英文版本 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/?lang=en</loc>
+    <lastmod>2025-01-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/" />
+  </url>
+  
+  <!-- 默认首页 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/</loc>
     <lastmod>2025-01-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/" />
   </url>
   
 </urlset>

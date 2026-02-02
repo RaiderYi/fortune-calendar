@@ -1,0 +1,155 @@
+{
+  "pages": {
+    "today": "今日运势",
+    "calendar": "日历",
+    "my": "我的"
+  },
+  "header": {
+    "title": "命运日历",
+    "subtitle": "探索您的每日运势",
+    "greeting": "，今日如何？",
+    "aiConsult": "AI 命理咨询",
+    "aiDeepAnalysis": "AI 深度推演",
+    "baziAcademy": "八字学堂",
+    "achievements": "成就系统",
+    "checkin": "每日签到",
+    "fortuneCalendar": "运势日历",
+    "trendAnalysis": "趋势分析",
+    "history": "历史记录",
+    "toggleTheme": "切换主题",
+    "settings": "设置"
+  },
+  "menu": {
+    "profile": "个人档案",
+    "checkin": "每日签到",
+    "achievements": "成就系统",
+    "knowledge": "八字学堂",
+    "feedback": "反馈建议",
+    "contact": "联系我们",
+    "lifemap": "人生大图景",
+    "settings": "设置",
+    "compare": "运势对比",
+    "history": "历史记录",
+    "aiDeduction": "AI 推演"
+  },
+  "forms": {
+    "name": "姓名",
+    "birthDate": "出生日期",
+    "birthTime": "出生时间",
+    "city": "出生地",
+    "gender": "性别",
+    "male": "男",
+    "female": "女",
+    "longitude": "经度"
+  },
+  "modals": {
+    "contact": "联系我们",
+    "lifemap": "人生大图景",
+    "settings": "设置",
+    "feedback": "反馈建议",
+    "checkin": "每日签到",
+    "achievements": "成就系统"
+  },
+  "sections": {
+    "yongShenXiJi": "用神喜忌",
+    "dayunForecast": "大运预测",
+    "baziInfo": "八字信息",
+    "dailySuggestions": "今日宜忌",
+    "fortuneDimensions": "运势维度",
+    "quickActions": "快捷操作",
+    "aiWisdom": "AI 今日慧语"
+  },
+  "contact": {
+    "title": "联系我们",
+    "description": "如果您有任何问题或建议，欢迎通过以下方式联系我们：",
+    "email": "邮箱",
+    "copyEmail": "复制邮箱",
+    "sendEmail": "发送邮件",
+    "copied": "邮箱已复制！"
+  },
+  "lifemap": {
+    "title": "人生大图景",
+    "description": "探索您未来十年的运势走向",
+    "score": "分数",
+    "year": "年"
+  },
+  "timeEnergy": {
+    "title": "时辰能量球",
+    "currentHour": "当前时辰",
+    "energy": "能量"
+  },
+  "dailySign": {
+    "title": "每日签文",
+    "generate": "生成每日签",
+    "share": "分享签文",
+    "themes": {
+      "zen": "禅意",
+      "minimal": "极简",
+      "oracle": "神谕"
+    }
+  },
+  "onboarding": {
+    "welcome": "欢迎使用命运日历",
+    "step1": "设置您的出生信息",
+    "step2": "探索每日运势",
+    "step3": "深入了解八字命理",
+    "complete": "开始使用"
+  },
+  "todayPage": {
+    "aiDeepConsult": "AI 深度咨询",
+    "feedbackAccuracy": "反馈准确度",
+    "baziDetails": "八字详情",
+    "yearPillar": "年柱",
+    "monthPillar": "月柱",
+    "dayPillar": "日柱",
+    "hourPillar": "时柱",
+    "dayMaster": "日主：",
+    "aiDeepAnalysis": "AI 深度解读八字",
+    "yongShenXiJi": "用神喜忌",
+    "editYongShen": "编辑用神",
+    "cancel": "取消",
+    "dayMasterStrength": "日主旺衰",
+    "custom": "自定义",
+    "selectYongShen": "选择用神",
+    "save": "保存",
+    "reset": "重置",
+    "noData": "暂无",
+    "currentDayun": "当前大运",
+    "startAge": "起运年龄",
+    "yearsOld": "岁",
+    "dayunCycle": "大运周期",
+    "todayShenSha": "今日神煞",
+    "viewBaziPassword": "查看今日天机密码",
+    "generating": "生成中...",
+    "generateSign": "生成日签",
+    "aiConsultPrompt": "请详细分析我的八字命理，包括四柱的含义、五行平衡、用神喜忌以及对我性格和运势的影响。"
+  },
+  "fortuneCard": {
+    "aiGeneratingWisdom": "AI 正在生成今日锦囊...",
+    "points": "分",
+    "viewBaziPassword": "查看今日天机密码"
+  },
+  "aiDeduction": {
+    "welcome": "欢迎使用 AI 命理咨询",
+    "description": "我已经了解了您的八字信息，可以为您提供专业的命理分析",
+    "quickQuestions": {
+      "wealth": "详解今日财运",
+      "career": "事业发展建议",
+      "romance": "感情运势分析",
+      "health": "健康注意事项",
+      "personality": "解析我的性格",
+      "avoid": "今日避坑指南"
+    },
+    "error": "AI 咨询失败，请稍后重试",
+    "errorMessage": "抱歉，我暂时无法回答您的问题。请稍后再试。",
+    "sendPlaceholder": "输入您的问题..."
+  },
+  "knowledgeBase": {
+    "categories": {
+      "all": "全部",
+      "basic": "基础",
+      "terms": "术语",
+      "advanced": "进阶"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { Crown, Eye, EyeOff, ChevronDown, ChevronUp, Info, Sparkles, Loader2 } f
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTodayWisdom } from '../services/api';
 import type { BaziContext } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface FortuneCardProps {
   mainTheme: {
@@ -51,6 +52,7 @@ export default function FortuneCard({
   todayTenGod,
   baziContext,
 }: FortuneCardProps) {
+  const { t } = useTranslation('ui');
   const [showDeepAnalysis, setShowDeepAnalysis] = useState(false);
   const [wisdomTip, setWisdomTip] = useState<string>('');
   const [isLoadingWisdom, setIsLoadingWisdom] = useState(false);
@@ -153,7 +155,7 @@ export default function FortuneCard({
         {isLoadingWisdom && (
           <div className="mb-4 bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/30 flex items-center gap-2">
             <Loader2 size={14} className="animate-spin opacity-60" />
-            <span className="text-xs opacity-60">AI 正在生成今日锦囊...</span>
+            <span className="text-xs opacity-60">{t('fortuneCard.aiGeneratingWisdom')}</span>
           </div>
         )}
 
@@ -170,7 +172,7 @@ export default function FortuneCard({
               <span className="text-5xl font-black tracking-tighter leading-none">
                 {totalScore}
               </span>
-              <span className="text-xs font-medium opacity-60">分</span>
+              <span className="text-xs font-medium opacity-60">{t('fortuneCard.points')}</span>
             </div>
           </div>
         </div>
@@ -197,7 +199,7 @@ export default function FortuneCard({
             {showBazi ? <EyeOff size={10} /> : <Eye size={10} />}
             {showBazi
               ? `${pillars.year} / ${pillars.month} / ${pillars.day}`
-              : '查看今日天机密码'}
+              : t('fortuneCard.viewBaziPassword')}
           </button>
         </div>
 

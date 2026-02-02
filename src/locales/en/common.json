@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "today": "Today",
+    "calendar": "Calendar",
+    "my": "My"
+  },
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "reset": "Reset",
+    "submit": "Submit",
+    "copy": "Copy",
+    "share": "Share",
+    "refresh": "Refresh",
+    "back": "Back",
+    "next": "Next",
+    "prev": "Previous",
+    "more": "More",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "generate": "Generate"
+  },
+  "status": {
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "noData": "No data available",
+    "calculating": "Calculating...",
+    "generating": "Generating..."
+  },
+  "messages": {
+    "copied": "Copied to clipboard",
+    "saved": "Saved successfully",
+    "error": "Operation failed, please try again",
+    "welcome": "Welcome",
+    "goodbye": "Goodbye"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "week": "This Week",
+    "month": "This Month",
+    "year": "This Year"
+  },
+  "language": {
+    "chinese": "中文",
+    "english": "English"
+  },
+  "examples": "Examples"
+}

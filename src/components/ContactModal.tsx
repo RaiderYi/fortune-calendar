@@ -5,6 +5,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Copy, Check, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -12,8 +13,10 @@ interface ContactModalProps {
 }
 
 export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
+  const { t, i18n } = useTranslation('ui');
   const [copied, setCopied] = useState(false);
   const email = '429507312@qq.com';
+  const isEnglish = i18n.language === 'en';
 
   const handleCopyEmail = async () => {
     try {
@@ -41,7 +44,11 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
   };
 
   const handleMailto = () => {
-    window.location.href = `mailto:${email}?subject=咨询&body=您好，我想咨询关于八字命理的问题。`;
+    const subject = isEnglish ? 'Inquiry' : '咨询';
+    const body = isEnglish 
+      ? 'Hello, I would like to inquire about Bazi fortune telling.' 
+      : '您好，我想咨询关于八字命理的问题。';
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -75,8 +82,8 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       <Mail size={24} />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold">联系我们</h2>
-                      <p className="text-white/80 text-sm mt-1">随时欢迎您的咨询与反馈</p>
+                      <h2 className="text-xl font-bold">{t('contact.title')}</h2>
+                      <p className="text-white/80 text-sm mt-1">{t('contact.description')}</p>
                     </div>
                   </div>
                   <button
@@ -94,7 +101,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-5 border-2 border-dashed border-gray-200 dark:border-gray-600">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">邮箱地址</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('contact.email')}</div>
                       <div className="text-lg font-mono font-semibold text-gray-800 dark:text-gray-200 break-all">
                         {email}
                       </div>
@@ -117,7 +124,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       className="mt-3 text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-2"
                     >
                       <Check size={16} />
-                      已复制到剪贴板
+                      {t('contact.copied')}
                     </motion.div>
                   )}
                 </div>
@@ -131,7 +138,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                     className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl p-4 font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
                   >
                     <MessageCircle size={20} />
-                    打开邮箱客户端
+                    {t('contact.sendEmail')}
                   </motion.button>
 
                   <button
@@ -139,14 +146,18 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                     className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl p-4 font-medium flex items-center justify-center gap-2 transition-colors"
                   >
                     <Copy size={18} />
-                    {copied ? '已复制' : '复制邮箱地址'}
+                    {copied ? t('contact.copied') : t('contact.copyEmail')}
                   </button>
                 </div>
 
                 {/* 提示信息 */}
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                   <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
-                    💡 <strong>温馨提示：</strong>如果您有任何问题、建议或合作意向，欢迎通过邮箱与我们联系。我们会在收到邮件后尽快回复您。
+                    💡 <strong>{isEnglish ? 'Tip:' : '温馨提示：'}</strong>
+                    {isEnglish 
+                      ? ' If you have any questions, suggestions, or business inquiries, feel free to contact us via email. We will reply as soon as possible.'
+                      : '如果您有任何问题、建议或合作意向，欢迎通过邮箱与我们联系。我们会在收到邮件后尽快回复您。'
+                    }
                   </p>
                 </div>
               </div>

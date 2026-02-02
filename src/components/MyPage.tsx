@@ -4,12 +4,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Award, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail } from 'lucide-react';
+import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail } from 'lucide-react';
 import LifeMap from './LifeMap';
 import ContactModal from './ContactModal';
 import { getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
 import type { UserProfile } from './ProfileSettings';
+import { useTranslation } from 'react-i18next';
 
 interface MyPageProps {
   userProfile: UserProfile;
@@ -28,6 +29,8 @@ export default function MyPage({
   onKnowledgeClick,
   onFeedbackClick,
 }: MyPageProps) {
+  const { t, i18n } = useTranslation('ui');
+  const isEnglish = i18n.language === 'en';
   const [showLifeMap, setShowLifeMap] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const checkinStats = getCheckinStats();
@@ -36,22 +39,22 @@ export default function MyPage({
   const menuItems = [
     {
       id: 'profile',
-      label: '个人档案',
+      label: t('menu.profile'),
       icon: User,
       color: 'indigo',
       onClick: onSettingsClick,
     },
     {
       id: 'checkin',
-      label: '每日签到',
+      label: t('menu.checkin'),
       icon: Target,
       color: 'green',
       onClick: onCheckinClick,
-      badge: checkinStats.consecutiveDays > 0 ? `${checkinStats.consecutiveDays}天` : undefined,
+      badge: checkinStats.consecutiveDays > 0 ? `${checkinStats.consecutiveDays}${isEnglish ? ' days' : '天'}` : undefined,
     },
     {
       id: 'achievements',
-      label: '成就系统',
+      label: t('menu.achievements'),
       icon: Trophy,
       color: 'yellow',
       onClick: onAchievementClick,
@@ -59,35 +62,35 @@ export default function MyPage({
     },
     {
       id: 'knowledge',
-      label: '八字学堂',
+      label: t('menu.knowledge'),
       icon: BookOpen,
       color: 'blue',
       onClick: onKnowledgeClick,
     },
     {
       id: 'feedback',
-      label: '反馈建议',
+      label: t('menu.feedback'),
       icon: MessageSquare,
       color: 'purple',
       onClick: onFeedbackClick,
     },
     {
       id: 'contact',
-      label: '联系我们',
+      label: t('menu.contact'),
       icon: Mail,
       color: 'blue',
       onClick: () => setShowContact(true),
     },
     {
       id: 'lifemap',
-      label: '人生大图景',
+      label: t('menu.lifemap'),
       icon: TrendingUp,
       color: 'purple',
       onClick: () => setShowLifeMap(true),
     },
     {
       id: 'settings',
-      label: '设置',
+      label: t('menu.settings'),
       icon: Settings,
       color: 'gray',
       onClick: onSettingsClick,
@@ -126,11 +129,11 @@ export default function MyPage({
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{checkinStats.consecutiveDays}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">连续签到</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{isEnglish ? 'Consecutive Days' : '连续签到'}</div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{achievementStats.unlocked}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">已解锁成就</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{isEnglish ? 'Achievements Unlocked' : '已解锁成就'}</div>
           </div>
         </div>
 

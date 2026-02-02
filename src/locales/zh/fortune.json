@@ -1,0 +1,55 @@
+{
+  "dimensions": {
+    "career": "事业",
+    "wealth": "财运",
+    "romance": "情感",
+    "health": "健康",
+    "study": "学业",
+    "travel": "出行"
+  },
+  "levels": {
+    "excellent": "极佳",
+    "good": "良好",
+    "average": "一般",
+    "poor": "较差",
+    "veryPoor": "很差"
+  },
+  "suggestions": {
+    "favorable": "宜",
+    "unfavorable": "忌",
+    "title": "今日宜忌",
+    "good": "宜",
+    "bad": "忌"
+  },
+  "themes": {
+    "relaxed": "松弛",
+    "wealthy": "吸金",
+    "romantic": "桃花",
+    "energetic": "活力",
+    "focused": "专注",
+    "adventurous": "冒险"
+  },
+  "score": {
+    "title": "综合运势",
+    "today": "今日运势",
+    "total": "总分",
+    "points": "分"
+  },
+  "trend": {
+    "rising": "上升",
+    "falling": "下降",
+    "stable": "稳定"
+  },
+  "calendar": {
+    "lunarDate": "农历",
+    "solarTerm": "节气",
+    "constellation": "星座",
+    "zodiac": "生肖"
+  },
+  "actions": {
+    "viewDetails": "查看详情",
+    "checkFortune": "查看运势",
+    "compareFortune": "对比运势",
+    "shareResult": "分享结果"
+  }
+}

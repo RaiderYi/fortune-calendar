@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { updateSEOMeta } from './utils/seo';
 import Header from './components/Header';
 import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
@@ -199,6 +201,24 @@ export default function App() {
   const [dailySignTheme, setDailySignTheme] = useState<DailySignTheme>('minimal');
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [customYongShen, setCustomYongShen] = useState<string | null>(null); // 用户自定义用神
+
+  // i18n 相关
+  const { t, i18n } = useTranslation(['common', 'ui', 'fortune', 'bazi']);
+
+  // 语言变化时更新 SEO
+  useEffect(() => {
+    updateSEOMeta(i18n.language);
+    
+    // 监听语言变化
+    const handleLanguageChange = (lng: string) => {
+      updateSEOMeta(lng);
+    };
+    
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
 
   // --- 核心：调用后端接口 ---
   useEffect(() => {

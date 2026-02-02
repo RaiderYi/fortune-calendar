@@ -1,0 +1,45 @@
+{
+  "items": {
+    "bazi_basic": {
+      "title": "What is Bazi?",
+      "content": "Bazi, also known as Four Pillars, is the foundation of traditional Chinese fortune telling. It consists of the Heavenly Stems and Earthly Branches of the birth year, month, day, and hour, totaling eight characters, hence the name 'Bazi'.",
+      "examples": ["For example: Born on August 15, 1995 at 9:30 AM, the corresponding Bazi might be: Yi Hai, Jia Shen, Wu Wu, Ding Si"]
+    },
+    "tiangan_dizhi": {
+      "title": "Heavenly Stems and Earthly Branches",
+      "content": "There are ten Heavenly Stems: Jia, Yi, Bing, Ding, Wu, Ji, Geng, Xin, Ren, Gui. There are twelve Earthly Branches: Zi, Chou, Yin, Mao, Chen, Si, Wu, Wei, Shen, You, Xu, Hai. The Heavenly Stems and Earthly Branches combine in pairs in order, forming sixty combinations called 'Sixty Jiazi'."
+    },
+    "wuxing": {
+      "title": "Five Elements",
+      "content": "The Five Elements include: Metal, Wood, Water, Fire, Earth. Each Heavenly Stem and Earthly Branch corresponds to a Five Elements attribute. There are relationships of generation and restriction: Generation (Wood generates Fire, Fire generates Earth, Earth generates Metal, Metal generates Water, Water generates Wood), Restriction (Wood restricts Earth, Earth restricts Water, Water restricts Fire, Fire restricts Metal, Metal restricts Wood)."
+    },
+    "shishen": {
+      "title": "Ten Gods",
+      "content": "Ten Gods are defined based on the relationship between the Day Master (the Heavenly Stem of the Day Pillar) and other Heavenly Stems: Companion, Rob Wealth, Eating God, Hurting Officer, Indirect Wealth, Direct Wealth, Seven Killings, Direct Officer, Indirect Seal, Direct Seal. Ten Gods reflect the interaction between the Day Master and other stems and branches."
+    },
+    "yongshen": {
+      "title": "Yong Shen",
+      "content": "Yong Shen is a core concept in Bazi analysis, referring to the Five Elements most beneficial to the Day Master. By analyzing the Day Master's strength and Five Elements balance, we find the Five Elements that can balance the Bazi and enhance fortune."
+    },
+    "dayun": {
+      "title": "Grand Cycle",
+      "content": "Grand Cycle represents fortune changes in ten-year stages of life. Based on birth time and gender, it starts from the Month Pillar and progresses forward or backward, changing every ten years. Grand Cycle has a very important impact on various stages of life."
+    },
+    "liunian": {
+      "title": "Annual Cycle",
+      "content": "Annual Cycle refers to the Heavenly Stems and Earthly Branches of the current year. Annual Cycle interacts with Bazi and Grand Cycle to form the year's fortune. Annual Cycle has the most direct impact on short-term fortune."
+    },
+    "shensha": {
+      "title": "Spiritual Stars",
+      "content": "Spiritual Stars are special combinations in Bazi, including auspicious gods and inauspicious stars. Common Spiritual Stars include: Tianyi Noble, Peach Blossom, Post Horse, Canopy, etc. Spiritual Stars can supplement certain characteristics of fortune."
+    },
+    "zhengtaiyangshi": {
+      "title": "True Solar Time",
+      "content": "True Solar Time is the actual solar time calculated based on local longitude, different from standard time (Beijing Time). Due to China's vast territory, True Solar Time varies significantly across different regions. Therefore, calibration based on birth location longitude is necessary for accurate Bazi calculation."
+    },
+    "jiezhi": {
+      "title": "Solar Terms",
+      "content": "Solar Terms are important concepts in the lunar calendar, with 24 solar terms in a year. In Bazi calculation, the Beginning of Spring is an important node for dividing years. Before the Beginning of Spring belongs to the previous year, and after it belongs to the new year."
+    }
+  }
+}

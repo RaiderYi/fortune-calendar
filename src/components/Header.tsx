@@ -4,6 +4,8 @@ import { isCheckedInToday, getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface HeaderProps {
   userName: string;
@@ -29,6 +31,7 @@ export default function Header({
   onAIClick
 }: HeaderProps) {
   const { effectiveTheme, toggleTheme } = useTheme();
+  const { t } = useTranslation('ui');
   const [checkedIn, setCheckedIn] = useState(isCheckedInToday());
   const [checkinStats, setCheckinStats] = useState(getCheckinStats());
   const [achievementStats, setAchievementStats] = useState(getAchievementStats());
@@ -44,7 +47,7 @@ export default function Header({
       <div className="flex items-center gap-2">
         <Sparkles size={20} className="text-yellow-500" />
         <h1 className="text-xl font-black text-gray-800 dark:text-gray-200 lg:text-2xl">
-          {userName}，今日如何？
+          {userName}{t('header.greeting', { defaultValue: '，今日如何？' })}
         </h1>
       </div>
       
@@ -55,8 +58,8 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-full transition shadow-lg"
-          aria-label="AI 命理咨询"
-          title="AI 深度推演"
+          aria-label={t('header.aiConsult')}
+          title={t('header.aiDeepAnalysis')}
         >
           <Sparkles size={20} className="text-white" />
         </motion.button>
@@ -67,7 +70,7 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
-          aria-label="八字学堂"
+          aria-label={t('header.baziAcademy')}
         >
           <BookOpen size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
@@ -78,7 +81,7 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition relative"
-          aria-label="成就系统"
+          aria-label={t('header.achievements')}
         >
           <Trophy size={20} className="text-gray-600 dark:text-gray-300" />
           {achievementStats.unlocked > 0 && (
@@ -100,7 +103,7 @@ export default function Header({
           className={`p-2 rounded-full transition relative ${
             checkedIn ? 'bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
           }`}
-          aria-label="每日签到"
+          aria-label={t('header.checkin')}
         >
           <Award size={20} className={checkedIn ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300'} />
           {checkedIn && (
@@ -118,7 +121,7 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
-          aria-label="运势日历"
+          aria-label={t('header.fortuneCalendar')}
         >
           <Calendar size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
@@ -129,7 +132,7 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
-          aria-label="趋势分析"
+          aria-label={t('header.trendAnalysis')}
         >
           <TrendingUp size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
@@ -140,18 +143,21 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
-          aria-label="历史记录"
+          aria-label={t('header.history')}
         >
           <Clock size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>
         
+        {/* 语言切换器 */}
+        <LanguageSwitcher />
+
         {/* 深色模式切换 */}
         <motion.button
           onClick={toggleTheme}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
-          aria-label="切换主题"
+          aria-label={t('header.toggleTheme')}
         >
           {effectiveTheme === 'dark' ? (
             <Sun size={20} className="text-gray-600 dark:text-gray-300" />
@@ -166,7 +172,7 @@ export default function Header({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
-          aria-label="设置"
+          aria-label={t('header.settings')}
         >
           <Settings size={20} className="text-gray-600 dark:text-gray-300" />
         </motion.button>

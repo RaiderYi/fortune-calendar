@@ -4,6 +4,7 @@
 
 import { Home, Calendar, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export type TabType = 'today' | 'calendar' | 'my';
 
@@ -13,10 +14,12 @@ interface BottomNavProps {
 }
 
 export default function BottomNav({ currentTab, onTabChange }: BottomNavProps) {
+  const { t } = useTranslation('common');
+  
   const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
-    { id: 'today', label: '今日', icon: Home },
-    { id: 'calendar', label: '日历', icon: Calendar },
-    { id: 'my', label: '我的', icon: User },
+    { id: 'today', label: t('nav.today'), icon: Home },
+    { id: 'calendar', label: t('nav.calendar'), icon: Calendar },
+    { id: 'my', label: t('nav.my'), icon: User },
   ];
 
   return (
