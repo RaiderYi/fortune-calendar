@@ -23,6 +23,9 @@ import CalendarPage from './components/CalendarPage';
 import MyPage from './components/MyPage';
 import DailySignThemeSelector, { type DailySignTheme } from './components/DailySignThemeSelector';
 import TimeEnergyBall from './components/TimeEnergyBall';
+import CollapsibleSection from './components/CollapsibleSection';
+import ContactModal from './components/ContactModal';
+import LifeMap from './components/LifeMap';
 import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
@@ -31,7 +34,7 @@ import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/Skeleto
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
-  Crown, Loader2, X, Download, MapPin
+  Crown, Loader2, X, Download, MapPin, Mail
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { CITY_LONGITUDE_MAP } from './utils/cityData';
@@ -170,6 +173,10 @@ export default function App() {
   const [showAIDeduction, setShowAIDeduction] = useState(false); // AI 推演
   const [aiInitialQuestion, setAiInitialQuestion] = useState<string | undefined>(undefined); // AI 预设问题
   const [currentTab, setCurrentTab] = useState<TabType>('today'); // 当前 Tab
+  const [showContact, setShowContact] = useState(false); // 联系我们
+  const [showLifeMap, setShowLifeMap] = useState(false); // 人生大图景
+  const [isEditingYongShen, setIsEditingYongShen] = useState(false); // 编辑用神状态（桌面端）
+  const [editYongShenValue, setEditYongShenValue] = useState(''); // 编辑用神值（桌面端）
 
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -716,10 +723,37 @@ export default function App() {
 
                         {/* 用神喜忌 */}
                         {fortune.yongShen && (
-                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-                              <TrendingUp size={14} /> 用神喜忌
-                            </h3>
+                          <CollapsibleSection
+                            title="用神喜忌"
+                            icon={<TrendingUp size={14} />}
+                            defaultExpanded={true}
+                            headerAction={
+                              !isEditingYongShen ? (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsEditingYongShen(true);
+                                    setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
+                                  }}
+                                  className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                                  type="button"
+                                >
+                                  ✏️ 编辑用神
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsEditingYongShen(false);
+                                  }}
+                                  className="text-sm px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md whitespace-nowrap"
+                                  type="button"
+                                >
+                                  取消
+                                </button>
+                              )
+                            }
+                          >
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <div className="text-[10px] text-gray-400 mb-2">日主旺衰</div>
@@ -731,38 +765,105 @@ export default function App() {
                                   {fortune.yongShen.strength}
                                 </div>
                               </div>
-                              <div>
-                                <div className="text-[10px] text-gray-400 mb-2">用神</div>
-                                <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen.yongShen.map((elem, idx) => (
-                                    <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                      {elem}
-                                    </span>
-                                  ))}
+                              <div className="col-span-2">
+                                <div className="text-[10px] text-gray-400 mb-2 flex items-center justify-between">
+                                  <span>用神</span>
+                                  <div className="flex items-center gap-2">
+                                    {fortune.yongShen.isCustom && (
+                                      <span className="text-[10px] px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full font-medium">自定义</span>
+                                    )}
+                                  </div>
                                 </div>
+                                {isEditingYongShen ? (
+                                  <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <select
+                                      value={editYongShenValue}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        setEditYongShenValue(e.target.value);
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 w-full"
+                                    >
+                                      <option value="">选择用神</option>
+                                      <option value="木">木</option>
+                                      <option value="火">火</option>
+                                      <option value="土">土</option>
+                                      <option value="金">金</option>
+                                      <option value="水">水</option>
+                                    </select>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (editYongShenValue) {
+                                            setCustomYongShen(editYongShenValue);
+                                            setIsEditingYongShen(false);
+                                          }
+                                        }}
+                                        disabled={!editYongShenValue}
+                                        className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
+                                        type="button"
+                                      >
+                                        保存
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setCustomYongShen(null);
+                                          setIsEditingYongShen(false);
+                                        }}
+                                        className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition"
+                                        type="button"
+                                      >
+                                        重置
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1">
+                                    {fortune.yongShen.yongShen && fortune.yongShen.yongShen.length > 0 ? (
+                                      fortune.yongShen.yongShen.map((elem, idx) => (
+                                        <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                          {elem}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-xs text-gray-400">暂无</span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                               <div>
                                 <div className="text-[10px] text-gray-400 mb-2">喜神</div>
                                 <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen.xiShen.map((elem, idx) => (
-                                    <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
-                                      {elem}
-                                    </span>
-                                  ))}
+                                  {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
+                                    fortune.yongShen.xiShen.map((elem, idx) => (
+                                      <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
+                                        {elem}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-gray-400">暂无</span>
+                                  )}
                                 </div>
                               </div>
                               <div>
                                 <div className="text-[10px] text-gray-400 mb-2">忌神</div>
                                 <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen.jiShen.map((elem, idx) => (
-                                    <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
-                                      {elem}
-                                    </span>
-                                  ))}
+                                  {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
+                                    fortune.yongShen.jiShen.map((elem, idx) => (
+                                      <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                        {elem}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-xs text-gray-400">暂无</span>
+                                  )}
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </CollapsibleSection>
                         )}
 
                         {/* 大运信息 */}
@@ -877,6 +978,24 @@ export default function App() {
                 >
                   <Sparkles size={16} />
                   AI 命理咨询
+                </motion.button>
+                <motion.button
+                  onClick={() => setShowLifeMap(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-purple-50 text-purple-600 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  <TrendingUp size={16} />
+                  人生大图景
+                </motion.button>
+                <motion.button
+                  onClick={() => setShowContact(true)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-blue-50 text-blue-600 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  <Mail size={16} />
+                  联系我们
                 </motion.button>
               </div>
             </div>
@@ -1045,6 +1164,19 @@ export default function App() {
             initialQuestion={aiInitialQuestion}
           />
         )}
+
+        {/* 联系我们 */}
+        <ContactModal
+          isOpen={showContact}
+          onClose={() => setShowContact(false)}
+        />
+
+        {/* 人生大图景 */}
+        <LifeMap
+          isOpen={showLifeMap}
+          onClose={() => setShowLifeMap(false)}
+          userProfile={userProfile}
+        />
 
       </div>
     </div>
