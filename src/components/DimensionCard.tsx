@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   Briefcase, Coins, Heart, Zap, BookOpen, Map, ChevronRight
 } from 'lucide-react';
@@ -12,6 +13,8 @@ interface DimensionCardProps {
 }
 
 export default function DimensionCard({ dimensions, onAIClick }: DimensionCardProps) {
+  const { t, i18n } = useTranslation(['fortune']);
+  const isEnglish = i18n.language === 'en';
   const [selectedDimension, setSelectedDimension] = useState<DimensionType | null>(null);
   const [viewedDimensions, setViewedDimensions] = useState<Set<DimensionType>>(new Set());
 
@@ -47,28 +50,29 @@ export default function DimensionCard({ dimensions, onAIClick }: DimensionCardPr
     }
   };
 
-  // 获取中文标签
+  // 获取标签
   const getLabel = (type: DimensionType) => {
-    switch (type) {
-      case 'career': return '事业';
-      case 'wealth': return '财运';
-      case 'romance': return '情感';
-      case 'health': return '健康';
-      case 'academic': return '学业';
-      case 'travel': return '出行';
-    }
+    const labelMap: Record<DimensionType, string> = {
+      career: t('fortune:dimensions.career'),
+      wealth: t('fortune:dimensions.wealth'),
+      romance: t('fortune:dimensions.romance'),
+      health: t('fortune:dimensions.health'),
+      academic: t('fortune:dimensions.study'),
+      travel: t('fortune:dimensions.travel'),
+    };
+    return labelMap[type];
   };
 
   return (
     <div className="mt-6">
       <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-        <span className="text-base">📊</span> 深度推演
+        <span className="text-base">📊</span> {isEnglish ? 'Deep Analysis' : '深度推演'}
       </h3>
       <div className="grid grid-cols-1 gap-3">
         {(Object.keys(dimensions) as DimensionType[]).map((key) => {
           const item = dimensions[key];
-          const isGood = item.level === '吉' || item.level === '大吉';
-          const isBad = item.level === '凶';
+          const isGood = item.level === '吉' || item.level === '大吉' || item.level === 'good' || item.level === 'excellent';
+          const isBad = item.level === '凶' || item.level === 'bad';
 
           return (
             <motion.div

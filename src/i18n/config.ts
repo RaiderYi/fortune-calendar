@@ -51,10 +51,13 @@ i18n
     },
     detection: {
       // 语言检测配置
-      order: ['localStorage', 'querystring', 'navigator'],
+      order: ['querystring', 'localStorage', 'navigator'],
       caches: ['localStorage'],
       lookupQuerystring: 'lang',
       lookupLocalStorage: 'i18nextLng',
+    },
+    react: {
+      useSuspense: false, // 禁用 Suspense 以避免语言切换时的闪烁
     },
   });
 

@@ -151,5 +151,106 @@
       "terms": "Terms",
       "advanced": "Advanced"
     }
+  },
+  "desktop": {
+    "profile": "Profile",
+    "editProfile": "Edit Profile",
+    "achievementProgress": "Achievement Progress",
+    "viewAllAchievements": "View All Achievements",
+    "feedbackAccuracy": "Feedback Today's Fortune Accuracy",
+    "imagePreview": "Image Preview",
+    "longPressToSave": "Long press to save, or click button below",
+    "close": "Close",
+    "saveImage": "Save Image",
+    "fortuneSign": "Fortune Sign"
+  },
+  "calendar": {
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    "weekDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "today": "Today"
+  },
+  "dateSelector": {
+    "yesterday": "Yesterday",
+    "weekAgo": "A week ago",
+    "monthAgo": "A month ago",
+    "threeMonthsAgo": "3 months ago",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "selectDate": "Select date",
+    "quickMenu": "Quick menu",
+    "backToToday": "Back to today"
+  },
+  "checkin": {
+    "checkingIn": "Checking in...",
+    "checkinNow": "Check in Now",
+    "consecutiveDays": "Consecutive Days",
+    "achievementsUnlocked": "Achievements Unlocked",
+    "days": "days"
+  },
+  "profileSettings": {
+    "saved": "Profile saved",
+    "locationSuccess": "Location detected",
+    "enterNickname": "Enter nickname",
+    "selectBirthDate": "Select birth date",
+    "selectBirthTime": "Select birth time"
+  },
+  "dailySignThemes": {
+    "zen": "Zen Ink",
+    "minimal": "Minimal Pro",
+    "oracle": "Oracle Card"
+  },
+  "timeEnergyHours": {
+    "zi": "Zi (23-1)",
+    "chou": "Chou (1-3)",
+    "yin": "Yin (3-5)",
+    "mao": "Mao (5-7)",
+    "chen": "Chen (7-9)",
+    "si": "Si (9-11)",
+    "wu": "Wu (11-13)",
+    "wei": "Wei (13-15)",
+    "shen": "Shen (15-17)",
+    "you": "You (17-19)",
+    "xu": "Xu (19-21)",
+    "hai": "Hai (21-23)"
+  },
+  "timeEnergyRelations": {
+    "generate": "Generate",
+    "restrict": "Restrict",
+    "beGenerated": "Fed",
+    "beRestricted": "Controlled",
+    "same": "Same",
+    "neutral": "Neutral"
+  },
+  "baziTermExplanations": {
+    "jieCai": "Rob Wealth represents competition. It indicates meeting competitors and needing to actively strive for resources.",
+    "shangGuan": "Hurting Officer represents talent and creativity, but may bring disputes. People with it are usually smart but should watch their words.",
+    "yiMa": "Post Horse represents change and travel. People with it tend to travel frequently or change jobs, suitable for mobile careers.",
+    "yongShen": "Yong Shen is the most beneficial element for the Day Master. Supplementing it can improve fortune and is the core of Bazi analysis.",
+    "jiShen": "Ji Shen is the unfavorable element for the Day Master. It needs to be avoided or resolved to prevent negative effects.",
+    "xiShen": "Xi Shen is the beneficial element that can enhance fortune and bring good luck.",
+    "pianCai": "Indirect Wealth represents unexpected income and investments. People with it can easily earn through side businesses.",
+    "zhengCai": "Direct Wealth represents stable income and salary, the main source of earnings.",
+    "zhengGuan": "Direct Officer represents career, status, and responsibility. People with it are usually responsible and suited for management.",
+    "qiSha": "Seven Killings represents pressure and challenges, but also courage and execution. People with it are capable but stressed.",
+    "zhengYin": "Direct Seal represents learning, wisdom, and benefactors. People with it have strong learning abilities.",
+    "pianYin": "Indirect Seal represents unconventional knowledge and special skills. People with it may have talents in unique fields.",
+    "shiShen": "Eating God represents enjoyment, talent, and good fortune with food. People with it usually have refined tastes.",
+    "biJian": "Companion represents friends, colleagues, and competition. People with it have good social connections.",
+    "daYun": "Grand Cycle represents fortune changes every 10 years, affecting major life transitions.",
+    "liuNian": "Annual Cycle is the yearly fortune change, an important short-term reference.",
+    "liuYue": "Monthly Cycle is the monthly fortune change, affecting specific events that month.",
+    "liuRi": "Daily Cycle is the daily fortune change, affecting specific events that day.",
+    "shiShenTerm": "Ten Gods are the relationships between Heavenly Stems, including Direct Officer, Seven Killings, etc.",
+    "wuXing": "Five Elements are Metal, Wood, Water, Fire, Earth, representing different attributes and energies.",
+    "tianGan": "Heavenly Stems are Jia, Yi, Bing, Ding, Wu, Ji, Geng, Xin, Ren, Gui, representing time units.",
+    "diZhi": "Earthly Branches are Zi, Chou, Yin, Mao, Chen, Si, Wu, Wei, Shen, You, Xu, Hai, representing time and direction.",
+    "shenShaTerm": "Spiritual Stars are special combinations in Bazi representing fortune indicators.",
+    "taoHua": "Peach Blossom represents romance. People with it attract the opposite sex but may face emotional complications.",
+    "yangRen": "Blade represents strength and impulsiveness. People with it are strong-willed but need emotional control.",
+    "kongWang": "Void represents emptiness. Stems/Branches with it may indicate things easily falling through.",
+    "chong": "Clash is the relationship between Earthly Branches, representing conflict and change.",
+    "he": "Combination is the harmonious relationship, representing cooperation opportunities.",
+    "xing": "Punishment is the conflicting relationship, indicating disputes and troubles.",
+    "hai": "Harm is the harmful relationship, requiring caution in those years."
   }
 }

@@ -566,18 +566,18 @@ export default function App() {
           <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
             {/* 个人信息卡片 */}
             <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-500 mb-3">个人档案</h3>
+              <h3 className="text-sm font-bold text-gray-500 mb-3">{t('ui:desktop.profile')}</h3>
               <div className="space-y-2">
                 <div>
-                  <div className="text-xs text-gray-400">姓名</div>
+                  <div className="text-xs text-gray-400">{t('ui:forms.name')}</div>
                   <div className="text-sm font-bold text-gray-800">{userProfile.name}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-400">出生日期</div>
+                  <div className="text-xs text-gray-400">{t('ui:forms.birthDate')}</div>
                   <div className="text-sm font-bold text-gray-800">{userProfile.birthDate}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-400">出生地</div>
+                  <div className="text-xs text-gray-400">{t('ui:forms.city')}</div>
                   <div className="text-sm font-bold text-gray-800">{userProfile.city}</div>
                 </div>
                 <motion.button
@@ -586,7 +586,7 @@ export default function App() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full mt-3 bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium"
                 >
-                  编辑档案
+                  {t('ui:desktop.editProfile')}
                 </motion.button>
               </div>
             </div>
@@ -689,7 +689,7 @@ export default function App() {
                         className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
                       >
                         <TrendingUp size={16} />
-                        反馈今日运势准确度
+                        {t('ui:desktop.feedbackAccuracy')}
                       </motion.button>
                     )}
 
@@ -714,28 +714,28 @@ export default function App() {
                         {fortune.baziDetail && (
                           <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                             <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-                              <Sparkles size={14} /> 八字详情
+                              <Sparkles size={14} /> {t('ui:todayPage.baziDetails')}
                             </h3>
                             <div className="grid grid-cols-4 gap-2 text-center">
                               <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-xl">
-                                <div className="text-[10px] text-gray-400 mb-1">年柱</div>
+                                <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.yearPillar')}</div>
                                 <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.year}</div>
                               </div>
                               <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl">
-                                <div className="text-[10px] text-gray-400 mb-1">月柱</div>
+                                <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.monthPillar')}</div>
                                 <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.month}</div>
                               </div>
                               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-xl">
-                                <div className="text-[10px] text-gray-400 mb-1">日柱</div>
+                                <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.dayPillar')}</div>
                                 <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.day}</div>
                               </div>
                               <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-3 rounded-xl">
-                                <div className="text-[10px] text-gray-400 mb-1">时柱</div>
+                                <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.hourPillar')}</div>
                                 <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.hour}</div>
                               </div>
                             </div>
                             <div className="mt-3 text-center">
-                              <span className="text-xs text-gray-400">日主：</span>
+                              <span className="text-xs text-gray-400">{t('ui:todayPage.dayMaster')}</span>
                               <span className="text-sm font-bold text-indigo-600 ml-1">{fortune.baziDetail.dayMaster}</span>
                             </div>
                           </div>
@@ -744,7 +744,7 @@ export default function App() {
                         {/* 用神喜忌 */}
                         {fortune.yongShen && (
                           <CollapsibleSection
-                            title="用神喜忌"
+                            title={t('ui:todayPage.yongShenXiJi')}
                             icon={<TrendingUp size={14} />}
                             defaultExpanded={true}
                             headerAction={
@@ -758,7 +758,7 @@ export default function App() {
                                   className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                                   type="button"
                                 >
-                                  ✏️ 编辑用神
+                                  ✏️ {t('ui:todayPage.editYongShen')}
                                 </button>
                               ) : (
                                 <button
@@ -769,28 +769,30 @@ export default function App() {
                                   className="text-sm px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md whitespace-nowrap"
                                   type="button"
                                 >
-                                  取消
+                                  {t('ui:todayPage.cancel')}
                                 </button>
                               )
                             }
                           >
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <div className="text-[10px] text-gray-400 mb-2">日主旺衰</div>
+                                <div className="text-[10px] text-gray-400 mb-2">{t('ui:todayPage.dayMasterStrength')}</div>
                                 <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
                                   fortune.yongShen.strength === '身旺' ? 'bg-red-100 text-red-700' :
                                   fortune.yongShen.strength === '身弱' ? 'bg-blue-100 text-blue-700' :
                                   'bg-gray-100 text-gray-700'
                                 }`}>
-                                  {fortune.yongShen.strength}
+                                  {fortune.yongShen.strength === '身旺' ? t('bazi:strength.strong') : 
+                                   fortune.yongShen.strength === '身弱' ? t('bazi:strength.weak') : 
+                                   fortune.yongShen.strength}
                                 </div>
                               </div>
                               <div className="col-span-2">
                                 <div className="text-[10px] text-gray-400 mb-2 flex items-center justify-between">
-                                  <span>用神</span>
+                                  <span>{t('bazi:terms.yongShen')}</span>
                                   <div className="flex items-center gap-2">
                                     {fortune.yongShen.isCustom && (
-                                      <span className="text-[10px] px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full font-medium">自定义</span>
+                                      <span className="text-[10px] px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full font-medium">{t('ui:todayPage.custom')}</span>
                                     )}
                                   </div>
                                 </div>
@@ -805,12 +807,12 @@ export default function App() {
                                       onClick={(e) => e.stopPropagation()}
                                       className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 w-full"
                                     >
-                                      <option value="">选择用神</option>
-                                      <option value="木">木</option>
-                                      <option value="火">火</option>
-                                      <option value="土">土</option>
-                                      <option value="金">金</option>
-                                      <option value="水">水</option>
+                                      <option value="">{t('ui:todayPage.selectYongShen')}</option>
+                                      <option value="木">{t('bazi:elements.wood')}</option>
+                                      <option value="火">{t('bazi:elements.fire')}</option>
+                                      <option value="土">{t('bazi:elements.earth')}</option>
+                                      <option value="金">{t('bazi:elements.metal')}</option>
+                                      <option value="水">{t('bazi:elements.water')}</option>
                                     </select>
                                     <div className="flex gap-2">
                                       <button
@@ -825,7 +827,7 @@ export default function App() {
                                         className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
                                         type="button"
                                       >
-                                        保存
+                                        {t('ui:todayPage.save')}
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -836,7 +838,7 @@ export default function App() {
                                         className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition"
                                         type="button"
                                       >
-                                        重置
+                                        {t('ui:todayPage.reset')}
                                       </button>
                                     </div>
                                   </div>
@@ -849,13 +851,13 @@ export default function App() {
                                         </span>
                                       ))
                                     ) : (
-                                      <span className="text-xs text-gray-400">暂无</span>
+                                      <span className="text-xs text-gray-400">{t('ui:todayPage.noData')}</span>
                                     )}
                                   </div>
                                 )}
                               </div>
                               <div>
-                                <div className="text-[10px] text-gray-400 mb-2">喜神</div>
+                                <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.xiShen')}</div>
                                 <div className="flex flex-wrap gap-1">
                                   {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
                                     fortune.yongShen.xiShen.map((elem, idx) => (
@@ -864,12 +866,12 @@ export default function App() {
                                       </span>
                                     ))
                                   ) : (
-                                    <span className="text-xs text-gray-400">暂无</span>
+                                    <span className="text-xs text-gray-400">{t('ui:todayPage.noData')}</span>
                                   )}
                                 </div>
                               </div>
                               <div>
-                                <div className="text-[10px] text-gray-400 mb-2">忌神</div>
+                                <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.jiShen')}</div>
                                 <div className="flex flex-wrap gap-1">
                                   {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
                                     fortune.yongShen.jiShen.map((elem, idx) => (
@@ -878,7 +880,7 @@ export default function App() {
                                       </span>
                                     ))
                                   ) : (
-                                    <span className="text-xs text-gray-400">暂无</span>
+                                    <span className="text-xs text-gray-400">{t('ui:todayPage.noData')}</span>
                                   )}
                                 </div>
                               </div>
@@ -890,7 +892,7 @@ export default function App() {
                         {fortune.daYun && (
                           <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                             <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-                              <Crown size={14} /> 当前大运
+                              <Crown size={14} /> {t('ui:todayPage.currentDayun')}
                             </h3>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
@@ -898,12 +900,12 @@ export default function App() {
                                   <div className="text-2xl font-black">{fortune.daYun.gan_zhi}</div>
                                 </div>
                                 <div>
-                                  <div className="text-xs text-gray-400">起运年龄</div>
-                                  <div className="text-sm font-bold text-gray-800">{fortune.daYun.age}岁</div>
+                                  <div className="text-xs text-gray-400">{t('ui:todayPage.startAge')}</div>
+                                  <div className="text-sm font-bold text-gray-800">{fortune.daYun.age}{t('ui:todayPage.yearsOld')}</div>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-xs text-gray-400">大运周期</div>
+                                <div className="text-xs text-gray-400">{t('ui:todayPage.dayunCycle')}</div>
                                 <div className="text-sm font-bold text-gray-800">
                                   {fortune.daYun.start_year} - {fortune.daYun.end_year}
                                 </div>
@@ -916,7 +918,7 @@ export default function App() {
                         {fortune.shenSha && fortune.shenSha.length > 0 && (
                           <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                             <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-                              <Sparkles size={14} /> 今日神煞
+                              <Sparkles size={14} /> {t('ui:todayPage.todayShenSha')}
                             </h3>
                             <div className="flex flex-wrap gap-2">
                               {fortune.shenSha.map((ss, idx) => (
@@ -942,21 +944,21 @@ export default function App() {
           <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
             {/* 成就统计卡片 */}
             <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-500 mb-3">成就进度</h3>
+              <h3 className="text-sm font-bold text-gray-500 mb-3">{t('ui:desktop.achievementProgress')}</h3>
               <motion.button
                 onClick={() => setShowAchievements(true)}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium mb-3"
               >
-                查看全部成就
+                {t('ui:desktop.viewAllAchievements')}
               </motion.button>
               {/* 这里可以显示简化的成就列表 */}
             </div>
 
             {/* 快捷操作 */}
             <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-500 mb-3">快捷操作</h3>
+              <h3 className="text-sm font-bold text-gray-500 mb-3">{t('ui:sections.quickActions')}</h3>
               <div className="space-y-2">
                 <motion.button
                   onClick={() => setShowCheckin(true)}
@@ -964,7 +966,7 @@ export default function App() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium"
                 >
-                  每日签到
+                  {t('ui:menu.checkin')}
                 </motion.button>
                 <motion.button
                   onClick={() => setShowTrends(true)}
@@ -972,7 +974,7 @@ export default function App() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-purple-50 text-purple-600 px-3 py-2 rounded-lg text-sm font-medium"
                 >
-                  趋势分析
+                  {t('ui:header.trendAnalysis')}
                 </motion.button>
                 <motion.button
                   onClick={() => setShowHistory(true)}
@@ -980,7 +982,7 @@ export default function App() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-pink-50 text-pink-600 px-3 py-2 rounded-lg text-sm font-medium"
                 >
-                  历史记录
+                  {t('ui:menu.history')}
                 </motion.button>
                 <motion.button
                   onClick={() => setShowKnowledge(true)}
@@ -988,7 +990,7 @@ export default function App() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-yellow-50 text-yellow-600 px-3 py-2 rounded-lg text-sm font-medium"
                 >
-                  八字学堂
+                  {t('ui:menu.knowledge')}
                 </motion.button>
                 <motion.button
                   onClick={() => setShowAIDeduction(true)}
@@ -997,7 +999,7 @@ export default function App() {
                   className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Sparkles size={16} />
-                  AI 命理咨询
+                  {t('ui:header.aiConsult')}
                 </motion.button>
                 <motion.button
                   onClick={() => setShowLifeMap(true)}
@@ -1006,7 +1008,7 @@ export default function App() {
                   className="w-full bg-purple-50 text-purple-600 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
                 >
                   <TrendingUp size={16} />
-                  人生大图景
+                  {t('ui:menu.lifemap')}
                 </motion.button>
                 <motion.button
                   onClick={() => setShowContact(true)}
@@ -1015,7 +1017,7 @@ export default function App() {
                   className="w-full bg-blue-50 text-blue-600 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
                 >
                   <Mail size={16} />
-                  联系我们
+                  {t('ui:menu.contact')}
                 </motion.button>
               </div>
             </div>
@@ -1029,7 +1031,7 @@ export default function App() {
               className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg font-bold transition hover:bg-black disabled:opacity-70"
             >
               {isGenerating ? <Loader2 size={18} className="animate-spin"/> : <Share2 size={18} />}
-              {isGenerating ? '生成中...' : '生成日签'}
+              {isGenerating ? t('ui:todayPage.generating') : t('ui:todayPage.generateSign')}
             </motion.button>
           </div>
         </div>
@@ -1039,10 +1041,10 @@ export default function App() {
         {generatedImage && (
           <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 animate-in fade-in duration-200">
              <div className="bg-white p-2 rounded-2xl shadow-2xl max-h-[70vh] overflow-hidden flex flex-col">
-               <img src={generatedImage} alt="今日运势" className="rounded-xl object-contain max-h-full" />
+               <img src={generatedImage} alt={t('ui:desktop.fortuneSign')} className="rounded-xl object-contain max-h-full" />
              </div>
              <div className="mt-6 flex flex-col items-center gap-3">
-               <p className="text-white/80 text-sm font-medium">长按图片保存，或点击下方按钮</p>
+               <p className="text-white/80 text-sm font-medium">{t('ui:desktop.longPressToSave')}</p>
                <div className="flex gap-4">
                  <motion.button
                    onClick={() => setGeneratedImage(null)}
@@ -1050,16 +1052,16 @@ export default function App() {
                    whileTap={{ scale: 0.95 }}
                    className="bg-white/10 text-white px-6 py-3 rounded-full font-bold backdrop-blur-md border border-white/20"
                  >
-                   关闭
+                   {t('ui:desktop.close')}
                  </motion.button>
                  <motion.a
                    href={generatedImage}
-                   download={`运势日签-${fortune?.dateStr}.png`}
+                   download={`${t('ui:desktop.fortuneSign')}-${fortune?.dateStr}.png`}
                    whileHover={{ scale: 1.05 }}
                    whileTap={{ scale: 0.95 }}
                    className="bg-indigo-600 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
                  >
-                   <Download size={18} /> 保存图片
+                   <Download size={18} /> {t('ui:desktop.saveImage')}
                  </motion.a>
                </div>
              </div>

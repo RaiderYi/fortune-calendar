@@ -4,6 +4,7 @@
 
 import { motion } from 'framer-motion';
 import { Palette, Sparkles, Minus, Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export type DailySignTheme = 'zen' | 'minimal' | 'oracle';
 
@@ -13,35 +14,37 @@ interface DailySignThemeSelectorProps {
   onClose: () => void;
 }
 
-const themes: Array<{ id: DailySignTheme; label: string; icon: React.ReactNode; description: string; preview: string }> = [
-  {
-    id: 'zen',
-    label: '禅意水墨',
-    icon: <Palette size={20} />,
-    description: '书法字体、水墨留白',
-    preview: '🎨 传统雅致',
-  },
-  {
-    id: 'minimal',
-    label: '极简专业',
-    icon: <Minus size={20} />,
-    description: '纯色背景、精准数据',
-    preview: '📊 现代简约',
-  },
-  {
-    id: 'oracle',
-    label: '神谕卡片',
-    icon: <Zap size={20} />,
-    description: '神秘风格、塔罗牌感',
-    preview: '🔮 神秘力量',
-  },
-];
-
 export default function DailySignThemeSelector({
   selectedTheme,
   onThemeChange,
   onClose,
 }: DailySignThemeSelectorProps) {
+  const { t, i18n } = useTranslation(['ui']);
+  const isEnglish = i18n.language === 'en';
+  
+  const themes: Array<{ id: DailySignTheme; label: string; icon: React.ReactNode; description: string; preview: string }> = [
+    {
+      id: 'zen',
+      label: t('ui:dailySignThemes.zen'),
+      icon: <Palette size={20} />,
+      description: isEnglish ? 'Calligraphy font, ink & wash style' : '书法字体、水墨留白',
+      preview: isEnglish ? '🎨 Traditional' : '🎨 传统雅致',
+    },
+    {
+      id: 'minimal',
+      label: t('ui:dailySignThemes.minimal'),
+      icon: <Minus size={20} />,
+      description: isEnglish ? 'Solid colors, precise data' : '纯色背景、精准数据',
+      preview: isEnglish ? '📊 Modern' : '📊 现代简约',
+    },
+    {
+      id: 'oracle',
+      label: t('ui:dailySignThemes.oracle'),
+      icon: <Zap size={20} />,
+      description: isEnglish ? 'Mystical style, tarot feel' : '神秘风格、塔罗牌感',
+      preview: isEnglish ? '🔮 Mystical' : '🔮 神秘力量',
+    },
+  ];
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -52,7 +55,7 @@ export default function DailySignThemeSelector({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-indigo-500" />
-          <h3 className="font-bold text-gray-800 dark:text-gray-200">选择日签风格</h3>
+          <h3 className="font-bold text-gray-800 dark:text-gray-200">{isEnglish ? 'Choose Sign Style' : '选择日签风格'}</h3>
         </div>
       </div>
 

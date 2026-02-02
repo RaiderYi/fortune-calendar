@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface CalendarWidgetProps {
   currentDate: Date;
@@ -25,6 +26,8 @@ export default function CalendarWidget({
   onDateSelect,
   getHistoryScore,
 }: CalendarWidgetProps) {
+  const { t, i18n } = useTranslation(['ui']);
+  const isEnglish = i18n.language === 'en';
   const [viewDate, setViewDate] = useState(new Date(currentDate));
   const [monthDays, setMonthDays] = useState<DayData[]>([]);
 
@@ -94,8 +97,8 @@ export default function CalendarWidget({
     }
   };
 
-  const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
-  const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+  const monthNames = t('ui:calendar.months', { returnObjects: true }) as string[];
+  const weekDays = t('ui:calendar.weekDays', { returnObjects: true }) as string[];
 
   return (
     <div>
@@ -110,7 +113,10 @@ export default function CalendarWidget({
           <ChevronLeft size={16} className="text-gray-600 dark:text-gray-400" />
         </motion.button>
         <div className="text-sm font-bold text-gray-800 dark:text-gray-200">
-          {viewDate.getFullYear()}年 {monthNames[viewDate.getMonth()]}
+          {isEnglish 
+            ? `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear()}`
+            : `${viewDate.getFullYear()}年 ${monthNames[viewDate.getMonth()]}`
+          }
         </div>
         <motion.button
           onClick={handleNextMonth}

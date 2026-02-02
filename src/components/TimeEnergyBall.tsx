@@ -5,26 +5,36 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface TimeEnergyBallProps {
   currentTime?: Date;
   dayMaster?: string; // 日主天干
 }
 
-// 时辰对应表（12时辰）
-const SHICHEN_MAP: Record<number, { name: string; gan: string; zhi: string; element: string }> = {
-  0: { name: '子时', gan: '甲', zhi: '子', element: '水' },
-  1: { name: '丑时', gan: '乙', zhi: '丑', element: '土' },
-  2: { name: '寅时', gan: '丙', zhi: '寅', element: '木' },
-  3: { name: '卯时', gan: '丁', zhi: '卯', element: '木' },
-  4: { name: '辰时', gan: '戊', zhi: '辰', element: '土' },
-  5: { name: '巳时', gan: '己', zhi: '巳', element: '火' },
-  6: { name: '午时', gan: '庚', zhi: '午', element: '火' },
-  7: { name: '未时', gan: '辛', zhi: '未', element: '土' },
-  8: { name: '申时', gan: '壬', zhi: '申', element: '金' },
-  9: { name: '酉时', gan: '癸', zhi: '酉', element: '金' },
-  10: { name: '戌时', gan: '甲', zhi: '戌', element: '土' },
-  11: { name: '亥时', gan: '乙', zhi: '亥', element: '水' },
+// 时辰对应表（12时辰）- 使用 key 来动态获取翻译
+const SHICHEN_MAP_BASE: Record<number, { key: string; gan: string; zhi: string; elementKey: string }> = {
+  0: { key: 'zi', gan: '甲', zhi: '子', elementKey: 'water' },
+  1: { key: 'chou', gan: '乙', zhi: '丑', elementKey: 'earth' },
+  2: { key: 'yin', gan: '丙', zhi: '寅', elementKey: 'wood' },
+  3: { key: 'mao', gan: '丁', zhi: '卯', elementKey: 'wood' },
+  4: { key: 'chen', gan: '戊', zhi: '辰', elementKey: 'earth' },
+  5: { key: 'si', gan: '己', zhi: '巳', elementKey: 'fire' },
+  6: { key: 'wu', gan: '庚', zhi: '午', elementKey: 'fire' },
+  7: { key: 'wei', gan: '辛', zhi: '未', elementKey: 'earth' },
+  8: { key: 'shen', gan: '壬', zhi: '申', elementKey: 'metal' },
+  9: { key: 'you', gan: '癸', zhi: '酉', elementKey: 'metal' },
+  10: { key: 'xu', gan: '甲', zhi: '戌', elementKey: 'earth' },
+  11: { key: 'hai', gan: '乙', zhi: '亥', elementKey: 'water' },
+};
+
+// 元素映射 (内部使用中文作为键)
+const ELEMENT_KEY_TO_CHINESE: Record<string, string> = {
+  wood: '木',
+  fire: '火',
+  earth: '土',
+  metal: '金',
+  water: '水',
 };
 
 // 天干五行映射
@@ -46,10 +56,13 @@ const ELEMENT_RELATION: Record<string, { sheng: string[]; ke: string[]; beiSheng
 };
 
 export default function TimeEnergyBall({ currentTime, dayMaster }: TimeEnergyBallProps) {
+  const { t, i18n } = useTranslation(['ui', 'bazi']);
+  const isEnglish = i18n.language === 'en';
   const [now, setNow] = useState(currentTime || new Date());
-  const [shichen, setShichen] = useState<{ name: string; gan: string; zhi: string; element: string } | null>(null);
+  const [shichen, setShichen] = useState<{ key: string; name: string; gan: string; zhi: string; element: string; elementKey: string } | null>(null);
   const [energyLevel, setEnergyLevel] = useState<'high' | 'medium' | 'low'>('medium');
   const [relation, setRelation] = useState<string>('');
+  const [relationKey, setRelationKey] = useState<string>('');
 
   useEffect(() => {
     // 更新当前时间
@@ -64,9 +77,15 @@ export default function TimeEnergyBall({ currentTime, dayMaster }: TimeEnergyBal
     // 计算当前时辰（每2小时一个时辰）
     const hour = now.getHours();
     const shichenIndex = Math.floor(hour / 2);
-    const currentShichen = SHICHEN_MAP[shichenIndex];
+    const currentShichenBase = SHICHEN_MAP_BASE[shichenIndex];
     
-    if (currentShichen) {
+    if (currentShichenBase) {
+      const chineseElement = ELEMENT_KEY_TO_CHINESE[currentShichenBase.elementKey];
+      const currentShichen = {
+        ...currentShichenBase,
+        name: t(`ui:timeEnergyHours.${currentShichenBase.key}`),
+        element: chineseElement,
+      };
       setShichen(currentShichen);
       
       // 如果有日主，计算生克关系
@@ -79,30 +98,37 @@ export default function TimeEnergyBall({ currentTime, dayMaster }: TimeEnergyBal
           
           if (relationData.sheng.includes(shichenElement)) {
             setRelation('生');
+            setRelationKey('generate');
             setEnergyLevel('high');
           } else if (relationData.ke.includes(shichenElement)) {
             setRelation('克');
+            setRelationKey('restrict');
             setEnergyLevel('high');
           } else if (relationData.beiSheng.includes(shichenElement)) {
             setRelation('被生');
+            setRelationKey('beGenerated');
             setEnergyLevel('high');
           } else if (relationData.beiKe.includes(shichenElement)) {
             setRelation('被克');
+            setRelationKey('beRestricted');
             setEnergyLevel('low');
           } else if (dayMasterElement === shichenElement) {
             setRelation('同');
+            setRelationKey('same');
             setEnergyLevel('medium');
           } else {
             setRelation('平');
+            setRelationKey('neutral');
             setEnergyLevel('medium');
           }
         }
       } else {
         setRelation('');
+        setRelationKey('');
         setEnergyLevel('medium');
       }
     }
-  }, [now, dayMaster]);
+  }, [now, dayMaster, t]);
 
   if (!shichen) return null;
 
@@ -158,30 +184,33 @@ export default function TimeEnergyBall({ currentTime, dayMaster }: TimeEnergyBal
         <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl p-3 shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           <div className="flex items-center gap-2 mb-2">
             <Clock size={14} className="text-gray-500 dark:text-gray-400" />
-            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">当前时辰</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{t('ui:timeEnergy.currentHour')}</span>
           </div>
           <div className="text-lg font-black text-gray-800 dark:text-gray-200 mb-1">
             {shichen.name}
           </div>
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-            {shichen.gan}{shichen.zhi} · {shichen.element}
+            {shichen.gan}{shichen.zhi} · {isEnglish ? t(`bazi:elements.${shichen.elementKey}`) : shichen.element}
           </div>
-          {dayMaster && relation && (
+          {dayMaster && relation && relationKey && (
             <>
               <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">与日主关系</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{isEnglish ? 'Relation with Day Master' : '与日主关系'}</div>
                 <div className={`text-sm font-bold ${
                   energyLevel === 'high' ? 'text-green-600 dark:text-green-400' :
                   energyLevel === 'low' ? 'text-red-600 dark:text-red-400' :
                   'text-yellow-600 dark:text-yellow-400'
                 }`}>
-                  {GAN_ELEMENT[dayMaster] || dayMaster} {relation} {shichen.element}
+                  {isEnglish 
+                    ? `${t(`bazi:elements.${shichen.elementKey}`)} ${t(`ui:timeEnergyRelations.${relationKey}`)}`
+                    : `${GAN_ELEMENT[dayMaster] || dayMaster} ${relation} ${shichen.element}`
+                  }
                 </div>
               </div>
             </>
           )}
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            {now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+            {now.toLocaleTimeString(isEnglish ? 'en-US' : 'zh-CN', { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
       </div>

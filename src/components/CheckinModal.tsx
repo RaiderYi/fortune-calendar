@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Award, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   checkIn,
   isCheckedInToday,
@@ -26,6 +27,7 @@ export default function CheckinModal({
   onClose,
   onCheckinSuccess,
 }: CheckinModalProps) {
+  const { t } = useTranslation(['ui']);
   const { showToast } = useToast();
   const [stats, setStats] = useState(getCheckinStats());
   const [calendar, setCalendar] = useState(getCheckinCalendar());
@@ -52,7 +54,7 @@ export default function CheckinModal({
         setStats(getCheckinStats());
         setCalendar(getCheckinCalendar());
         onCheckinSuccess?.(result);
-        showToast(`签到成功！已连续签到 ${result.consecutiveDays} 天`, 'success');
+        showToast(`${t('ui:checkin.checkinNow')}! ${result.consecutiveDays} ${t('ui:checkin.days')}`, 'success');
       }
     }, 500);
   };
@@ -151,7 +153,7 @@ export default function CheckinModal({
                       whileTap={{ scale: 0.95 }}
                       className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg disabled:opacity-50"
                     >
-                      {isCheckingIn ? '签到中...' : '立即签到'}
+                      {isCheckingIn ? t('ui:checkin.checkingIn') : t('ui:checkin.checkinNow')}
                     </motion.button>
                   </div>
                 )}
@@ -179,7 +181,7 @@ export default function CheckinModal({
                     最近30天
                   </h4>
                   <div className="grid grid-cols-7 gap-1">
-                    {['日', '一', '二', '三', '四', '五', '六'].map((day) => (
+                    {(t('ui:calendar.weekDays', { returnObjects: true }) as string[]).map((day) => (
                       <div key={day} className="text-center text-xs font-bold text-gray-400 py-1">
                         {day}
                       </div>

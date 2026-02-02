@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Home, MoreVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface DateSelectorProps {
   currentDate: Date;
@@ -19,6 +20,8 @@ export default function DateSelector({
   onNextDay,
   onDateChange
 }: DateSelectorProps) {
+  const { t, i18n } = useTranslation(['ui']);
+  const isEnglish = i18n.language === 'en';
 
   // 格式化日期为 YYYY-MM-DD 供 input 使用
   const formattedDateValue = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
@@ -54,10 +57,10 @@ export default function DateSelector({
 
   // 快捷日期选项
   const quickOptions = [
-    { label: '昨天', days: -1 },
-    { label: '一周前', days: -7 },
-    { label: '一个月前', days: -30 },
-    { label: '三个月前', days: -90 },
+    { label: t('ui:dateSelector.yesterday'), days: -1 },
+    { label: t('ui:dateSelector.weekAgo'), days: -7 },
+    { label: t('ui:dateSelector.monthAgo'), days: -30 },
+    { label: t('ui:dateSelector.threeMonthsAgo'), days: -90 },
   ];
 
   // 处理快捷跳转
@@ -90,7 +93,7 @@ export default function DateSelector({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="text-gray-400 hover:text-gray-800 p-2"
-          aria-label="前一天"
+          aria-label={t('ui:dateSelector.prevDay')}
         >
           <ChevronLeft />
         </motion.button>
@@ -102,11 +105,11 @@ export default function DateSelector({
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             onChange={handleDateInput}
             value={formattedDateValue}
-            aria-label="选择日期"
+            aria-label={t('ui:dateSelector.selectDate')}
           />
           <div className="flex items-center gap-1 group-hover:opacity-70 transition-opacity">
             <span className="text-2xl font-black font-mono tracking-tighter text-gray-800 dark:text-gray-200">
-              {currentDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
+              {currentDate.toLocaleDateString(isEnglish ? 'en-US' : 'zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '.')}
             </span>
             {/* 仅用于视觉提示的小图标 */}
             <CalendarIcon size={14} className="text-gray-300 dark:text-gray-600" />
@@ -121,7 +124,7 @@ export default function DateSelector({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="absolute right-0 top-0 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
-            aria-label="快捷菜单"
+            aria-label={t('ui:dateSelector.quickMenu')}
           >
             <MoreVertical size={14} />
           </motion.button>
@@ -161,10 +164,10 @@ export default function DateSelector({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1"
-              aria-label="回到今天"
+              aria-label={t('ui:dateSelector.backToToday')}
             >
               <Home size={12} />
-              今天
+              {t('ui:calendar.today')}
             </motion.button>
           </motion.div>
         )}
