@@ -57,7 +57,24 @@ export default function KnowledgeBase({ isOpen, onClose }: KnowledgeBaseProps) {
         'liunian': 'advanced',
       };
       
-      const item = t(`knowledge:items.${id}`, { returnObjects: true }) as any;
+      // 类型安全的翻译对象获取
+      const item = t(`knowledge:items.${id}`, { returnObjects: true }) as {
+        title?: string;
+        content?: string;
+        examples?: string[];
+      } | string;
+      
+      // 如果返回的是字符串，说明翻译缺失，使用默认值
+      if (typeof item === 'string') {
+        return {
+          id,
+          title: id,
+          category: categoryMap[id] || 'basic',
+          content: '',
+          examples: [],
+        };
+      }
+      
       return {
         id,
         title: item?.title || id,
