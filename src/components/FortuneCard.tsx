@@ -96,8 +96,11 @@ function FortuneCard({
         const dayGanElement = getElementFromGan(liuNian.dayGan);
         if (yongShenList.includes(dayGanElement)) {
           analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的用神相合，运势较为顺畅。`);
-        } else if (yongShen.jiShen.includes(dayGanElement)) {
-          analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的忌神相冲，需谨慎行事。`);
+        } else {
+          const jiShenList = Array.isArray(yongShen.jiShen) ? yongShen.jiShen : [];
+          if (jiShenList.includes(dayGanElement)) {
+            analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的忌神相冲，需谨慎行事。`);
+          }
         }
       }
     }

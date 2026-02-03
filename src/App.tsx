@@ -373,7 +373,18 @@ export default function App() {
           type: item.type === '宜' ? 'up' : 'down'
         })),
         baziDetail: bazi,
-        yongShen: analysis.yong_shen_result || {},
+        yongShen: (() => {
+          // 转换后端返回的 yong_shen_result 格式为前端期望的格式
+          const yongShenData = analysis.yong_shen_result || {};
+          return {
+            strength: yongShenData.strength || '未知',
+            yongShen: Array.isArray(yongShenData.favorable) 
+              ? yongShenData.favorable 
+              : (yongShenData.primary ? [yongShenData.primary] : []),
+            xiShen: Array.isArray(yongShenData.xi_shen) ? yongShenData.xi_shen : [],
+            jiShen: Array.isArray(yongShenData.ji_shen) ? yongShenData.ji_shen : []
+          };
+        })(),
         liuNian: fortune.liuNian || {},
         todayTenGod: fortune.liuRi?.gan || ''
       };
@@ -1040,7 +1051,7 @@ export default function App() {
                                 ) : (
                                   <div className="flex flex-wrap gap-1">
                                     {fortune.yongShen.yongShen && fortune.yongShen.yongShen.length > 0 ? (
-                                      fortune.yongShen.yongShen.map((elem, idx) => (
+                                      (Array.isArray(fortune.yongShen?.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
                                         <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
                                           {elem}
                                         </span>
@@ -1055,7 +1066,7 @@ export default function App() {
                                 <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.xiShen')}</div>
                                 <div className="flex flex-wrap gap-1">
                                   {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
-                                    fortune.yongShen.xiShen.map((elem, idx) => (
+                                    (Array.isArray(fortune.yongShen?.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
                                       <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
                                         {elem}
                                       </span>
@@ -1069,7 +1080,7 @@ export default function App() {
                                 <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.jiShen')}</div>
                                 <div className="flex flex-wrap gap-1">
                                   {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
-                                    fortune.yongShen.jiShen.map((elem, idx) => (
+                                    (Array.isArray(fortune.yongShen?.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
                                       <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
                                         {elem}
                                       </span>

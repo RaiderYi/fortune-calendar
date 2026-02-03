@@ -348,7 +348,7 @@ export default function TodayPage({
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {fortune.yongShen.yongShen && fortune.yongShen.yongShen.length > 0 ? (
-                              fortune.yongShen.yongShen.map((elem, idx) => (
+                              (Array.isArray(fortune.yongShen?.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
                                 <TermButton
                                   key={idx}
                                   term={elem}
@@ -367,7 +367,7 @@ export default function TodayPage({
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
-                            fortune.yongShen.xiShen.map((elem, idx) => (
+                            (Array.isArray(fortune.yongShen?.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
                               <TermButton
                                 key={idx}
                                 term={elem}
@@ -385,7 +385,7 @@ export default function TodayPage({
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
-                            fortune.yongShen.jiShen.map((elem, idx) => (
+                            (Array.isArray(fortune.yongShen?.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
                               <TermButton
                                 key={idx}
                                 term={elem}
