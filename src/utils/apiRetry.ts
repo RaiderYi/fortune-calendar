@@ -38,11 +38,29 @@ export async function fetchWithRetry<T>(
     try {
       const response = await fetch(url, options);
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // 尝试解析响应（无论成功或失败）
+      let responseData: any;
+      try {
+        responseData = await response.json();
+      } catch {
+        // 如果不是 JSON，使用文本
+        const text = await response.text();
+        responseData = { error: text || `HTTP ${response.status}: ${response.statusText}` };
       }
       
-      return await response.json();
+      if (!response.ok) {
+        // 如果响应中有错误信息，使用它
+        const errorMsg = responseData?.error || responseData?.message || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errorMsg);
+      }
+      
+      // 检查响应中是否有 success: false
+      if (responseData && responseData.success === false) {
+        const errorMsg = responseData.error || responseData.message || '请求失败';
+        throw new Error(errorMsg);
+      }
+      
+      return responseData;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       

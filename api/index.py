@@ -3215,12 +3215,21 @@ class handler(BaseHTTPRequestHandler):
             return
         
         # 路由到认证接口
-        if '/auth/' in path:
+        if '/auth/' in path or '/auth' in path:
             self._handle_auth(path)
             return
         
-        # 默认处理运势分析
-        self._handle_fortune()
+        # 路由到运势分析接口（/fortune 或 /api/fortune）
+        if '/fortune' in path or path == '/' or path == '/api' or path == '':
+            self._handle_fortune()
+            return
+        
+        # 未知路径
+        self._send_json_response(404, {
+            'success': False,
+            'error': f'Unknown endpoint: {path}',
+            'available_endpoints': ['/api/fortune', '/api/ai-chat', '/api/auth/register', '/api/auth/login']
+        })
     
     def _handle_ai_chat(self):
         """处理 AI 聊天请求"""
@@ -3854,10 +3863,19 @@ def _hash_password(password):
         except Exception as e:
             # 错误处理
             import traceback
+            error_trace = traceback.format_exc()
+            error_message = str(e)
+            
+            # 记录错误到控制台（Vercel 日志）
+            print(f"运势计算错误: {error_message}")
+            print(f"错误堆栈: {error_trace}")
+            
             error_response = {
                 'success': False,
-                'error': str(e),
-                'traceback': traceback.format_exc()
+                'error': error_message,
+                'message': '运势数据计算失败，请检查输入参数',
+                # 生产环境不返回 traceback，开发环境可以返回
+                'traceback': error_trace if os.environ.get('VERCEL_ENV') != 'production' else None
             }
 
             self.send_response(500)

@@ -372,8 +372,30 @@ export default function App() {
 
       } catch (error) {
         console.error("获取运势数据失败", error);
-        // 优雅降级：显示错误提示
-        showToast('运势数据加载失败，请稍后重试', 'error');
+        
+        // 提取错误信息
+        let errorMessage = '运势数据加载失败，请稍后重试';
+        if (error instanceof Error) {
+          errorMessage = error.message || errorMessage;
+          // 如果是网络错误，显示更友好的提示
+          if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage = '网络连接失败，请检查网络后重试';
+          } else if (error.message.includes('HTTP 500')) {
+            errorMessage = '服务器错误，请稍后重试';
+          } else if (error.message.includes('HTTP 404')) {
+            errorMessage = 'API 接口不存在，请联系管理员';
+          }
+        }
+        
+        // 显示错误提示
+        showToast(errorMessage, 'error');
+        
+        // 如果用户档案不完整，提示用户
+        if (!userProfile.birthDate || !userProfile.birthTime) {
+          setTimeout(() => {
+            showToast('请先完善个人档案信息', 'warning');
+          }, 2000);
+        }
       } finally {
         setIsLoading(false);
       }
