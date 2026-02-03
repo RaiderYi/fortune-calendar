@@ -3214,11 +3214,24 @@ def calculate_ten_god(day_gan, target_gan):
     返回:
         十神名称（如 "食神"）
     """
-    day_idx = TIAN_GAN.index(day_gan)
-    target_idx = TIAN_GAN.index(target_gan)
-    diff = (target_idx - day_idx) % 10
-    
-    return SHI_SHEN[diff]
+    try:
+        # 安全访问，提供默认值
+        if day_gan not in TIAN_GAN:
+            print(f"[WARNING] 无效的日干: {day_gan}, 使用默认值 '甲'")
+            day_gan = '甲'
+        if target_gan not in TIAN_GAN:
+            print(f"[WARNING] 无效的目标天干: {target_gan}, 使用默认值 '甲'")
+            target_gan = '甲'
+        
+        day_idx = TIAN_GAN.index(day_gan)
+        target_idx = TIAN_GAN.index(target_gan)
+        diff = (target_idx - day_idx) % 10
+        
+        return SHI_SHEN[diff]
+    except Exception as e:
+        print(f"[ERROR] calculate_ten_god 失败: {e}, day_gan={day_gan}, target_gan={target_gan}")
+        # 返回默认值
+        return '比肩'
 
 def generate_main_theme(total_score, day_gan, liu_ri_gan):
     """
@@ -4209,17 +4222,45 @@ def _hash_password(password):
                 print("[DEBUG] 响应数据清理完成")
             except Exception as clean_error:
                 print(f"[WARNING] 响应数据清理失败: {clean_error}")
+                import traceback
+                print(traceback.format_exc())
                 cleaned_response = response  # 使用原始响应，让 safe_json_dumps 处理
             
             # 使用安全的 JSON 序列化
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
+            try:
+                # 先序列化，确保没有错误
+                output = safe_json_dumps(cleaned_response, indent=2)
+                print(f"[DEBUG] JSON 序列化成功，长度: {len(output)}")
+                
+                # 然后发送响应头
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
 
-            output = safe_json_dumps(cleaned_response, indent=2)
-            self.wfile.write(output.encode('utf-8'))
-            print("[DEBUG] 响应发送完成")
+                # 最后写入响应体
+                self.wfile.write(output.encode('utf-8'))
+                print("[DEBUG] 响应发送完成")
+            except Exception as send_error:
+                print(f"[ERROR] 发送响应失败: {send_error}")
+                import traceback
+                print(traceback.format_exc())
+                # 如果响应头已经发送，无法再发送错误响应
+                # 尝试发送最基本的错误信息
+                try:
+                    if not hasattr(self, '_headers_sent') or not self._headers_sent:
+                        self.send_response(500)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        error_json = safe_json_dumps({
+                            'success': False,
+                            'error': f'响应发送失败: {str(send_error)}',
+                            'message': '服务器内部错误'
+                        })
+                        self.wfile.write(error_json.encode('utf-8'))
+                except:
+                    pass  # 如果连错误响应都发送失败，只能记录日志
 
         except Exception as e:
             # 错误处理
