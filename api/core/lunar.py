@@ -250,9 +250,8 @@ def calculate_bazi(birth_datetime, longitude=120.0):
         'time_gan': hour_gz[0],
         'time_zhi': hour_gz[1],
         'solar_term': term_name,
-        'solar_term_index': term_index,
-        'adjusted_datetime': adjusted_dt,
-        'original_datetime': birth_datetime
+        'solar_term_index': term_index
+        # 注意：不包含 datetime 对象，避免 JSON 序列化问题
     }
 
 

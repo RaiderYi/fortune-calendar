@@ -12,7 +12,7 @@ from ..core.lunar import (
 from ..core.bazi_engine import analyze_bazi_cached, calculate_ten_god
 from ..core.fortune_engine import (
     calculate_fortune_score_v5, calculate_dimensions_v5,
-    generate_main_theme, generate_todo, generate_dimension_scores
+    generate_main_theme, generate_todo
 )
 from ..utils.json_utils import clean_for_json
 
@@ -56,7 +56,22 @@ class FortuneService:
 
             # 5. 计算运势评分 (V5.0)
             yongshen_data = analysis_result.get('yong_shen_result', {})
-            element_analysis = analysis_result.get('element_analysis', {})
+            strength_result = analysis_result.get('strength_result', {})
+            
+            # 构建元素分析数据：将中文 level 映射为英文 pattern
+            level = strength_result.get('level', '中和')
+            level_to_pattern = {
+                '身弱': 'Weak',
+                '身旺': 'Strong',
+                '中和': 'Neutral'
+            }
+            pattern = level_to_pattern.get(level, 'Neutral')
+            
+            element_analysis = {
+                'pattern': pattern,
+                'score': strength_result.get('score', 0.5),
+                'level': level  # 保留中文 level 供其他用途
+            }
             
             score_result_v5 = calculate_fortune_score_v5(
                 bazi, element_analysis, yongshen_data,
@@ -65,8 +80,11 @@ class FortuneService:
             total_score = score_result_v5['total_score']
 
             # 6. 生成维度评分和建议
+            # 计算神煞（用于维度计算）- 从 calculate_fortune_score_v5 的结果中获取
+            shensha_result = score_result_v5.get('shensha', score_result_v5.get('shensha_result', {'total_score': 0, 'details': [], 'dimension_boosts': {}}))
+            
             dimensions = calculate_dimensions_v5(
-                bazi, liu_ri, total_score, yongshen_data, gender
+                bazi, liu_ri, total_score, yongshen_data, element_analysis, shensha_result
             )
             
             todo_list = generate_todo(
@@ -79,24 +97,21 @@ class FortuneService:
             )
 
             # 7. 构建完整响应
-            response = {
-                'success': True,
-                'data': {
-                    'bazi': bazi,
-                    'analysis': analysis_result,
-                    'fortune': {
-                        'totalScore': total_score,
-                        'dimensions': dimensions,
-                        'mainTheme': main_theme,
-                        'todoList': todo_list,
-                        'liuNian': liu_nian,
-                        'liuYue': liu_yue,
-                        'liuRi': liu_ri
-                    }
+            response_data = {
+                'bazi': clean_for_json(bazi),
+                'analysis': clean_for_json(analysis_result),
+                'fortune': {
+                    'totalScore': total_score,
+                    'dimensions': clean_for_json(dimensions),
+                    'mainTheme': clean_for_json(main_theme),
+                    'todoList': clean_for_json(todo_list),
+                    'liuNian': clean_for_json(liu_nian),
+                    'liuYue': clean_for_json(liu_yue),
+                    'liuRi': clean_for_json(liu_ri)
                 }
             }
             
-            return {'success': True, 'data': clean_for_json(response), 'code': 200}
+            return {'success': True, 'data': response_data, 'code': 200}
 
         except Exception as e:
             import traceback
