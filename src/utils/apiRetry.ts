@@ -38,14 +38,16 @@ export async function fetchWithRetry<T>(
     try {
       const response = await fetch(url, options);
       
-      // 尝试解析响应（无论成功或失败）
+      // 先读取响应文本（Response body 只能读取一次）
+      const responseText = await response.text();
+      
+      // 尝试解析为 JSON
       let responseData: any;
       try {
-        responseData = await response.json();
+        responseData = JSON.parse(responseText);
       } catch {
-        // 如果不是 JSON，使用文本
-        const text = await response.text();
-        responseData = { error: text || `HTTP ${response.status}: ${response.statusText}` };
+        // 如果不是 JSON，使用文本作为错误信息
+        responseData = { error: responseText || `HTTP ${response.status}: ${response.statusText}` };
       }
       
       if (!response.ok) {
