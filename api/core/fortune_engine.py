@@ -327,24 +327,122 @@ def _calculate_shensha(bazi, liu_ri):
     }
 
 
+def _get_level_from_score(score):
+    """根据分数获取等级"""
+    if score >= 80:
+        return "大吉"
+    elif score >= 70:
+        return "吉"
+    elif score >= 60:
+        return "平"
+    else:
+        return "凶"
+
+
+def _get_tag_from_score(score, dimension):
+    """根据分数和维度获取标签"""
+    tags = {
+        "career": {
+            "high": "事业腾飞", "mid": "稳中有升", "low": "需谨慎"
+        },
+        "wealth": {
+            "high": "财运亨通", "mid": "正财得地", "low": "财运平平"
+        },
+        "romance": {
+            "high": "桃花运旺", "mid": "平平淡淡", "low": "感情波折"
+        },
+        "health": {
+            "high": "神清气爽", "mid": "注意休息", "low": "身体欠安"
+        },
+        "academic": {
+            "high": "文昌显现", "mid": "学业顺利", "low": "需加把劲"
+        },
+        "travel": {
+            "high": "出行顺利", "mid": "平安出行", "low": "宜静不宜动"
+        }
+    }
+    dim_tags = tags.get(dimension, {})
+    if score >= 80:
+        return dim_tags.get("high", "吉")
+    elif score >= 60:
+        return dim_tags.get("mid", "平")
+    else:
+        return dim_tags.get("low", "凶")
+
+
+def _get_inference_from_score(score, dimension, ten_god=None):
+    """根据分数、维度和十神生成推论"""
+    inferences = {
+        "career": {
+            "high": f"{ten_god or '官杀'}得力，利于职场晋升和事业发展。",
+            "mid": "工作稳定，稳步前进，适合积累经验。",
+            "low": "职场压力较大，需谨慎应对，避免冲动。"
+        },
+        "wealth": {
+            "high": f"{ten_god or '财星'}得地，财运亨通，适合投资理财。",
+            "mid": "正财稳定，辛苦钱稳赚，偏财勿念。",
+            "low": "财运平平，不宜冒险投资，保守为佳。"
+        },
+        "romance": {
+            "high": "桃花旺盛，感情运势佳，利于表白和约会。",
+            "mid": "感情平淡，多关注伴侣情绪，增进感情。",
+            "low": "感情容易波动，需多沟通，避免争吵。"
+        },
+        "health": {
+            "high": "五行流通，身体倍儿棒，精力充沛。",
+            "mid": "身体尚可，注意劳逸结合，适度锻炼。",
+            "low": "身体欠安，注意休息，避免过度劳累。"
+        },
+        "academic": {
+            "high": "头脑清晰，思维敏捷，适合学习和考试。",
+            "mid": "学业顺利，稳步前进，保持专注。",
+            "low": "注意力不集中，需调整状态，多加努力。"
+        },
+        "travel": {
+            "high": "出行顺利，利于出差、旅游和社交。",
+            "mid": "平安出行，注意交通安全，顺利到达。",
+            "low": "出行容易受阻，宜静不宜动，推迟行程。"
+        }
+    }
+    dim_inferences = inferences.get(dimension, {})
+    if score >= 80:
+        return dim_inferences.get("high", "运势较好")
+    elif score >= 60:
+        return dim_inferences.get("mid", "运势平稳")
+    else:
+        return dim_inferences.get("low", "运势欠佳")
+
+
 def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
                              element_analysis, shensha_result):
-    """计算六大维度分数"""
+    """计算六大维度分数（返回完整对象）"""
     dimensions = {}
     base_dim_score = overall_score
+    ten_god = calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
 
     # 事业运
     career_score = base_dim_score
-    ten_god = calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
     if ten_god in DIMENSION_MAPPING['career']['core_shishen']:
         career_score += 10
-    dimensions['career'] = max(0, min(100, int(career_score)))
+    career_score = max(0, min(100, int(career_score)))
+    dimensions['career'] = {
+        'score': career_score,
+        'level': _get_level_from_score(career_score),
+        'tag': _get_tag_from_score(career_score, 'career'),
+        'inference': _get_inference_from_score(career_score, 'career', ten_god)
+    }
 
     # 财运
     wealth_score = base_dim_score
     if ten_god in DIMENSION_MAPPING['wealth']['core_shishen']:
         wealth_score += 12
-    dimensions['wealth'] = max(0, min(100, int(wealth_score)))
+    wealth_score = max(0, min(100, int(wealth_score)))
+    dimensions['wealth'] = {
+        'score': wealth_score,
+        'level': _get_level_from_score(wealth_score),
+        'tag': _get_tag_from_score(wealth_score, 'wealth'),
+        'inference': _get_inference_from_score(wealth_score, 'wealth', ten_god)
+    }
 
     # 情感运
     romance_score = base_dim_score
@@ -352,23 +450,46 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
         romance_score += 12
     elif DIZHI_INTERACTIONS['liu_chong'].get(liu_ri['zhi']) == bazi['day_zhi']:
         romance_score -= 15
-    dimensions['romance'] = max(0, min(100, int(romance_score)))
+    romance_score = max(0, min(100, int(romance_score)))
+    dimensions['romance'] = {
+        'score': romance_score,
+        'level': _get_level_from_score(romance_score),
+        'tag': _get_tag_from_score(romance_score, 'romance'),
+        'inference': _get_inference_from_score(romance_score, 'romance', ten_god)
+    }
 
     # 健康运
-    health_score = base_dim_score
-    dimensions['health'] = max(0, min(100, int(health_score)))
+    health_score = max(0, min(100, int(base_dim_score)))
+    dimensions['health'] = {
+        'score': health_score,
+        'level': _get_level_from_score(health_score),
+        'tag': _get_tag_from_score(health_score, 'health'),
+        'inference': _get_inference_from_score(health_score, 'health', ten_god)
+    }
 
-    # 学业运
+    # 学业运（前端使用 academic）
     studies_score = base_dim_score
     if ten_god in DIMENSION_MAPPING['studies']['core_shishen']:
         studies_score += 10
-    dimensions['studies'] = max(0, min(100, int(studies_score)))
+    studies_score = max(0, min(100, int(studies_score)))
+    dimensions['academic'] = {
+        'score': studies_score,
+        'level': _get_level_from_score(studies_score),
+        'tag': _get_tag_from_score(studies_score, 'academic'),
+        'inference': _get_inference_from_score(studies_score, 'academic', ten_god)
+    }
 
     # 出行运
     travel_score = base_dim_score
     if 'travel' in shensha_result.get('dimension_boosts', {}):
         travel_score += shensha_result['dimension_boosts']['travel']
-    dimensions['travel'] = max(0, min(100, int(travel_score)))
+    travel_score = max(0, min(100, int(travel_score)))
+    dimensions['travel'] = {
+        'score': travel_score,
+        'level': _get_level_from_score(travel_score),
+        'tag': _get_tag_from_score(travel_score, 'travel'),
+        'inference': _get_inference_from_score(travel_score, 'travel', ten_god)
+    }
 
     return dimensions
 

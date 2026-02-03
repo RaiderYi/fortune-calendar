@@ -87,11 +87,14 @@ function FortuneCard({
     }
 
     if (yongShen) {
-      analysis.push(`您的八字${yongShen.strength}，用神为${yongShen.yongShen.join('、')}。`);
+      const yongShenList = Array.isArray(yongShen.yongShen) ? yongShen.yongShen : [];
+      if (yongShenList.length > 0) {
+        analysis.push(`您的八字${yongShen.strength || '未知'}，用神为${yongShenList.join('、')}。`);
+      }
       
       if (liuNian) {
         const dayGanElement = getElementFromGan(liuNian.dayGan);
-        if (yongShen.yongShen.includes(dayGanElement)) {
+        if (yongShenList.includes(dayGanElement)) {
           analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的用神相合，运势较为顺畅。`);
         } else if (yongShen.jiShen.includes(dayGanElement)) {
           analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的忌神相冲，需谨慎行事。`);

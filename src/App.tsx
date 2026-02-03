@@ -332,7 +332,41 @@ export default function App() {
           emoji: '',
           description: ''
         },
-        dimensions: fortune.dimensions || {},
+        dimensions: (() => {
+          // 确保 dimensions 有正确的结构
+          const dims = fortune.dimensions || {};
+          const result: { [key: string]: any } = {};
+          
+          // 维度键名映射（后端可能使用不同的键名）
+          const dimensionKeys = ['career', 'wealth', 'romance', 'health', 'academic', 'travel'];
+          
+          dimensionKeys.forEach(key => {
+            const dim = dims[key];
+            if (dim && typeof dim === 'object' && 'score' in dim) {
+              // 已经是完整对象
+              result[key] = dim;
+            } else if (typeof dim === 'number') {
+              // 只是数字，需要转换为对象
+              const score = dim;
+              result[key] = {
+                score,
+                level: score >= 80 ? '大吉' : score >= 70 ? '吉' : score >= 60 ? '平' : '凶',
+                tag: score >= 80 ? '吉' : score >= 60 ? '平' : '凶',
+                inference: score >= 80 ? '运势较好' : score >= 60 ? '运势平稳' : '运势欠佳'
+              };
+            } else {
+              // 默认值
+              result[key] = {
+                score: 50,
+                level: '平',
+                tag: '平',
+                inference: '运势平稳'
+              };
+            }
+          });
+          
+          return result;
+        })(),
         todo: (fortune.todoList || []).map((item: any) => ({
           label: item.type === '宜' ? '宜' : '忌',
           content: item.content || '',
