@@ -284,7 +284,7 @@ export default function App() {
       customYongShen: yongShen
     };
 
-    const backendData = await fetchWithRetryAndCache<DailyFortune>(
+    const response = await fetchWithRetryAndCache<any>(
       '/api/fortune',
       {
         method: 'POST',
@@ -303,7 +303,52 @@ export default function App() {
       }
     );
 
-    return backendData;
+    // 转换 API 响应格式：从嵌套结构转换为扁平结构
+    if (response && response.success && response.data) {
+      const { data } = response;
+      const fortune = data.fortune || {};
+      const bazi = data.bazi || {};
+      const analysis = data.analysis || {};
+      
+      // 计算星期几
+      const dateObj = new Date(dateStr);
+      const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      const weekDay = weekDays[dateObj.getDay()];
+      
+      // 构建扁平化的数据结构
+      const transformedData: DailyFortune = {
+        dateStr,
+        lunarStr: bazi.solar_term || '', // 使用节气作为农历信息
+        weekDay,
+        totalScore: fortune.totalScore || 0,
+        pillars: {
+          year: bazi.year || '',
+          month: bazi.month || '',
+          day: bazi.day || ''
+        },
+        mainTheme: fortune.mainTheme || {
+          keyword: '',
+          subKeyword: '',
+          emoji: '',
+          description: ''
+        },
+        dimensions: fortune.dimensions || {},
+        todo: (fortune.todoList || []).map((item: any) => ({
+          label: item.type === '宜' ? '宜' : '忌',
+          content: item.content || '',
+          type: item.type === '宜' ? 'up' : 'down'
+        })),
+        baziDetail: bazi,
+        yongShen: analysis.yong_shen_result || {},
+        liuNian: fortune.liuNian || {},
+        todayTenGod: fortune.liuRi?.gan || ''
+      };
+      
+      return transformedData;
+    }
+    
+    // 如果响应格式不符合预期，返回空数据
+    throw new Error('API 响应格式错误');
   }, []);
 
   useEffect(() => {

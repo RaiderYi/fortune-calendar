@@ -404,35 +404,32 @@ def generate_main_theme(total_score, day_gan, liu_ri_gan):
 
 def generate_todo(yong_shen_element, ji_shen_list):
     """根据用神和忌神生成宜忌建议"""
-    element_names = {
-        '木': '木',
-        '火': '火',
-        '土': '土',
-        '金': '金',
-        '水': '水'
-    }
-    
-    yong_name = element_names.get(yong_shen_element, '木')
+    todo_items = []
     
     # 宜做的事情（基于用神）
-    yi_list = []
     if yong_shen_element == '木':
-        yi_list = ['多接触绿色植物', '向东发展', '多读书学习', '早起锻炼']
+        todo_items.append({'type': '宜', 'content': '多接触绿色植物，向东发展，多读书学习'})
     elif yong_shen_element == '火':
-        yi_list = ['多晒太阳', '向南发展', '多社交活动', '保持热情']
+        todo_items.append({'type': '宜', 'content': '多晒太阳，向南发展，多社交活动'})
     elif yong_shen_element == '土':
-        yi_list = ['稳定发展', '多接地气', '保持耐心', '注重实际']
+        todo_items.append({'type': '宜', 'content': '稳定发展，多接地气，保持耐心'})
     elif yong_shen_element == '金':
-        yi_list = ['向西发展', '多接触金属', '保持果断', '注重效率']
+        todo_items.append({'type': '宜', 'content': '向西发展，多接触金属，保持果断'})
     elif yong_shen_element == '水':
-        yi_list = ['多喝水', '向北发展', '保持冷静', '多思考']
+        todo_items.append({'type': '宜', 'content': '多喝水，向北发展，保持冷静'})
     
     # 忌做的事情（基于忌神）
-    ji_list = []
     if ji_shen_list:
-        ji_list = ['避免冲动决策', '谨慎投资', '注意人际关系', '保持低调']
+        todo_items.append({'type': '忌', 'content': '避免冲动决策，谨慎投资，注意人际关系'})
     
-    return {
-        'yi': yi_list[:3],  # 最多3条
-        'ji': ji_list[:3]   # 最多3条
-    }
+    # 随机添加一些通用建议
+    general_suggestions = [
+        {'type': '宜', 'content': '保持积极心态，多与人交流'},
+        {'type': '宜', 'content': '规律作息，均衡饮食'},
+        {'type': '忌', 'content': '避免冲动决策，三思而后行'},
+        {'type': '忌', 'content': '减少不必要的争执'}
+    ]
+    random.shuffle(general_suggestions)
+    todo_items.extend(general_suggestions[:2])  # 随机选2条
+    
+    return todo_items
