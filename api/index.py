@@ -142,7 +142,7 @@ class handler(BaseHTTPRequestHandler):
             messages = data.get('messages', [])
             bazi_context = data.get('baziContext', {})
             
-            api_key = os.environ.get('DEEPSEEK_API_KEY')
+            api_key = os.environ.get('sk-5de6598eb59e448f9e829350d56cbd00')
             if not api_key:
                 self._send_json_response(500, {'success': False, 'error': 'AI configuration missing'})
                 return
