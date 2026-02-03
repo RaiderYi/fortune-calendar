@@ -2144,7 +2144,8 @@ def _create_custom_yongshen(custom_yongshen, bazi):
     custom_yongshen: 可以是字符串（单个用神）或列表（多个用神）
     返回格式与 determine_yongshen_tiered_v5 一致
     """
-    from .core.constants import WU_XING_MAP, WU_XING_SHENG, WU_XING_KE
+    # 这些常量应该已经在文件顶部定义（内联版本）
+    # 如果未定义，使用默认值
     
     # 处理输入：如果是字符串，转换为列表
     if isinstance(custom_yongshen, str):
@@ -3810,6 +3811,8 @@ def _hash_password(password):
             yongshen_v5 = None
             element_analysis = None
             dimensions_v5 = None
+            score_result_v5 = None  # 初始化 V5 评分结果
+            total_score = 0  # 初始化总分
             use_v5 = USE_V5_ALGORITHM  # 使用局部变量
             
             # 4. 计算运势评分
@@ -3915,10 +3918,10 @@ def _hash_password(password):
                     'dayMaster': bazi['day_gan']
                 },
                 'yongShen': {
-                    'strength': analysis['strength']['level'],
-                    'yongShen': [yongshen_v5['primary']] if (use_v5 and yongshen_v5) else [analysis['yong_shen'].get('primary', '')],
-                    'xiShen': yongshen_v5.get('xi_shen', []) if (use_v5 and yongshen_v5) else analysis['yong_shen'].get('xi_shen', []),
-                    'jiShen': yongshen_v5.get('ji_shen', []) if (use_v5 and yongshen_v5) else analysis['yong_shen'].get('ji_shen', []),
+                    'strength': analysis.get('strength', {}).get('level', '未知'),
+                    'yongShen': [yongshen_v5['primary']] if (use_v5 and yongshen_v5 and 'primary' in yongshen_v5) else [analysis.get('yong_shen', {}).get('primary', '')],
+                    'xiShen': (yongshen_v5.get('xi_shen', []) if (use_v5 and yongshen_v5) else analysis.get('yong_shen', {}).get('xi_shen', [])) or [],
+                    'jiShen': (yongshen_v5.get('ji_shen', []) if (use_v5 and yongshen_v5) else analysis.get('yong_shen', {}).get('ji_shen', [])) or [],
                     'isCustom': bool(custom_yongshen)  # 标记是否为自定义用神
                 },
                 'liuNian': {
@@ -3938,37 +3941,45 @@ def _hash_password(password):
             }
             
             # ========== V5.0 新增响应字段 ==========
-            if use_v5 and yongshen_v5 and element_analysis:
-                response.update({
-                    'algorithmVersion': 'v5.0',
-                    'elementAnalysis': {
-                        'strength': element_analysis['strength'],
-                        'dayMasterScore': element_analysis['day_master_score'],
-                        'pattern': element_analysis['pattern'],
-                        'patternDesc': {
-                            'Strong': '身强',
-                            'Weak': '身弱',
-                            'Neutral': '中和',
-                            'Dominant': '专旺',
-                            'Follower': '从格'
-                        }.get(element_analysis['pattern'], element_analysis['pattern'])
-                    },
-                    'yongshenTiers': {
-                        'primary': yongshen_v5['primary'],
-                        'favorable': yongshen_v5['favorable'],
-                        'unfavorable': yongshen_v5['unfavorable'],
-                        'tiers': yongshen_v5['tiers'],
-                        'pattern': yongshen_v5['pattern']
-                    },
-                    'scoreBreakdownV5': score_result_v5['breakdown'],
-                    'interactionsV5': score_result_v5['interactions'],
-                    'factorsV5': score_result_v5['factors'],
-                    'shenShaV5': {
-                        'totalScore': score_result_v5['shensha']['total_score'],
-                        'details': score_result_v5['shensha']['details']
-                    },
-                    'dimensionsV5': dimensions_v5
-                })
+            if use_v5 and yongshen_v5 and element_analysis and score_result_v5:
+                try:
+                    response.update({
+                        'algorithmVersion': 'v5.0',
+                        'elementAnalysis': {
+                            'strength': element_analysis.get('strength', {}),
+                            'dayMasterScore': element_analysis.get('day_master_score', 0),
+                            'pattern': element_analysis.get('pattern', 'Unknown'),
+                            'patternDesc': {
+                                'Strong': '身强',
+                                'Weak': '身弱',
+                                'Neutral': '中和',
+                                'Dominant': '专旺',
+                                'Follower': '从格'
+                            }.get(element_analysis.get('pattern', ''), element_analysis.get('pattern', '未知'))
+                        },
+                        'yongshenTiers': {
+                            'primary': yongshen_v5.get('primary', ''),
+                            'favorable': yongshen_v5.get('favorable', []),
+                            'unfavorable': yongshen_v5.get('unfavorable', []),
+                            'tiers': yongshen_v5.get('tiers', {}),
+                            'pattern': yongshen_v5.get('pattern', '')
+                        },
+                        'scoreBreakdownV5': score_result_v5.get('breakdown', {}),
+                        'interactionsV5': score_result_v5.get('interactions', {}),
+                        'factorsV5': score_result_v5.get('factors', {}),
+                        'shenShaV5': {
+                            'totalScore': score_result_v5.get('shensha', {}).get('total_score', 0),
+                            'details': score_result_v5.get('shensha', {}).get('details', [])
+                        },
+                        'dimensionsV5': dimensions_v5 or {}
+                    })
+                except Exception as v5_response_error:
+                    print(f"[ERROR] V5 响应构建失败: {v5_response_error}")
+                    import traceback
+                    print(traceback.format_exc())
+                    response.update({
+                        'algorithmVersion': 'v5.0 (partial)'
+                    })
             else:
                 response.update({
                     'algorithmVersion': 'v3.1'
