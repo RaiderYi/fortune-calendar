@@ -11,13 +11,21 @@ import traceback
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
-# 导入业务服务
-from .services.auth_service import AuthService
-from .services.ai_service import AIService
-from .services.fortune_service import FortuneService
-
-# 导入工具函数
-from .utils.json_utils import safe_json_dumps
+# 导入业务服务 - 使用 try-except 处理 Vercel 环境的导入问题
+try:
+    from .services.auth_service import AuthService
+    from .services.ai_service import AIService
+    from .services.fortune_service import FortuneService
+    from .utils.json_utils import safe_json_dumps
+except ImportError:
+    # Vercel 部署时的备用导入方式
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from services.auth_service import AuthService
+    from services.ai_service import AIService
+    from services.fortune_service import FortuneService
+    from utils.json_utils import safe_json_dumps
 
 class handler(BaseHTTPRequestHandler):
     """
@@ -44,7 +52,7 @@ class handler(BaseHTTPRequestHandler):
             try:
                 if not self.wfile.closed:
                     self.wfile.write(json.dumps({"success": False, "error": "Internal Server Error"}).encode('utf-8'))
-    except:
+            except:
                 pass
 
     def do_OPTIONS(self):

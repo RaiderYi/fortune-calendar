@@ -5,16 +5,36 @@
 """
 
 import datetime
-from ..core.lunar import (
-    calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
-    get_day_gan_zhi, get_hour_gan_zhi
-)
-from ..core.bazi_engine import analyze_bazi_cached, calculate_ten_god
-from ..core.fortune_engine import (
-    calculate_fortune_score_v5, calculate_dimensions_v5,
-    generate_main_theme, generate_todo
-)
-from ..utils.json_utils import clean_for_json
+import os
+import sys
+
+# 处理相对导入问题（Vercel 环境兼容）
+try:
+    from ..core.lunar import (
+        calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
+        get_day_gan_zhi, get_hour_gan_zhi
+    )
+    from ..core.bazi_engine import analyze_bazi_cached, calculate_ten_god
+    from ..core.fortune_engine import (
+        calculate_fortune_score_v5, calculate_dimensions_v5,
+        generate_main_theme, generate_todo
+    )
+    from ..utils.json_utils import clean_for_json
+except ImportError:
+    # Vercel 部署时的备用导入方式
+    api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if api_dir not in sys.path:
+        sys.path.insert(0, api_dir)
+    from core.lunar import (
+        calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
+        get_day_gan_zhi, get_hour_gan_zhi
+    )
+    from core.bazi_engine import analyze_bazi_cached, calculate_ten_god
+    from core.fortune_engine import (
+        calculate_fortune_score_v5, calculate_dimensions_v5,
+        generate_main_theme, generate_todo
+    )
+    from utils.json_utils import clean_for_json
 
 class FortuneService:
     @staticmethod
@@ -32,20 +52,25 @@ class FortuneService:
                 return {'success': False, 'error': '出生日期必填', 'code': 400}
 
             # 解析出生日期时间
-            from ..utils.date_utils import parse_datetime
+            try:
+                from ..utils.date_utils import parse_datetime
+            except ImportError:
+                from utils.date_utils import parse_datetime
             birth_dt = parse_datetime(birth_date_str, birth_time_str)
 
             # 2. 计算基础八字
             bazi = calculate_bazi(birth_dt, longitude)
 
             # 3. 八字分析（带缓存）
-            from ..core.bazi_engine import generate_bazi_cache_key
+            try:
+                from ..core.bazi_engine import generate_bazi_cache_key, _create_custom_yongshen
+            except ImportError:
+                from core.bazi_engine import generate_bazi_cache_key, _create_custom_yongshen
             cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
             analysis_result = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
 
             # 处理用户手动调整的用神
             if custom_yongshen:
-                from ..core.bazi_engine import _create_custom_yongshen
                 analysis_result['yong_shen_result'] = _create_custom_yongshen(custom_yongshen, bazi)
 
             # 4. 计算当前流年流月流日
