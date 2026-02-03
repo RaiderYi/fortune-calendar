@@ -1,8 +1,9 @@
 import { X, Clock, TrendingUp, Trash2, BarChart3 } from 'lucide-react';
 import { getHistory, clearHistory, formatHistoryDate, getHistoryStats, HistoryRecord } from '../utils/historyStorage';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { updateAchievementProgress } from '../utils/achievementStorage';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 interface HistoryDrawerProps {
   isOpen: boolean;
@@ -11,9 +12,18 @@ interface HistoryDrawerProps {
   onCompareClick?: () => void; // 新增
 }
 
-export default function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompareClick }: HistoryDrawerProps) {
+function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompareClick }: HistoryDrawerProps) {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [stats, setStats] = useState<ReturnType<typeof getHistoryStats>>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // 虚拟列表配置
+  const rowVirtualizer = useVirtualizer({
+    count: history.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 180, // 预估每个项目的高度
+    overscan: 3, // 预渲染额外的项目数量
+  });
 
   // 加载历史记录
   useEffect(() => {
@@ -29,22 +39,21 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompare
   }, [isOpen]);
 
   // 清除所有历史
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     if (confirm('确定要清除所有历史记录吗？')) {
       clearHistory();
       setHistory([]);
       setStats(null);
     }
-  };
+  }, []);
 
   // 选择日期
-  const handleSelectDate = (dateStr: string) => {
-    // 修复：使用本地时区创建日期，避免时区偏移
+  const handleSelectDate = useCallback((dateStr: string) => {
     const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(year, month - 1, day, 12, 0, 0); // 使用中午12点，避免跨日期问题
+    const date = new Date(year, month - 1, day, 12, 0, 0);
     onSelectDate(date);
     onClose();
-  };
+  }, [onSelectDate, onClose]);
 
   return (
     <AnimatePresence>
@@ -102,8 +111,8 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompare
           )}
         </div>
 
-        {/* 内容区域 */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* 内容区域 - 使用虚拟列表优化性能 */}
+        <div ref={parentRef} className="flex-1 overflow-y-auto p-4">
           {history.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
               <Clock size={48} className="opacity-30" />
@@ -111,58 +120,35 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompare
               <p className="text-xs">查询运势后会自动保存</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {history.map((record, index) => (
-                <button
-                  key={`${record.date}-${index}`}
-                  onClick={() => handleSelectDate(record.date)}
-                  className="w-full bg-white border border-gray-200 rounded-2xl p-4 hover:border-indigo-400 hover:shadow-md transition text-left group"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div className="font-bold text-gray-800 text-lg mb-1">
-                        {formatHistoryDate(record.date)}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {record.date}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-black text-indigo-600">
-                        {record.fortune.totalScore}
-                      </div>
-                      <div className="text-xs text-gray-400">分</div>
-                    </div>
+            <div
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const record = history[virtualRow.index];
+                return (
+                  <div
+                    key={`${record.date}-${virtualRow.index}`}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                    className="pb-3"
+                  >
+                    <HistoryItem
+                      record={record}
+                      onSelect={handleSelectDate}
+                    />
                   </div>
-
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-2xl">{record.fortune.mainTheme.emoji}</span>
-                    <span className="font-bold text-gray-700 text-sm">
-                      {record.fortune.mainTheme.keyword}
-                    </span>
-                  </div>
-
-                  {/* 六维度迷你图 */}
-                  <div className="grid grid-cols-6 gap-1">
-                    {Object.entries(record.fortune.dimensions).map(([key, value]) => (
-                      <div key={key} className="text-center">
-                        <div 
-                          className="h-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full mb-1"
-                          style={{ width: `${value.score}%` }}
-                        />
-                        <div className="text-[8px] text-gray-400">
-                          {value.score}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-3 text-xs text-indigo-600 opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
-                    <TrendingUp size={12} />
-                    点击查看详情
-                  </div>
-                </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -199,3 +185,64 @@ export default function HistoryDrawer({ isOpen, onClose, onSelectDate, onCompare
     </AnimatePresence>
   );
 }
+
+// 记忆化的历史记录项组件
+interface HistoryItemProps {
+  record: HistoryRecord;
+  onSelect: (dateStr: string) => void;
+}
+
+const HistoryItem = memo(function HistoryItem({ record, onSelect }: HistoryItemProps) {
+  return (
+    <button
+      onClick={() => onSelect(record.date)}
+      className="w-full h-full bg-white border border-gray-200 rounded-2xl p-4 hover:border-indigo-400 hover:shadow-md transition text-left group"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="font-bold text-gray-800 text-lg mb-1">
+            {formatHistoryDate(record.date)}
+          </div>
+          <div className="text-xs text-gray-400">
+            {record.date}
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-3xl font-black text-indigo-600">
+            {record.fortune.totalScore}
+          </div>
+          <div className="text-xs text-gray-400">分</div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-2xl">{record.fortune.mainTheme.emoji}</span>
+        <span className="font-bold text-gray-700 text-sm">
+          {record.fortune.mainTheme.keyword}
+        </span>
+      </div>
+
+      {/* 六维度迷你图 */}
+      <div className="grid grid-cols-6 gap-1">
+        {Object.entries(record.fortune.dimensions).map(([key, value]) => (
+          <div key={key} className="text-center">
+            <div 
+              className="h-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full mb-1"
+              style={{ width: `${value.score}%` }}
+            />
+            <div className="text-[8px] text-gray-400">
+              {value.score}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 text-xs text-indigo-600 opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
+        <TrendingUp size={12} />
+        点击查看详情
+      </div>
+    </button>
+  );
+});
+
+export default memo(HistoryDrawer);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,7 +12,7 @@ interface DimensionCardProps {
   onAIClick?: (question: string) => void; // AI咨询回调
 }
 
-export default function DimensionCard({ dimensions, onAIClick }: DimensionCardProps) {
+function DimensionCard({ dimensions, onAIClick }: DimensionCardProps) {
   const { t, i18n } = useTranslation(['fortune']);
   const isEnglish = i18n.language === 'en';
   const [selectedDimension, setSelectedDimension] = useState<DimensionType | null>(null);
@@ -147,3 +147,5 @@ export default function DimensionCard({ dimensions, onAIClick }: DimensionCardPr
     </div>
   );
 }
+
+export default memo(DimensionCard);

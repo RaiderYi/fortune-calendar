@@ -3,38 +3,54 @@
 // ==========================================
 
 import type { AIChatRequest, AIChatResponse } from '../types';
+import { fetchWithRetry, getCachedData, setCacheData } from '../utils/apiRetry';
 
 const API_BASE_URL = '/api';
 
+// 重试配置
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  delay: 1000,
+  backoff: 1.5,
+};
+
 /**
- * AI 聊天请求
+ * AI 聊天请求（带重试机制）
  */
 export async function chatWithAI(
   messages: AIChatRequest['messages'],
   baziContext: AIChatRequest['baziContext']
 ): Promise<AIChatResponse> {
+  const requestBody = {
+    messages,
+    baziContext,
+  } as AIChatRequest;
+
   try {
-    const response = await fetch(`${API_BASE_URL}/ai-chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const data = await fetchWithRetry<AIChatResponse>(
+      `${API_BASE_URL}/ai-chat`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       },
-      body: JSON.stringify({
-        messages,
-        baziContext,
-      } as AIChatRequest),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data: AIChatResponse = await response.json();
+      {
+        ...RETRY_CONFIG,
+        onRetry: (attempt, error) => {
+          console.warn(`AI 聊天请求第 ${attempt} 次重试:`, error.message);
+        },
+      }
+    );
     return data;
   } catch (error) {
-    console.error('AI 聊天请求失败:', error);
-    throw error;
+    console.error('AI 聊天请求失败（已重试）:', error);
+    // 返回优雅降级的响应
+    return {
+      success: false,
+      error: '服务暂时不可用，请稍后重试',
+    };
   }
 }
 

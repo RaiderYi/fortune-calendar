@@ -4,11 +4,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Bot, User, Loader2, Sparkles, TrendingUp, Briefcase, Coins, Heart, Zap, BookOpen, Map } from 'lucide-react';
+import { X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { chatWithAI } from '../services/api';
 import type { ChatMessage, BaziContext, QuickQuestion } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { useTranslation } from 'react-i18next';
+import TypewriterText from './TypewriterText';
 
 interface AIDeductionProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export default function AIDeduction({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null); // 正在打字的消息索引
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasSentInitialQuestion = useRef(false);
@@ -71,7 +73,9 @@ export default function AIDeduction({
           role: 'assistant',
           content: response.message,
         };
-        setMessages([...newMessages, assistantMessage]);
+        const updatedMessages = [...newMessages, assistantMessage];
+        setMessages(updatedMessages);
+        setTypingMessageIndex(updatedMessages.length - 1); // 触发打字机效果
       } else {
         throw new Error(response.error || t('aiDeduction.error'));
       }
@@ -234,7 +238,16 @@ export default function AIDeduction({
                         <Bot size={16} className="mt-0.5 flex-shrink-0 text-indigo-500" />
                       )}
                       <div className="flex-1 whitespace-pre-wrap text-sm leading-relaxed">
-                        {msg.content}
+                        {/* AI 消息使用打字机效果 */}
+                        {msg.role === 'assistant' && idx === typingMessageIndex ? (
+                          <TypewriterText
+                            text={msg.content}
+                            speed={20}
+                            onComplete={() => setTypingMessageIndex(null)}
+                          />
+                        ) : (
+                          msg.content
+                        )}
                       </div>
                       {msg.role === 'user' && (
                         <User size={16} className="mt-0.5 flex-shrink-0" />

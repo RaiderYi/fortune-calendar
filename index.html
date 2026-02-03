@@ -36,11 +36,87 @@
     <meta property="og:locale:alternate" content="en_US" />
     
     <!-- ============================================ -->
+    <!-- 字体预加载 (性能优化) -->
+    <!-- ============================================ -->
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" /></noscript>
+    
+    <!-- ============================================ -->
+    <!-- 关键 CSS 内联 (首屏渲染优化) -->
+    <!-- ============================================ -->
+    
+    <style>
+      /* 关键样式内联，避免闪烁 */
+      :root {
+        --bg-primary: #F5F5F7;
+        --text-primary: #1f2937;
+        --accent-indigo: #6366f1;
+      }
+      
+      /* 骨架屏样式 */
+      .skeleton-pulse {
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+        background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+        background-size: 200% 100%;
+      }
+      
+      @keyframes skeleton-pulse {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+      
+      /* 初始加载状态 */
+      #root:empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: var(--bg-primary);
+      }
+      
+      #root:empty::after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e5e7eb;
+        border-top-color: var(--accent-indigo);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* 暗色模式支持 */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-primary: #0f172a;
+          --text-primary: #f1f5f9;
+        }
+        
+        .skeleton-pulse {
+          background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+          background-size: 200% 100%;
+        }
+      }
+    </style>
+    
+    <!-- ============================================ -->
     <!-- 网站图标 -->
     <!-- ============================================ -->
     
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="canonical" href="https://fortunecalendar.vercel.app" />
+    
+    <!-- PWA 相关 -->
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     
     <!-- ============================================ -->
     <!-- 结构化数据 (Schema.org) -->

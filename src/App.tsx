@@ -1,24 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { updateSEOMeta } from './utils/seo';
+import { useHaptics } from './utils/haptics';
+import { useSwipeGesture } from './hooks/useSwipeGesture';
+import { fetchWithRetryAndCache, getCachedData, setCacheData } from './utils/apiRetry';
 import Header from './components/Header';
 import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
 import DimensionCard from './components/DimensionCard';
-import HistoryDrawer from './components/HistoryDrawer';
-import TrendsView from './components/TrendsView';
-import CalendarView from './components/CalendarView';
 import CalendarWidget from './components/CalendarWidget';
 import Onboarding from './components/Onboarding';
 import ProfileSettings from './components/ProfileSettings';
 import type { UserProfile } from './components/ProfileSettings';
-import CheckinModal from './components/CheckinModal';
-import AchievementView from './components/AchievementView';
-import FortuneCompare from './components/FortuneCompare';
-import KnowledgeBase from './components/KnowledgeBase';
-import FeedbackModal from './components/FeedbackModal';
-import AIDeduction from './components/AIDeduction';
 import BottomNav, { type TabType } from './components/BottomNav';
 import TodayPage from './components/TodayPage';
 import CalendarPage from './components/CalendarPage';
@@ -26,13 +20,27 @@ import MyPage from './components/MyPage';
 import DailySignThemeSelector, { type DailySignTheme } from './components/DailySignThemeSelector';
 import TimeEnergyBall from './components/TimeEnergyBall';
 import CollapsibleSection from './components/CollapsibleSection';
-import ContactModal from './components/ContactModal';
-import LifeMap from './components/LifeMap';
+import LazyLoadFallback from './components/LazyLoadFallback';
 import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
 import { useToast } from './contexts/ToastContext';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
+
+// ==========================================
+// 懒加载非核心组件（性能优化）
+// ==========================================
+const HistoryDrawer = lazy(() => import('./components/HistoryDrawer'));
+const TrendsView = lazy(() => import('./components/TrendsView'));
+const CalendarView = lazy(() => import('./components/CalendarView'));
+const CheckinModal = lazy(() => import('./components/CheckinModal'));
+const AchievementView = lazy(() => import('./components/AchievementView'));
+const FortuneCompare = lazy(() => import('./components/FortuneCompare'));
+const KnowledgeBase = lazy(() => import('./components/KnowledgeBase'));
+const FeedbackModal = lazy(() => import('./components/FeedbackModal'));
+const AIDeduction = lazy(() => import('./components/AIDeduction'));
+const ContactModal = lazy(() => import('./components/ContactModal'));
+const LifeMap = lazy(() => import('./components/LifeMap'));
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
@@ -150,6 +158,7 @@ interface DailyFortune {
 
 export default function App() {
   const { showToast } = useToast();
+  const haptics = useHaptics(); // 震动反馈
   const [currentDate, setCurrentDate] = useState(new Date());
   const [fortune, setFortune] = useState<DailyFortune | null>(null);
   const [showBazi, setShowBazi] = useState(false);
@@ -179,6 +188,24 @@ export default function App() {
   const [showLifeMap, setShowLifeMap] = useState(false); // 人生大图景
   const [isEditingYongShen, setIsEditingYongShen] = useState(false); // 编辑用神状态（桌面端）
   const [editYongShenValue, setEditYongShenValue] = useState(''); // 编辑用神值（桌面端）
+
+  // 手势支持：左右滑动切换日期
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: () => {
+      if (currentTab === 'today' && !isAnimating) {
+        haptics.light();
+        changeDate(1); // 下一天
+      }
+    },
+    onSwipeRight: () => {
+      if (currentTab === 'today' && !isAnimating) {
+        haptics.light();
+        changeDate(-1); // 前一天
+      }
+    },
+    minDistance: 80,
+    maxTime: 400,
+  });
 
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -220,7 +247,53 @@ export default function App() {
     };
   }, [i18n]);
 
-  // --- 核心：调用后端接口 ---
+  // --- 核心：调用后端接口（带重试和缓存） ---
+  const fetchFortuneData = useCallback(async (date: Date, profile: UserProfile, yongShen: string | null) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    // 缓存键
+    const cacheKey = `fortune:${dateStr}:${profile.birthDate}:${profile.birthTime}:${yongShen || 'auto'}`;
+    
+    // 先检查缓存
+    const cached = getCachedData<DailyFortune>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const requestBody = {
+      date: dateStr,
+      birthDate: profile.birthDate,
+      birthTime: profile.birthTime,
+      longitude: profile.longitude,
+      gender: profile.gender,
+      customYongShen: yongShen
+    };
+
+    const backendData = await fetchWithRetryAndCache<DailyFortune>(
+      '/api/fortune',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      },
+      {
+        maxRetries: 3,
+        delay: 1000,
+        backoff: 1.5,
+        ttl: 5 * 60 * 1000, // 5分钟缓存
+        key: cacheKey,
+        onRetry: (attempt, error) => {
+          console.warn(`运势数据请求第 ${attempt} 次重试:`, error.message);
+        },
+      }
+    );
+
+    return backendData;
+  }, []);
+
   useEffect(() => {
     const fetchFortune = async () => {
       setIsLoading(true);
@@ -230,89 +303,71 @@ export default function App() {
         const day = String(currentDate.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
 
-        // 相对路径请求，Vercel 会处理
-        const res = await fetch('/api/fortune', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            date: dateStr,
-            birthDate: userProfile.birthDate,
-            birthTime: userProfile.birthTime,
-            longitude: userProfile.longitude, // 传递经度给后端计算真太阳时
-            gender: userProfile.gender, // 新增：传递性别给后端
-            customYongShen: customYongShen // 新增：传递用户自定义用神
-          }),
-        });
+        const backendData = await fetchFortuneData(currentDate, userProfile, customYongShen);
+        setFortune({ ...backendData, dateObj: currentDate });
 
-        if (res.ok) {
-          const backendData = await res.json();
-          setFortune({ ...backendData, dateObj: currentDate });
-
-          // 更新成就进度（查询运势）
-          try {
-            const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
-            const queryCount = history.length + 1;
-            updateAchievements({
-              query_10: queryCount,
-              query_50: queryCount,
-              query_100: queryCount,
-            });
-            
-            // 检查是否有新解锁的成就
-            const newUnlocks = checkNewUnlocks();
-            if (newUnlocks.length > 0) {
-              // 可以显示成就解锁通知
-              console.log('新解锁成就:', newUnlocks);
-            }
-          } catch (error) {
-            console.error('更新成就失败:', error);
+        // 更新成就进度（查询运势）
+        try {
+          const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+          const queryCount = history.length + 1;
+          updateAchievements({
+            query_10: queryCount,
+            query_50: queryCount,
+            query_100: queryCount,
+          });
+          
+          // 检查是否有新解锁的成就
+          const newUnlocks = checkNewUnlocks();
+          if (newUnlocks.length > 0) {
+            console.log('新解锁成就:', newUnlocks);
           }
-
-          // 保存到历史记录
-          const historyRecord: HistoryRecord = {
-            date: dateStr, // YYYY-MM-DD
-            timestamp: Date.now(),
-            fortune: {
-              totalScore: backendData.totalScore,
-              mainTheme: {
-                keyword: backendData.mainTheme.keyword,
-                emoji: backendData.mainTheme.emoji,
-              },
-              dimensions: {
-                career: { score: backendData.dimensions.career.score },
-                wealth: { score: backendData.dimensions.wealth.score },
-                romance: { score: backendData.dimensions.romance.score },
-                health: { score: backendData.dimensions.health.score },
-                academic: { score: backendData.dimensions.academic.score },
-                travel: { score: backendData.dimensions.travel.score },
-              },
-            },
-          };
-          saveHistory(historyRecord);
-
-          // 颜色映射逻辑
-          const keyword = backendData.mainTheme.keyword;
-          let themeKey = 'default';
-          // 关键词模糊匹配
-          if (['松弛', '食神', '叛逆', '伤官'].some(k => keyword.includes(k))) themeKey = '食神';
-          else if (['吸金', '偏财', '搬砖', '正财', '破财'].some(k => keyword.includes(k))) themeKey = '偏财';
-          else if (['气场', '七杀', '硬刚', '比肩'].some(k => keyword.includes(k))) themeKey = '七杀';
-          else if (['万人迷', '桃花', '上岸', '正官'].some(k => keyword.includes(k))) themeKey = '桃花';
-          else if (['锦鲤', '正印', '脑洞', '偏印'].some(k => keyword.includes(k))) themeKey = '正印';
-
-          setCurrentThemeStyle(SAFE_THEMES[themeKey] || SAFE_THEMES['default']);
-
-        } else {
-          console.error("后端返回错误");
+        } catch (error) {
+          console.error('更新成就失败:', error);
         }
+
+        // 保存到历史记录
+        const historyRecord: HistoryRecord = {
+          date: dateStr,
+          timestamp: Date.now(),
+          fortune: {
+            totalScore: backendData.totalScore,
+            mainTheme: {
+              keyword: backendData.mainTheme.keyword,
+              emoji: backendData.mainTheme.emoji,
+            },
+            dimensions: {
+              career: { score: backendData.dimensions.career.score },
+              wealth: { score: backendData.dimensions.wealth.score },
+              romance: { score: backendData.dimensions.romance.score },
+              health: { score: backendData.dimensions.health.score },
+              academic: { score: backendData.dimensions.academic.score },
+              travel: { score: backendData.dimensions.travel.score },
+            },
+          },
+        };
+        saveHistory(historyRecord);
+
+        // 颜色映射逻辑
+        const keyword = backendData.mainTheme.keyword;
+        let themeKey = 'default';
+        if (['松弛', '食神', '叛逆', '伤官'].some(k => keyword.includes(k))) themeKey = '食神';
+        else if (['吸金', '偏财', '搬砖', '正财', '破财'].some(k => keyword.includes(k))) themeKey = '偏财';
+        else if (['气场', '七杀', '硬刚', '比肩'].some(k => keyword.includes(k))) themeKey = '七杀';
+        else if (['万人迷', '桃花', '上岸', '正官'].some(k => keyword.includes(k))) themeKey = '桃花';
+        else if (['锦鲤', '正印', '脑洞', '偏印'].some(k => keyword.includes(k))) themeKey = '正印';
+
+        setCurrentThemeStyle(SAFE_THEMES[themeKey] || SAFE_THEMES['default']);
+
       } catch (error) {
-        console.error("连接后端失败", error);
+        console.error("获取运势数据失败", error);
+        // 优雅降级：显示错误提示
+        showToast('运势数据加载失败，请稍后重试', 'error');
       } finally {
         setIsLoading(false);
       }
     };
     fetchFortune();
-  }, [currentDate, userProfile, customYongShen]); // 添加 customYongShen 依赖，当用神改变时重新获取数据
+  }, [currentDate, userProfile, customYongShen, fetchFortuneData, showToast]);
 
   // --- 截图逻辑（使用html-to-image，完美支持lab颜色）---
   const handleGenerateImage = async () => {
@@ -359,6 +414,7 @@ export default function App() {
       
       setGeneratedImage(dataUrl);
       setShowBazi(originalShowBazi);
+      haptics.success(); // 震动反馈
       showToast('日签生成成功！', 'success');
       console.log('✅ 截图成功！');
 
@@ -419,7 +475,10 @@ export default function App() {
       <div className="w-full max-w-[448px] lg:max-w-7xl mx-auto bg-[#F5F5F7] dark:bg-slate-900 min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
         
         {/* ========== 移动端：单列布局 ========== */}
-        <div className="flex flex-col lg:hidden min-h-screen">
+        <div 
+          className="flex flex-col lg:hidden min-h-screen"
+          {...swipeHandlers}
+        >
           {/* --- 顶部导航（仅在今日Tab显示） --- */}
           {currentTab === 'today' && (
             <>
@@ -1076,129 +1135,132 @@ export default function App() {
           onSave={handleSaveSettings}
         />
 
-        {/* 历史记录抽屉 */}
-        <HistoryDrawer
-          isOpen={showHistory}
-          onClose={() => setShowHistory(false)}
-          onSelectDate={(date) => {
-            setCurrentDate(date);
-            setShowHistory(false);
-          }}
-          onCompareClick={() => setShowCompare(true)}
-        />
-
-        {/* 趋势视图 */}
-        <TrendsView
-          isOpen={showTrends}
-          onClose={() => setShowTrends(false)}
-          onSelectDate={(date) => {
-            setCurrentDate(date);
-            setShowTrends(false);
-          }}
-        />
-
-        {/* 日历视图 */}
-        {showCalendar && (
-          <CalendarView
-            currentDate={currentDate}
-            onDateSelect={(date) => {
+        {/* ========== 懒加载弹窗组件 ========== */}
+        <Suspense fallback={<LazyLoadFallback fullScreen />}>
+          {/* 历史记录抽屉 */}
+          <HistoryDrawer
+            isOpen={showHistory}
+            onClose={() => setShowHistory(false)}
+            onSelectDate={(date) => {
               setCurrentDate(date);
-              setShowCalendar(false);
+              setShowHistory(false);
             }}
-            onClose={() => setShowCalendar(false)}
-            getHistoryScore={(dateStr) => {
-              try {
-                const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
-                const record = history.find((h: HistoryRecord) => h.date === dateStr);
-                return record ? record.fortune.totalScore : null; // ← 修复：添加 .fortune
-              } catch {
-                return null;
-              }
+            onCompareClick={() => setShowCompare(true)}
+          />
+
+          {/* 趋势视图 */}
+          <TrendsView
+            isOpen={showTrends}
+            onClose={() => setShowTrends(false)}
+            onSelectDate={(date) => {
+              setCurrentDate(date);
+              setShowTrends(false);
             }}
           />
-        )}
 
-        {/* 签到弹窗 */}
-        <CheckinModal
-          isOpen={showCheckin}
-          onClose={() => setShowCheckin(false)}
-          onCheckinSuccess={(record) => {
-            // 更新签到相关成就
-            updateAchievements({
-              checkin_3: record.consecutiveDays,
-              checkin_7: record.consecutiveDays,
-              checkin_30: record.consecutiveDays,
-              checkin_100: record.consecutiveDays,
-            });
-          }}
-        />
+          {/* 日历视图 */}
+          {showCalendar && (
+            <CalendarView
+              currentDate={currentDate}
+              onDateSelect={(date) => {
+                setCurrentDate(date);
+                setShowCalendar(false);
+              }}
+              onClose={() => setShowCalendar(false)}
+              getHistoryScore={(dateStr) => {
+                try {
+                  const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+                  const record = history.find((h: HistoryRecord) => h.date === dateStr);
+                  return record ? record.fortune.totalScore : null;
+                } catch {
+                  return null;
+                }
+              }}
+            />
+          )}
 
-        {/* 成就展示 */}
-        <AchievementView
-          isOpen={showAchievements}
-          onClose={() => setShowAchievements(false)}
-        />
-
-        {/* 运势对比 */}
-        <FortuneCompare
-          isOpen={showCompare}
-          onClose={() => setShowCompare(false)}
-          onSelectDate={(date) => {
-            setCurrentDate(date);
-            setShowCompare(false);
-          }}
-        />
-
-        {/* 知识库 */}
-        <KnowledgeBase
-          isOpen={showKnowledge}
-          onClose={() => setShowKnowledge(false)}
-        />
-
-        {/* 反馈弹窗 */}
-        {fortune && (
-          <FeedbackModal
-            isOpen={showFeedback}
-            onClose={() => setShowFeedback(false)}
-            date={fortune.dateStr}
-            onFeedbackSubmit={() => {
-              // 反馈提交后的操作
+          {/* 签到弹窗 */}
+          <CheckinModal
+            isOpen={showCheckin}
+            onClose={() => setShowCheckin(false)}
+            onCheckinSuccess={(record) => {
+              haptics.success(); // 签到成功震动反馈
+              updateAchievements({
+                checkin_3: record.consecutiveDays,
+                checkin_7: record.consecutiveDays,
+                checkin_30: record.consecutiveDays,
+                checkin_100: record.consecutiveDays,
+              });
             }}
           />
-        )}
 
-        {/* AI 命理深度推演 */}
-        {fortune && (
-          <AIDeduction
-            isOpen={showAIDeduction}
-            onClose={() => {
-              setShowAIDeduction(false);
-              setAiInitialQuestion(undefined); // 关闭时清除预设问题
-            }}
-            baziContext={{
-              baziDetail: fortune.baziDetail,
-              yongShen: fortune.yongShen,
-              dimensions: fortune.dimensions,
-              mainTheme: fortune.mainTheme,
-              totalScore: fortune.totalScore,
-              liuNian: fortune.liuNian,
-            }}
-            initialQuestion={aiInitialQuestion}
+          {/* 成就展示 */}
+          <AchievementView
+            isOpen={showAchievements}
+            onClose={() => setShowAchievements(false)}
           />
-        )}
 
-        {/* 联系我们 */}
-        <ContactModal
-          isOpen={showContact}
-          onClose={() => setShowContact(false)}
-        />
+          {/* 运势对比 */}
+          <FortuneCompare
+            isOpen={showCompare}
+            onClose={() => setShowCompare(false)}
+            onSelectDate={(date) => {
+              setCurrentDate(date);
+              setShowCompare(false);
+            }}
+          />
 
-        {/* 人生大图景 */}
-        <LifeMap
-          isOpen={showLifeMap}
-          onClose={() => setShowLifeMap(false)}
-          userProfile={userProfile}
-        />
+          {/* 知识库 */}
+          <KnowledgeBase
+            isOpen={showKnowledge}
+            onClose={() => setShowKnowledge(false)}
+          />
+
+          {/* 反馈弹窗 */}
+          {fortune && (
+            <FeedbackModal
+              isOpen={showFeedback}
+              onClose={() => setShowFeedback(false)}
+              date={fortune.dateStr}
+              onFeedbackSubmit={() => {
+                haptics.success(); // 反馈提交成功震动
+              }}
+            />
+          )}
+
+          {/* AI 命理深度推演 */}
+          {fortune && (
+            <AIDeduction
+              isOpen={showAIDeduction}
+              onClose={() => {
+                setShowAIDeduction(false);
+                setAiInitialQuestion(undefined);
+              }}
+              baziContext={{
+                baziDetail: fortune.baziDetail,
+                yongShen: fortune.yongShen,
+                dimensions: fortune.dimensions,
+                mainTheme: fortune.mainTheme,
+                totalScore: fortune.totalScore,
+                liuNian: fortune.liuNian,
+              }}
+              initialQuestion={aiInitialQuestion}
+            />
+          )}
+
+          {/* 联系我们 */}
+          <ContactModal
+            isOpen={showContact}
+            onClose={() => setShowContact(false)}
+          />
+
+          {/* 人生大图景 */}
+          <LifeMap
+            isOpen={showLifeMap}
+            onClose={() => setShowLifeMap(false)}
+            userProfile={userProfile}
+          />
+        </Suspense>
 
       </div>
     </div>

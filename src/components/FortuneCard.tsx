@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Crown, Eye, EyeOff, ChevronDown, ChevronUp, Info, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTodayWisdom } from '../services/api';
@@ -40,7 +40,7 @@ interface FortuneCardProps {
   baziContext?: BaziContext; // 用于AI锦囊生成
 }
 
-export default function FortuneCard({
+function FortuneCard({
   mainTheme,
   totalScore,
   pillars,
@@ -248,3 +248,5 @@ export default function FortuneCard({
     </div>
   );
 }
+
+export default memo(FortuneCard);
