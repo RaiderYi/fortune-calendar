@@ -3169,13 +3169,21 @@ class handler(BaseHTTPRequestHandler):
         """处理 OPTIONS 请求 - CORS 预检"""
         self.send_response(204)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.end_headers()
 
     def do_GET(self):
-        """处理 GET 请求 - 健康检查"""
-        # Vercel中路径是 / 而不是 /api
+        """处理 GET 请求 - 健康检查和认证验证"""
+        parsed_path = urlparse(self.path)
+        path = parsed_path.path
+        
+        # Token 验证
+        if '/auth/verify' in path:
+            self._auth_verify()
+            return
+        
+        # 健康检查
         self.send_response(200)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -3188,7 +3196,8 @@ class handler(BaseHTTPRequestHandler):
             'features': [
                 '纯Python八字计算',
                 '五维旺衰分析',
-                '多层次用神推导'
+                '多层次用神推导',
+                '用户认证系统'
             ]
         }
 
@@ -3203,6 +3212,11 @@ class handler(BaseHTTPRequestHandler):
         # 路由到 AI 聊天接口
         if '/ai-chat' in path or path.endswith('/ai-chat'):
             self._handle_ai_chat()
+            return
+        
+        # 路由到认证接口
+        if '/auth/' in path:
+            self._handle_auth(path)
             return
         
         # 默认处理运势分析
@@ -3363,6 +3377,284 @@ class handler(BaseHTTPRequestHandler):
             raise Exception(f'DeepSeek API 请求失败: {e.code} - {error_body}')
         except Exception as e:
             raise Exception(f'调用 DeepSeek API 时出错: {str(e)}')
+    
+    # ==================== 用户存储（内存，生产环境应使用数据库）====================
+
+# 全局用户存储字典（实际应使用数据库或 Vercel KV）
+_users_store = {}
+_passwords_store = {}
+
+def _get_user_by_email(email):
+    """根据邮箱获取用户"""
+    for user_id, user in _users_store.items():
+        if user.get('email') == email:
+            return user
+    return None
+
+def _get_user_by_phone(phone):
+    """根据手机号获取用户"""
+    for user_id, user in _users_store.items():
+        if user.get('phone') == phone:
+            return user
+    return None
+
+def _save_user(user_id, user_data, password_hash):
+    """保存用户"""
+    _users_store[user_id] = user_data
+    _passwords_store[user_id] = password_hash
+
+def _hash_password(password):
+    """哈希密码"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# ==================== 认证相关方法 ====================
+    
+    def _handle_auth(self, path):
+        """处理认证相关请求"""
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8')) if body else {}
+            
+            if '/register' in path:
+                self._auth_register(data)
+            elif '/login' in path:
+                self._auth_login(data)
+            elif '/refresh' in path:
+                self._auth_refresh(data)
+            elif '/verify' in path:
+                self._auth_verify()
+            elif '/reset-password' in path:
+                self._auth_reset_password(data)
+            else:
+                self._send_json_response(404, {'success': False, 'error': 'Not Found'})
+        except Exception as e:
+            self._send_json_response(500, {'success': False, 'error': str(e)})
+    
+    def _auth_register(self, data):
+        """处理注册"""
+        import time
+        
+        email = data.get('email')
+        phone = data.get('phone')
+        password = data.get('password')
+        name = data.get('name', '')
+        
+        # 验证输入
+        if not (email or phone):
+            self._send_json_response(400, {'success': False, 'error': '邮箱或手机号必填'})
+            return
+        
+        if not password or len(password) < 6:
+            self._send_json_response(400, {'success': False, 'error': '密码长度至少6位'})
+            return
+        
+        # 检查用户是否已存在
+        if email and _get_user_by_email(email):
+            self._send_json_response(409, {'success': False, 'error': '该邮箱已被注册'})
+            return
+        
+        if phone and _get_user_by_phone(phone):
+            self._send_json_response(409, {'success': False, 'error': '该手机号已被注册'})
+            return
+        
+        # 创建用户
+        user_id = hashlib.md5(f"{email or phone}{time.time()}".encode()).hexdigest()
+        user = {
+            'id': user_id,
+            'email': email,
+            'phone': phone,
+            'name': name or (email.split('@')[0] if email else phone),
+            'createdAt': int(time.time() * 1000),
+            'lastLoginAt': int(time.time() * 1000),
+        }
+        
+        # 保存用户和密码哈希
+        password_hash = _hash_password(password)
+        _save_user(user_id, user, password_hash)
+        
+        # 生成 Token
+        token = self._generate_jwt({'userId': user_id, 'type': 'access'}, 3600)
+        refresh_token = self._generate_jwt({'userId': user_id, 'type': 'refresh'}, 7*24*3600)
+        
+        response = {
+            'success': True,
+            'user': user,
+            'token': token,
+            'refreshToken': refresh_token,
+        }
+        
+        self._send_json_response(200, response)
+    
+    def _auth_login(self, data):
+        """处理登录"""
+        import time
+        
+        email = data.get('email')
+        phone = data.get('phone')
+        password = data.get('password')
+        
+        if not (email or phone):
+            self._send_json_response(400, {'success': False, 'error': '邮箱或手机号必填'})
+            return
+        
+        if not password:
+            self._send_json_response(400, {'success': False, 'error': '密码必填'})
+            return
+        
+        # 查找用户
+        user = None
+        if email:
+            user = _get_user_by_email(email)
+        elif phone:
+            user = _get_user_by_phone(phone)
+        
+        if not user:
+            self._send_json_response(401, {'success': False, 'error': '用户不存在，请先注册'})
+            return
+        
+        # 验证密码
+        user_id = user['id']
+        stored_password_hash = _passwords_store.get(user_id)
+        password_hash = _hash_password(password)
+        
+        if stored_password_hash != password_hash:
+            self._send_json_response(401, {'success': False, 'error': '密码错误'})
+            return
+        
+        # 更新最后登录时间
+        user['lastLoginAt'] = int(time.time() * 1000)
+        _users_store[user_id] = user
+        
+        # 生成 Token
+        token = self._generate_jwt({'userId': user_id, 'type': 'access'}, 3600)
+        refresh_token = self._generate_jwt({'userId': user_id, 'type': 'refresh'}, 7*24*3600)
+        
+        response = {
+            'success': True,
+            'user': user,
+            'token': token,
+            'refreshToken': refresh_token,
+        }
+        
+        self._send_json_response(200, response)
+    
+    def _auth_refresh(self, data):
+        """刷新 Token"""
+        import time
+        
+        refresh_token = data.get('refreshToken')
+        if not refresh_token:
+            self._send_json_response(400, {'success': False, 'error': 'Refresh Token 必填'})
+            return
+        
+        # 解码并验证 Token
+        payload = self._decode_jwt(refresh_token)
+        if not payload or payload.get('type') != 'refresh':
+            self._send_json_response(401, {'success': False, 'error': '无效的 Refresh Token'})
+            return
+        
+        user_id = payload.get('userId')
+        
+        # 生成新 Token
+        token = self._generate_jwt({'userId': user_id, 'type': 'access'}, 3600)
+        new_refresh_token = self._generate_jwt({'userId': user_id, 'type': 'refresh'}, 7*24*3600)
+        
+        response = {
+            'success': True,
+            'token': token,
+            'refreshToken': new_refresh_token,
+        }
+        
+        self._send_json_response(200, response)
+    
+    def _auth_verify(self):
+        """验证 Token"""
+        auth_header = self.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            self._send_json_response(401, {'success': False, 'error': '未提供 Token'})
+            return
+        
+        token = auth_header[7:]
+        payload = self._decode_jwt(token)
+        
+        if not payload or payload.get('type') != 'access':
+            self._send_json_response(401, {'success': False, 'error': '无效的 Token'})
+            return
+        
+        self._send_json_response(200, {'success': True, 'userId': payload.get('userId')})
+    
+    def _auth_reset_password(self, data):
+        """密码重置"""
+        email = data.get('email')
+        if not email:
+            self._send_json_response(400, {'success': False, 'error': '邮箱必填'})
+            return
+        
+        # 模拟发送重置邮件
+        self._send_json_response(200, {'success': True, 'message': '如果该邮箱存在，将收到密码重置邮件'})
+    
+    def _generate_jwt(self, payload: dict, expires_in: int) -> str:
+        """生成 JWT Token"""
+        import time
+        import base64
+        import hmac
+        
+        JWT_SECRET = os.environ.get('JWT_SECRET', 'fortune-calendar-secret-2024')
+        
+        header = {'alg': 'HS256', 'typ': 'JWT'}
+        payload['exp'] = int(time.time()) + expires_in
+        payload['iat'] = int(time.time())
+        
+        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip('=')
+        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip('=')
+        
+        message = f"{header_b64}.{payload_b64}"
+        signature = hmac.new(JWT_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
+        
+        return f"{header_b64}.{payload_b64}.{signature}"
+    
+    def _decode_jwt(self, token: str) -> dict:
+        """解码 JWT Token"""
+        import time
+        import base64
+        import hmac
+        
+        JWT_SECRET = os.environ.get('JWT_SECRET', 'fortune-calendar-secret-2024')
+        
+        try:
+            parts = token.split('.')
+            if len(parts) != 3:
+                return None
+            
+            header_b64, payload_b64, signature = parts
+            
+            # 验证签名
+            message = f"{header_b64}.{payload_b64}"
+            expected_signature = hmac.new(JWT_SECRET.encode(), message.encode(), hashlib.sha256).hexdigest()
+            
+            if not hmac.compare_digest(signature, expected_signature):
+                return None
+            
+            # 解码 payload
+            payload_json = base64.urlsafe_b64decode(payload_b64 + '==')
+            payload = json.loads(payload_json)
+            
+            # 检查过期时间
+            if payload.get('exp', 0) < time.time():
+                return None
+            
+            return payload
+        except:
+            return None
+    
+    def _send_json_response(self, status_code: int, data: dict):
+        """发送 JSON 响应"""
+        self.send_response(status_code)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
     
     def _handle_fortune(self):
         """处理运势分析请求（原有逻辑）"""

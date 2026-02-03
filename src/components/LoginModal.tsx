@@ -79,9 +79,11 @@ export default function LoginModal({
 
     if (!validateInput()) return;
 
-    const success = await login(emailOrPhone, password, isPhone);
-    if (success) {
+    const result = await login(emailOrPhone, password, isPhone);
+    if (result.success) {
       onClose();
+    } else {
+      setError(result.error || '登录失败，请检查邮箱/手机号和密码');
     }
   };
 
@@ -92,9 +94,11 @@ export default function LoginModal({
 
     if (!validateInput()) return;
 
-    const success = await register(emailOrPhone, password, name, isPhone);
-    if (success) {
+    const result = await register(emailOrPhone, password, name, isPhone);
+    if (result.success) {
       onClose();
+    } else {
+      setError(result.error || '注册失败，该邮箱/手机号可能已被注册');
     }
   };
 

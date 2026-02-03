@@ -19,8 +19,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (emailOrPhone: string, password: string, isPhone?: boolean) => Promise<boolean>;
-  register: (emailOrPhone: string, password: string, name: string, isPhone?: boolean) => Promise<boolean>;
+  login: (emailOrPhone: string, password: string, isPhone?: boolean) => Promise<{ success: boolean; error?: string }>;
+  register: (emailOrPhone: string, password: string, name: string, isPhone?: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
 }
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     emailOrPhone: string,
     password: string,
     isPhone = false
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
       const result = await loginService({
@@ -88,15 +88,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result.success && result.user) {
         setUser(result.user);
         showToast('登录成功', 'success');
-        return true;
+        return { success: true };
       } else {
-        showToast(result.error || '登录失败', 'error');
-        return false;
+        const errorMsg = result.error || '登录失败';
+        showToast(errorMsg, 'error');
+        return { success: false, error: errorMsg };
       }
     } catch (error) {
       console.error('登录错误:', error);
-      showToast('登录失败，请稍后重试', 'error');
-      return false;
+      const errorMsg = '登录失败，请稍后重试';
+      showToast(errorMsg, 'error');
+      return { success: false, error: errorMsg };
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     name: string,
     isPhone = false
-  ): Promise<boolean> => {
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
       const result = await registerService({
@@ -120,15 +122,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result.success && result.user) {
         setUser(result.user);
         showToast('注册成功', 'success');
-        return true;
+        return { success: true };
       } else {
-        showToast(result.error || '注册失败', 'error');
-        return false;
+        const errorMsg = result.error || '注册失败';
+        showToast(errorMsg, 'error');
+        return { success: false, error: errorMsg };
       }
     } catch (error) {
       console.error('注册错误:', error);
-      showToast('注册失败，请稍后重试', 'error');
-      return false;
+      const errorMsg = '注册失败，请稍后重试';
+      showToast(errorMsg, 'error');
+      return { success: false, error: errorMsg };
     } finally {
       setIsLoading(false);
     }
