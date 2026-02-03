@@ -3338,25 +3338,54 @@ class handler(BaseHTTPRequestHandler):
             error_trace = traceback.format_exc()
             error_message = str(e)
             
-            print(f"POST 请求处理错误: {error_message}")
-            print(f"错误堆栈: {error_trace}")
+            print(f"[ERROR] POST 请求处理错误: {error_message}")
+            print(f"[ERROR] 错误堆栈: {error_trace}")
             
+            # 构建错误响应
+            error_response_data = {
+                'success': False,
+                'error': error_message,
+                'message': '服务器内部错误，请稍后重试',
+                'errorType': type(e).__name__
+            }
+            
+            # 尝试使用 _send_json_response
             try:
-                self._send_json_response(500, {
-                    'success': False,
-                    'error': error_message,
-                    'message': '服务器内部错误，请稍后重试'
-                })
-            except:
-                # 如果连错误响应都发送失败，尝试最基本的响应
-                try:
-                    self.send_response(500)
-                    self.send_header('Content-Type', 'text/plain; charset=utf-8')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.end_headers()
-                    self.wfile.write(b'Internal Server Error')
-                except:
-                    pass
+                self._send_json_response(500, error_response_data)
+                return
+            except Exception as send_error:
+                print(f"[ERROR] _send_json_response 失败: {send_error}")
+                import traceback as tb2
+                print(f"[ERROR] _send_json_response 错误堆栈: {tb2.format_exc()}")
+            
+            # 如果 _send_json_response 失败，直接发送 JSON 响应
+            try:
+                # 使用 safe_json_dumps 确保可以序列化
+                json_output = safe_json_dumps(error_response_data)
+                
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json_output.encode('utf-8'))
+                return
+            except Exception as json_error:
+                print(f"[ERROR] 直接发送 JSON 响应失败: {json_error}")
+                import traceback as tb3
+                print(f"[ERROR] 直接发送 JSON 错误堆栈: {tb3.format_exc()}")
+            
+            # 最后的回退：发送最基本的文本响应（但包含 JSON 格式）
+            try:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                # 即使 safe_json_dumps 失败，也尝试发送最基本的 JSON
+                basic_error = '{"success":false,"error":"Internal Server Error","message":"服务器内部错误"}'
+                self.wfile.write(basic_error.encode('utf-8'))
+            except Exception as final_error:
+                print(f"[ERROR] 最终回退响应也失败: {final_error}")
+                # 如果连这个都失败，说明响应头可能已经发送，无法再发送响应
     
     def _handle_ai_chat(self):
         """处理 AI 聊天请求"""
@@ -3881,22 +3910,76 @@ def _hash_password(password):
 
             # 调用缓存函数（相同出生信息会直接返回缓存）
             print("[DEBUG] 开始计算八字...")
-            bazi, analysis = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
-            print(f"[DEBUG] 八字计算完成: {bazi.get('year', 'N/A')}")
+            try:
+                bazi, analysis = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
+                print(f"[DEBUG] 八字计算完成: {bazi.get('year', 'N/A')}")
+            except Exception as bazi_error:
+                print(f"[ERROR] 八字计算失败: {bazi_error}")
+                import traceback
+                print(traceback.format_exc())
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': f'八字计算失败: {str(bazi_error)}',
+                    'message': '八字计算过程中出错，请检查输入参数'
+                })
+                return
             # =============================================
+
+            # 验证 bazi 和 analysis 是否有效
+            if not bazi or not isinstance(bazi, dict):
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': '八字计算结果无效',
+                    'message': '八字计算结果格式错误'
+                })
+                return
+            
+            if not analysis or not isinstance(analysis, dict):
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': '八字分析结果无效',
+                    'message': '八字分析结果格式错误'
+                })
+                return
 
             # 3. 计算流年流月流日
             print("[DEBUG] 开始计算流年流月流日...")
-            current_date = parse_date(date_str)
-            liu_nian = calculate_liu_nian(current_date.year)
-            liu_yue = calculate_liu_yue(current_date.year, current_date.month, current_date.day)
-            liu_ri = calculate_liu_ri(current_date.year, current_date.month, current_date.day)
-            print(f"[DEBUG] 流年流月流日计算完成: {liu_nian.get('gan_zhi', 'N/A')}")
+            try:
+                current_date = parse_date(date_str)
+                liu_nian = calculate_liu_nian(current_date.year)
+                liu_yue = calculate_liu_yue(current_date.year, current_date.month, current_date.day)
+                liu_ri = calculate_liu_ri(current_date.year, current_date.month, current_date.day)
+                print(f"[DEBUG] 流年流月流日计算完成: {liu_nian.get('gan_zhi', 'N/A')}")
+            except Exception as liu_error:
+                print(f"[ERROR] 流年流月流日计算失败: {liu_error}")
+                import traceback
+                print(traceback.format_exc())
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': f'流年流月流日计算失败: {str(liu_error)}',
+                    'message': '流年流月流日计算过程中出错'
+                })
+                return
 
             # 3.5. 计算大运
             print("[DEBUG] 开始计算大运...")
-            dayun_info = get_dayun_direction(bazi['year_gan'], gender)
-            print(f"[DEBUG] 大运计算完成: {dayun_info.get('direction', 'N/A')}")
+            try:
+                # 安全访问 year_gan
+                year_gan = bazi.get('year_gan')
+                if not year_gan:
+                    raise ValueError('bazi 中缺少 year_gan 字段')
+                dayun_info = get_dayun_direction(year_gan, gender)
+                print(f"[DEBUG] 大运计算完成: {dayun_info.get('direction', 'N/A')}")
+            except Exception as dayun_error:
+                print(f"[ERROR] 大运计算失败: {dayun_error}")
+                import traceback
+                print(traceback.format_exc())
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': f'大运计算失败: {str(dayun_error)}',
+                    'message': '大运计算过程中出错'
+                })
+                return
 
             # 初始化变量（避免未定义错误）
             yongshen_v5 = None
