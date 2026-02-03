@@ -2844,13 +2844,50 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     计算六大维度分数
     
     返回: {
-        'career': 85,
-        'wealth': 70,
+        'career': { score: 85, level: '大吉', tag: '事业运', inference: '...' },
+        'wealth': { score: 70, level: '吉', tag: '财运', inference: '...' },
         ...
     }
     """
     
     dimensions = {}
+    
+    # 辅助函数：生成维度对象
+    def make_dimension_obj(score, dim_name):
+        score_int = max(0, min(100, int(score)))
+        if score_int >= 85:
+            level = '大吉'
+        elif score_int >= 70:
+            level = '吉'
+        elif score_int >= 50:
+            level = '平'
+        else:
+            level = '凶'
+        
+        tags = {
+            'career': '事业运',
+            'wealth': '财运',
+            'romance': '感情运',
+            'health': '健康运',
+            'academic': '学业运',
+            'travel': '出行运'
+        }
+        
+        inferences = {
+            'career': f"事业运势{level}，" + ("把握机会" if score_int >= 70 else "稳扎稳打" if score_int >= 50 else "需谨慎行事"),
+            'wealth': f"财运{level}，" + ("财运亨通" if score_int >= 70 else "正财稳定" if score_int >= 50 else "避免投资"),
+            'romance': f"感情运势{level}，" + ("桃花旺盛" if score_int >= 70 else "感情平稳" if score_int >= 50 else "需多沟通"),
+            'health': f"健康运势{level}，" + ("精力充沛" if score_int >= 70 else "注意休息" if score_int >= 50 else "多加保养"),
+            'academic': f"学业运势{level}，" + ("思维敏捷" if score_int >= 70 else "稳步前进" if score_int >= 50 else "需加努力"),
+            'travel': f"出行运势{level}，" + ("一路顺风" if score_int >= 70 else "平安出行" if score_int >= 50 else "宜静不宜动")
+        }
+        
+        return {
+            'score': score_int,
+            'level': level,
+            'tag': tags.get(dim_name, dim_name),
+            'inference': inferences.get(dim_name, f"{dim_name}运势{level}")
+        }
     
     # 基准分：基于总分
     base_dim_score = overall_score
@@ -2868,7 +2905,7 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     if 'career' in shensha_result.get('dimension_boosts', {}):
         career_score += shensha_result['dimension_boosts']['career']
     
-    dimensions['career'] = max(0, min(100, int(career_score)))
+    dimensions['career'] = make_dimension_obj(career_score, 'career')
     
     # ========== 2. 财运 ==========
     wealth_score = base_dim_score
@@ -2880,7 +2917,7 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
         if has_wealth_in_bazi(bazi):
             wealth_score -= 15  # 比劫夺财
     
-    dimensions['wealth'] = max(0, min(100, int(wealth_score)))
+    dimensions['wealth'] = make_dimension_obj(wealth_score, 'wealth')
     
     # ========== 3. 情感运 ==========
     romance_score = base_dim_score
@@ -2895,7 +2932,7 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     if 'romance' in shensha_result.get('dimension_boosts', {}):
         romance_score += shensha_result['dimension_boosts']['romance']
     
-    dimensions['romance'] = max(0, min(100, int(romance_score)))
+    dimensions['romance'] = make_dimension_obj(romance_score, 'romance')
     
     # ========== 4. 健康运 ==========
     health_score = base_dim_score
@@ -2913,7 +2950,7 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
         if DIZHI_INTERACTIONS['liu_chong'].get(liu_ri['zhi']) == bazi['day_zhi']:
             health_score -= 10  # 子午冲，心脑血管
     
-    dimensions['health'] = max(0, min(100, int(health_score)))
+    dimensions['health'] = make_dimension_obj(health_score, 'health')
     
     # ========== 5. 学业运 ==========
     studies_score = base_dim_score
@@ -2925,7 +2962,7 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     if 'studies' in shensha_result.get('dimension_boosts', {}):
         studies_score += shensha_result['dimension_boosts']['studies']
     
-    dimensions['studies'] = max(0, min(100, int(studies_score)))
+    dimensions['academic'] = make_dimension_obj(studies_score, 'academic')
     
     # ========== 6. 出行运 ==========
     travel_score = base_dim_score
@@ -2942,7 +2979,7 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     if liu_ri['zhi'] in DIMENSION_MAPPING['travel']['four_changsheng']:
         travel_score += 8
     
-    dimensions['travel'] = max(0, min(100, int(travel_score)))
+    dimensions['travel'] = make_dimension_obj(travel_score, 'travel')
     
     return dimensions
 
@@ -3693,6 +3730,8 @@ def _hash_password(password):
         """处理运势分析请求（原有逻辑）"""
         # Vercel中路径是 / 而不是 /api/fortune
         try:
+            print(f"[DEBUG] 收到运势请求，路径: {self.path}")
+            
             # 读取请求体（添加错误处理）
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
@@ -3702,7 +3741,9 @@ def _hash_password(password):
                 if not body:
                     raise ValueError('Empty request body')
                 data = json.loads(body.decode('utf-8'))
+                print(f"[DEBUG] 请求数据: {json.dumps(data, ensure_ascii=False)}")
             except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as e:
+                print(f"[ERROR] 请求体解析失败: {e}")
                 self._send_json_response(400, {
                     'success': False,
                     'error': f'Invalid request: {str(e)}',
@@ -3717,6 +3758,8 @@ def _hash_password(password):
             longitude_str = data.get('longitude', '116.4')
             gender = data.get('gender', 'male')  # 新增：性别参数（male/female）
             custom_yongshen = data.get('customYongShen')  # 新增：用户自定义用神
+            
+            print(f"[DEBUG] 解析参数: date={date_str}, birthDate={birth_date_str}, birthTime={birth_time_str}")
 
             # 验证必需参数
             if not birth_date_str or not birth_time_str:
@@ -3742,58 +3785,80 @@ def _hash_password(password):
 
             # 生成缓存键
             cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
+            print(f"[DEBUG] 缓存键: {cache_key}")
 
             # 调用缓存函数（相同出生信息会直接返回缓存）
+            print("[DEBUG] 开始计算八字...")
             bazi, analysis = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
+            print(f"[DEBUG] 八字计算完成: {bazi.get('year', 'N/A')}")
             # =============================================
 
             # 3. 计算流年流月流日
+            print("[DEBUG] 开始计算流年流月流日...")
             current_date = parse_date(date_str)
             liu_nian = calculate_liu_nian(current_date.year)
             liu_yue = calculate_liu_yue(current_date.year, current_date.month, current_date.day)
             liu_ri = calculate_liu_ri(current_date.year, current_date.month, current_date.day)
+            print(f"[DEBUG] 流年流月流日计算完成: {liu_nian.get('gan_zhi', 'N/A')}")
 
             # 3.5. 计算大运
+            print("[DEBUG] 开始计算大运...")
             dayun_info = get_dayun_direction(bazi['year_gan'], gender)
+            print(f"[DEBUG] 大运计算完成: {dayun_info.get('direction', 'N/A')}")
 
+            # 初始化变量（避免未定义错误）
+            yongshen_v5 = None
+            element_analysis = None
+            dimensions_v5 = None
+            use_v5 = USE_V5_ALGORITHM  # 使用局部变量
+            
             # 4. 计算运势评分
-            if USE_V5_ALGORITHM:
+            print(f"[DEBUG] 使用算法版本: {'V5.0' if use_v5 else 'V3.1'}")
+            if use_v5:
                 # ========== V5.0 Celestial-Quant 完整流程 ==========
-                # 4.1 五行强度量化
-                element_analysis = calculate_element_strength_v5(bazi)
-                
-                # 4.2 三层用神体系（如果用户提供了自定义用神，则使用自定义用神）
-                if custom_yongshen:
-                    # 使用用户自定义用神
-                    yongshen_v5 = _create_custom_yongshen(custom_yongshen, bazi)
-                else:
-                    # 使用系统计算的用神
-                    yongshen_v5 = determine_yongshen_tiered_v5(bazi, element_analysis)
-                
-                # 4.3 运势评分
-                score_result_v5 = calculate_fortune_score_v5(
-                    bazi=bazi,
-                    element_analysis=element_analysis,
-                    yongshen=yongshen_v5,
-                    liu_nian=liu_nian,
-                    liu_yue=liu_yue,
-                    liu_ri=liu_ri,
-                    dayun=dayun_info
-                )
-                
-                # 4.4 六大维度
-                dimensions_v5 = calculate_dimensions_v5(
-                    bazi=bazi,
-                    liu_ri=liu_ri,
-                    overall_score=score_result_v5['score'],
-                    yongshen=yongshen_v5,
-                    element_analysis=element_analysis,
-                    shensha_result=score_result_v5['shensha']
-                )
-                
-                total_score = score_result_v5['score']
-            else:
-                # ========== V3.1 保留流程 ==========
+                try:
+                    # 4.1 五行强度量化
+                    element_analysis = calculate_element_strength_v5(bazi)
+                    
+                    # 4.2 三层用神体系（如果用户提供了自定义用神，则使用自定义用神）
+                    if custom_yongshen:
+                        # 使用用户自定义用神
+                        yongshen_v5 = _create_custom_yongshen(custom_yongshen, bazi)
+                    else:
+                        # 使用系统计算的用神
+                        yongshen_v5 = determine_yongshen_tiered_v5(bazi, element_analysis)
+                    
+                    # 4.3 运势评分
+                    score_result_v5 = calculate_fortune_score_v5(
+                        bazi=bazi,
+                        element_analysis=element_analysis,
+                        yongshen=yongshen_v5,
+                        liu_nian=liu_nian,
+                        liu_yue=liu_yue,
+                        liu_ri=liu_ri,
+                        dayun=dayun_info
+                    )
+                    
+                    # 4.4 六大维度
+                    dimensions_v5 = calculate_dimensions_v5(
+                        bazi=bazi,
+                        liu_ri=liu_ri,
+                        overall_score=score_result_v5['score'],
+                        yongshen=yongshen_v5,
+                        element_analysis=element_analysis,
+                        shensha_result=score_result_v5['shensha']
+                    )
+                    
+                    total_score = score_result_v5['score']
+                except Exception as v5_error:
+                    # 如果 V5 算法失败，降级到 V3.1
+                    print(f"V5 算法计算失败，降级到 V3.1: {v5_error}")
+                    import traceback
+                    print(traceback.format_exc())
+                    use_v5 = False  # 使用局部变量
+            
+            # 如果 V5 失败或未启用，使用 V3.1
+            if not use_v5 or yongshen_v5 is None:
                 score_result = calculate_fortune_score_v3_1(
                     yong_shen_result=analysis['yong_shen'],
                     liu_nian=liu_nian,
@@ -3807,7 +3872,12 @@ def _hash_password(password):
                 total_score = score_result['score']
 
             # 5. 生成各维度评分
-            dimensions = generate_dimension_scores(total_score, liu_ri['gan'])
+            if use_v5 and dimensions_v5:
+                # 使用 V5 计算的维度
+                dimensions = dimensions_v5
+            else:
+                # 使用 V3.1 的维度生成
+                dimensions = generate_dimension_scores(total_score, liu_ri['gan'])
 
             # 6. 生成宜忌
             todo = generate_todo(
@@ -3823,6 +3893,7 @@ def _hash_password(password):
             )
 
             # 8. 构建响应
+            print("[DEBUG] 开始构建响应...")
             response = {
                 'dateStr': current_date.strftime('%m.%d'),
                 'weekDay': get_week_day_cn(current_date),
@@ -3845,9 +3916,9 @@ def _hash_password(password):
                 },
                 'yongShen': {
                     'strength': analysis['strength']['level'],
-                    'yongShen': [yongshen_v5['primary']] if USE_V5_ALGORITHM else [analysis['yong_shen']['primary']],
-                    'xiShen': yongshen_v5.get('xi_shen', []) if USE_V5_ALGORITHM else analysis['yong_shen']['xi_shen'],
-                    'jiShen': yongshen_v5.get('ji_shen', []) if USE_V5_ALGORITHM else analysis['yong_shen']['ji_shen'],
+                    'yongShen': [yongshen_v5['primary']] if (use_v5 and yongshen_v5) else [analysis['yong_shen'].get('primary', '')],
+                    'xiShen': yongshen_v5.get('xi_shen', []) if (use_v5 and yongshen_v5) else analysis['yong_shen'].get('xi_shen', []),
+                    'jiShen': yongshen_v5.get('ji_shen', []) if (use_v5 and yongshen_v5) else analysis['yong_shen'].get('ji_shen', []),
                     'isCustom': bool(custom_yongshen)  # 标记是否为自定义用神
                 },
                 'liuNian': {
@@ -3867,7 +3938,7 @@ def _hash_password(password):
             }
             
             # ========== V5.0 新增响应字段 ==========
-            if USE_V5_ALGORITHM:
+            if use_v5 and yongshen_v5 and element_analysis:
                 response.update({
                     'algorithmVersion': 'v5.0',
                     'elementAnalysis': {
@@ -3904,6 +3975,7 @@ def _hash_password(password):
                 })
 
             # 返回响应
+            print("[DEBUG] 准备发送响应...")
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -3911,6 +3983,7 @@ def _hash_password(password):
 
             output = json.dumps(response, ensure_ascii=False, indent=2)
             self.wfile.write(output.encode('utf-8'))
+            print("[DEBUG] 响应发送完成")
 
         except Exception as e:
             # 错误处理

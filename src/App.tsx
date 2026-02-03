@@ -316,6 +316,29 @@ export default function App() {
         const dateStr = `${year}-${month}-${day}`;
 
         const backendData = await fetchFortuneData(currentDate, userProfile, customYongShen);
+        
+        // 验证数据格式
+        if (!backendData || typeof backendData !== 'object') {
+          throw new Error('返回数据格式错误');
+        }
+        
+        // 验证必需字段
+        if (typeof backendData.totalScore !== 'number') {
+          throw new Error('缺少总分数据');
+        }
+        if (!backendData.mainTheme || !backendData.mainTheme.keyword) {
+          throw new Error('缺少主题数据');
+        }
+        if (!backendData.dimensions || typeof backendData.dimensions !== 'object') {
+          throw new Error('缺少维度数据');
+        }
+        
+        console.log('[DEBUG] 运势数据加载成功:', {
+          totalScore: backendData.totalScore,
+          keyword: backendData.mainTheme?.keyword,
+          dimensionsCount: Object.keys(backendData.dimensions || {}).length
+        });
+        
         setFortune({ ...backendData, dateObj: currentDate });
 
         // 更新成就进度（查询运势）
