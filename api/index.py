@@ -443,8 +443,9 @@ def calculate_bazi(birth_datetime, longitude=120.0):
         'time_zhi': hour_gz[1],
         'solar_term': term_name,
         'solar_term_index': term_index,
-        'adjusted_datetime': adjusted_dt,
-        'original_datetime': birth_datetime
+        # 移除 datetime 对象，改为字符串格式（避免 JSON 序列化错误）
+        'adjusted_datetime_str': adjusted_dt.strftime('%Y-%m-%d %H:%M:%S'),
+        'original_datetime_str': birth_datetime.strftime('%Y-%m-%d %H:%M:%S')
     }
 
 def calculate_liu_nian(year):
@@ -1986,6 +1987,70 @@ def analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude):
 # ==================== 主API处理器 ====================
 # ==================== 工具函数 ====================
 
+class DateTimeJSONEncoder(json.JSONEncoder):
+    """自定义 JSON 编码器，处理 datetime 对象和其他不可序列化类型"""
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, datetime.date):
+            return obj.strftime('%Y-%m-%d')
+        elif isinstance(obj, datetime.time):
+            return obj.strftime('%H:%M:%S')
+        elif hasattr(obj, '__dict__'):
+            # 尝试序列化对象为字典
+            return obj.__dict__
+        return super().default(obj)
+
+def clean_for_json(obj):
+    """
+    递归清理数据，确保所有对象都可以被 JSON 序列化
+    
+    参数:
+        obj: 要清理的对象（可以是 dict, list, 或其他类型）
+    
+    返回:
+        清理后的对象
+    """
+    if isinstance(obj, datetime.datetime):
+        return obj.strftime('%Y-%m-%d %H:%M:%S')
+    elif isinstance(obj, datetime.date):
+        return obj.strftime('%Y-%m-%d')
+    elif isinstance(obj, datetime.time):
+        return obj.strftime('%H:%M:%S')
+    elif isinstance(obj, dict):
+        return {key: clean_for_json(value) for key, value in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [clean_for_json(item) for item in obj]
+    elif hasattr(obj, '__dict__'):
+        # 如果是自定义对象，尝试转换为字典
+        try:
+            return clean_for_json(obj.__dict__)
+        except:
+            return str(obj)
+    else:
+        # 基本类型（str, int, float, bool, None）直接返回
+        return obj
+
+def safe_json_dumps(obj, **kwargs):
+    """
+    安全的 JSON 序列化函数，自动处理不可序列化的对象
+    
+    参数:
+        obj: 要序列化的对象
+        **kwargs: 传递给 json.dumps 的其他参数
+    
+    返回:
+        JSON 字符串
+    """
+    try:
+        # 先尝试使用自定义编码器
+        return json.dumps(obj, cls=DateTimeJSONEncoder, ensure_ascii=False, **kwargs)
+    except (TypeError, ValueError) as e:
+        # 如果编码器失败，使用清理函数
+        print(f"[WARNING] JSON 编码器失败，使用清理函数: {e}")
+        cleaned_obj = clean_for_json(obj)
+        return json.dumps(cleaned_obj, ensure_ascii=False, **kwargs)
+
 def parse_date(date_str):
     """解析日期字符串"""
     try:
@@ -3237,7 +3302,7 @@ class handler(BaseHTTPRequestHandler):
             ]
         }
 
-        self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+        self.wfile.write(safe_json_dumps(response).encode('utf-8'))
 
     def do_POST(self):
         """处理 POST 请求 - 路由到不同接口"""
@@ -3332,7 +3397,7 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+            self.wfile.write(safe_json_dumps(response).encode('utf-8'))
             
         except Exception as e:
             import traceback
@@ -3720,12 +3785,38 @@ def _hash_password(password):
             return None
     
     def _send_json_response(self, status_code: int, data: dict):
-        """发送 JSON 响应"""
-        self.send_response(status_code)
-        self.send_header('Content-Type', 'application/json; charset=utf-8')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.end_headers()
-        self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
+        """发送 JSON 响应（使用安全的 JSON 序列化）"""
+        try:
+            self.send_response(status_code)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            # 使用安全的 JSON 序列化函数
+            output = safe_json_dumps(data)
+            self.wfile.write(output.encode('utf-8'))
+        except Exception as e:
+            # 如果 JSON 序列化失败，尝试发送错误响应
+            print(f"[ERROR] JSON 序列化失败: {e}")
+            import traceback
+            print(traceback.format_exc())
+            try:
+                # 尝试清理数据后再次序列化
+                cleaned_data = clean_for_json(data)
+                output = json.dumps(cleaned_data, ensure_ascii=False)
+                self.send_response(status_code)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(output.encode('utf-8'))
+            except Exception as e2:
+                # 如果还是失败，发送基本错误响应
+                print(f"[ERROR] 清理后序列化也失败: {e2}")
+                error_msg = {'success': False, 'error': 'JSON serialization failed', 'message': str(e)}
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(error_msg, ensure_ascii=False).encode('utf-8'))
     
     def _handle_fortune(self):
         """处理运势分析请求（原有逻辑）"""
@@ -3987,12 +4078,21 @@ def _hash_password(password):
 
             # 返回响应
             print("[DEBUG] 准备发送响应...")
+            # 在发送前清理响应数据，确保所有对象都可序列化
+            try:
+                cleaned_response = clean_for_json(response)
+                print("[DEBUG] 响应数据清理完成")
+            except Exception as clean_error:
+                print(f"[WARNING] 响应数据清理失败: {clean_error}")
+                cleaned_response = response  # 使用原始响应，让 safe_json_dumps 处理
+            
+            # 使用安全的 JSON 序列化
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
 
-            output = json.dumps(response, ensure_ascii=False, indent=2)
+            output = safe_json_dumps(cleaned_response, indent=2)
             self.wfile.write(output.encode('utf-8'))
             print("[DEBUG] 响应发送完成")
 
@@ -4003,8 +4103,13 @@ def _hash_password(password):
             error_message = str(e)
             
             # 记录错误到控制台（Vercel 日志）
-            print(f"运势计算错误: {error_message}")
-            print(f"错误堆栈: {error_trace}")
+            print(f"[ERROR] 运势计算错误: {error_message}")
+            print(f"[ERROR] 错误堆栈: {error_trace}")
+            
+            # 检查是否是 JSON 序列化错误
+            is_json_error = isinstance(e, (TypeError, ValueError)) and ('not JSON serializable' in str(e) or 'Object of type' in str(e))
+            if is_json_error:
+                print(f"[ERROR] 检测到 JSON 序列化错误，尝试清理数据后重试")
             
             # 确保响应头还没有发送
             try:
@@ -4012,19 +4117,24 @@ def _hash_password(password):
                     'success': False,
                     'error': error_message,
                     'message': '运势数据计算失败，请检查输入参数',
+                    'errorType': 'JSON_SERIALIZATION_ERROR' if is_json_error else 'CALCULATION_ERROR',
                     # 生产环境不返回 traceback，开发环境可以返回
                     'traceback': error_trace if os.environ.get('VERCEL_ENV') != 'production' else None
                 }
 
+                # 使用安全的 JSON 序列化
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
 
-                self.wfile.write(json.dumps(error_response, ensure_ascii=False).encode('utf-8'))
+                output = safe_json_dumps(error_response)
+                self.wfile.write(output.encode('utf-8'))
             except Exception as send_error:
                 # 如果发送错误响应也失败，记录到日志
-                print(f"发送错误响应失败: {send_error}")
+                print(f"[ERROR] 发送错误响应失败: {send_error}")
+                import traceback as tb
+                print(f"[ERROR] 发送错误响应失败堆栈: {tb.format_exc()}")
                 # 尝试发送最基本的错误响应
                 try:
                     self.send_response(500)
