@@ -20,7 +20,6 @@ import MyPage from './components/MyPage';
 import DailySignThemeSelector, { type DailySignTheme } from './components/DailySignThemeSelector';
 import TimeEnergyBall from './components/TimeEnergyBall';
 import CollapsibleSection from './components/CollapsibleSection';
-import LazyLoadFallback from './components/LazyLoadFallback';
 import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
@@ -231,6 +230,19 @@ export default function App() {
 
   // i18n 相关
   const { t, i18n } = useTranslation(['common', 'ui', 'fortune', 'bazi']);
+
+  // 懒加载 Fallback 组件（内联定义，避免导入问题）
+  const LazyLoadFallback = ({ fullScreen = false }: { fullScreen?: boolean }) => (
+    <div className={fullScreen ? 'fixed inset-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm flex items-center justify-center' : 'flex flex-col items-center justify-center gap-3 p-8'}>
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      >
+        <Loader2 size={32} className="text-indigo-500" />
+      </motion.div>
+      <span className="text-sm text-gray-500 dark:text-gray-400">加载中...</span>
+    </div>
+  );
 
   // 语言变化时更新 SEO
   useEffect(() => {
