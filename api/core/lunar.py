@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 历法计算模块
-包含：农历、节气、真太阳时、干支计算
+包含：农历、节气、真太阳时、干支计算、大运计算
 """
 
 import datetime
 from .constants import (
     TIAN_GAN, DI_ZHI, SOLAR_TERMS, SOLAR_TERM_TABLE
 )
+
+# 尝试导入 lunar_python，如果不存在则使用备用方案
+try:
+    from lunar_python import Solar, Lunar
+    LUNAR_PYTHON_AVAILABLE = True
+except ImportError:
+    LUNAR_PYTHON_AVAILABLE = False
 
 
 def get_gan_zhi_from_num(num):
@@ -299,3 +306,73 @@ def calculate_liu_ri(year, month, day):
         'gan': day_gz[0],
         'zhi': day_gz[1]
     }
+
+
+def calculate_dayun(birth_datetime, target_year, gender='male', longitude=120.0):
+    """
+    计算当前大运
+    
+    参数:
+        birth_datetime: datetime 对象，出生时间
+        target_year: int，目标年份
+        gender: str，性别 ('male' 或 'female')
+        longitude: float，出生地经度
+    
+    返回:
+        dict: {
+            'current_gan': str, 当前大运天干
+            'current_zhi': str, 当前大运地支
+            'gan_zhi': str, 当前大运干支
+            'start_year': int, 大运起始年份
+            'end_year': int, 大运结束年份
+        } 或 None（如果无法计算）
+    """
+    if not LUNAR_PYTHON_AVAILABLE:
+        # 如果没有 lunar_python 库，返回 None
+        return None
+    
+    try:
+        # 创建 Solar 对象
+        solar = Solar.fromYmdHms(
+            birth_datetime.year,
+            birth_datetime.month,
+            birth_datetime.day,
+            birth_datetime.hour,
+            birth_datetime.minute,
+            birth_datetime.second
+        )
+        
+        # 获取农历和八字
+        lunar = solar.getLunar()
+        eight_char = lunar.getEightChar()
+        
+        # 根据性别获取大运（1=男，2=女）
+        gender_code = 1 if gender == 'male' else 2
+        yun = eight_char.getYun(gender_code)
+        da_yun_list = yun.getDaYun()
+        
+        # 查找目标年份所在的大运
+        for i, dy in enumerate(da_yun_list):
+            if i == 0:
+                continue  # 跳过大运前的童限
+            
+            start_year = dy.getStartYear()
+            end_year = dy.getEndYear()
+            
+            if start_year <= target_year <= end_year:
+                gan_zhi = dy.getGanZhi()
+                if len(gan_zhi) >= 2:
+                    return {
+                        'current_gan': gan_zhi[0],
+                        'current_zhi': gan_zhi[1],
+                        'gan_zhi': gan_zhi,
+                        'start_year': start_year,
+                        'end_year': end_year,
+                        'age': dy.getStartAge()
+                    }
+        
+        return None
+    except Exception as e:
+        # 如果计算失败，返回 None
+        print(f"[WARNING] 大运计算失败: {str(e)}")
+        return None

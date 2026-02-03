@@ -12,7 +12,7 @@ import sys
 try:
     from ..core.lunar import (
         calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
-        get_day_gan_zhi, get_hour_gan_zhi
+        get_day_gan_zhi, get_hour_gan_zhi, calculate_dayun
     )
     from ..core.bazi_engine import analyze_bazi_cached, calculate_ten_god
     from ..core.fortune_engine import (
@@ -27,7 +27,7 @@ except ImportError:
         sys.path.insert(0, api_dir)
     from core.lunar import (
         calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
-        get_day_gan_zhi, get_hour_gan_zhi
+        get_day_gan_zhi, get_hour_gan_zhi, calculate_dayun
     )
     from core.bazi_engine import analyze_bazi_cached, calculate_ten_god
     from core.fortune_engine import (
@@ -78,6 +78,9 @@ class FortuneService:
             liu_nian = calculate_liu_nian(now.year)
             liu_yue = calculate_liu_yue(now.year, now.month, now.day)
             liu_ri = calculate_liu_ri(now.year, now.month, now.day)
+            
+            # 4.1 计算当前大运
+            dayun = calculate_dayun(birth_dt, now.year, gender, longitude)
 
             # 5. 计算运势评分 (V5.0)
             yongshen_data = analysis_result.get('yong_shen_result', {})
@@ -100,7 +103,7 @@ class FortuneService:
             
             score_result_v5 = calculate_fortune_score_v5(
                 bazi, element_analysis, yongshen_data,
-                liu_nian, liu_yue, liu_ri
+                liu_nian, liu_yue, liu_ri, dayun=dayun
             )
             total_score = score_result_v5['total_score']
 

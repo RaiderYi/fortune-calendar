@@ -18,8 +18,9 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
     """
     Celestial-Quant V5.0 完整算法
     """
-    # 使用流日作为随机种子
-    random.seed(hash(liu_ri['gan'] + liu_ri['zhi']))
+    # 改进随机种子：结合用户八字和流日，增加个性化波动
+    seed_str = f"{bazi['day_gan']}{bazi['day_zhi']}{bazi['year_gan']}{bazi['month_zhi']}{liu_ri['gan']}{liu_ri['zhi']}"
+    random.seed(hash(seed_str))
 
     # 基础分（大运修正）
     base_score = FORTUNE_WEIGHTS_V5['base_score']
@@ -72,7 +73,8 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
     total = (base_score + liunian_score + liuyue_score + liuri_score +
              tiangan_score + dizhi_score + shensha_score + ten_god_score)
 
-    final_score = max(30, min(100, int(total)))
+    # 优化分数范围：扩大波动空间，允许更极端的分数
+    final_score = max(20, min(100, int(total)))
 
     # 收集所有因素
     all_factors = []
@@ -108,7 +110,7 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
 
 
 def _calculate_liunian_score(liu_nian, yongshen):
-    """计算流年影响 - 优化版，减少随机性，提高准确性"""
+    """计算流年影响 - 修复权重计算逻辑"""
     liunian_weight = FORTUNE_WEIGHTS_V5['liunian']['weight']
     stem_ratio = FORTUNE_WEIGHTS_V5['liunian']['stem_ratio']
     branch_ratio = FORTUNE_WEIGHTS_V5['liunian']['branch_ratio']
@@ -142,32 +144,56 @@ def _calculate_liunian_score(liu_nian, yongshen):
     else:
         nian_zhi_bonus = random.randint(-1, 1)
 
-    return (nian_gan_bonus * stem_ratio + nian_zhi_bonus * branch_ratio) * (liunian_weight / 0.12)
+    # 修复：直接使用权重，不再除以固定值
+    # 基础分数范围约 -10 到 +10，乘以权重后得到最终影响
+    base_score = nian_gan_bonus * stem_ratio + nian_zhi_bonus * branch_ratio
+    # 使用权重作为比例因子，确保配置的权重正确生效
+    return base_score * liunian_weight * 10  # 乘以10以保持合理的分数范围
 
 
 def _calculate_liuyue_score(liu_yue, yongshen):
-    """计算流月影响 - 优化版，减少随机性，提高准确性"""
+    """计算流月影响 - 修复权重计算逻辑，加入地支计算"""
     liuyue_weight = FORTUNE_WEIGHTS_V5['liuyue']['weight']
+    # 如果配置了 stem_ratio 和 branch_ratio，使用它们；否则只使用天干
+    stem_ratio = FORTUNE_WEIGHTS_V5['liuyue'].get('stem_ratio', 1.0)
+    branch_ratio = FORTUNE_WEIGHTS_V5['liuyue'].get('branch_ratio', 0.0)
+    
     yue_gan_element = WU_XING_MAP.get(liu_yue['gan'])
+    yue_zhi_element = WU_XING_MAP.get(liu_yue['zhi'])
 
     favorable_list = yongshen.get('favorable', [])
     unfavorable_list = yongshen.get('unfavorable', [])
     primary = yongshen.get('primary')
 
+    # 天干计算
     if yue_gan_element == primary:
-        liuyue_score = 13 + random.randint(-2, 2)  # 减少随机范围
+        yue_gan_bonus = 13 + random.randint(-2, 2)  # 减少随机范围
     elif yue_gan_element in favorable_list:
-        liuyue_score = 8 + random.randint(-1, 1)
+        yue_gan_bonus = 8 + random.randint(-1, 1)
     elif yue_gan_element in unfavorable_list:
-        liuyue_score = -9 + random.randint(-1, 1)
+        yue_gan_bonus = -9 + random.randint(-1, 1)
     else:
-        liuyue_score = random.randint(-2, 2)  # 减少随机范围
+        yue_gan_bonus = random.randint(-2, 2)  # 减少随机范围
 
-    return liuyue_score * (liuyue_weight / 0.18)
+    # 地支计算（新增）
+    yue_zhi_bonus = 0
+    if branch_ratio > 0:
+        if yue_zhi_element == primary:
+            yue_zhi_bonus = 9 + random.randint(-1, 1)
+        elif yue_zhi_element in favorable_list:
+            yue_zhi_bonus = 6 + random.randint(-1, 1)
+        elif yue_zhi_element in unfavorable_list:
+            yue_zhi_bonus = -7 + random.randint(-1, 0)
+        else:
+            yue_zhi_bonus = random.randint(-2, 2)
+
+    # 修复：直接使用权重，不再除以固定值
+    base_score = yue_gan_bonus * stem_ratio + yue_zhi_bonus * branch_ratio
+    return base_score * liuyue_weight * 10  # 乘以10以保持合理的分数范围
 
 
 def _calculate_liuri_score(liu_ri, yongshen):
-    """计算流日影响 - 优化版，减少随机性，提高准确性"""
+    """计算流日影响 - 修复权重计算逻辑"""
     liuri_weight = FORTUNE_WEIGHTS_V5['liuri']['weight']
     stem_ratio = FORTUNE_WEIGHTS_V5['liuri']['stem_ratio']
     branch_ratio = FORTUNE_WEIGHTS_V5['liuri']['branch_ratio']
@@ -200,7 +226,9 @@ def _calculate_liuri_score(liu_ri, yongshen):
     else:
         ri_zhi_bonus = random.randint(-3, 3)
 
-    return (ri_gan_bonus * stem_ratio + ri_zhi_bonus * branch_ratio) * (liuri_weight / 0.70)
+    # 修复：直接使用权重，不再除以固定值
+    base_score = ri_gan_bonus * stem_ratio + ri_zhi_bonus * branch_ratio
+    return base_score * liuri_weight * 10  # 乘以10以保持合理的分数范围
 
 
 def _check_tiangan_interaction(gan1, gan2, yongshen, is_weak):
