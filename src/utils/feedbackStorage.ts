@@ -3,6 +3,7 @@
 // ==========================================
 
 export interface FeedbackRecord {
+  id: string; // 唯一标识符（用于同步）
   date: string; // YYYY-MM-DD
   timestamp: number;
   accuracy: 'accurate' | 'inaccurate' | 'partial'; // 准确、不准确、部分准确
