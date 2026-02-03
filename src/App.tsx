@@ -376,18 +376,95 @@ export default function App() {
         yongShen: (() => {
           // 转换后端返回的 yong_shen_result 格式为前端期望的格式
           const yongShenData = analysis.yong_shen_result || {};
+          const strengthResult = analysis.strength_result || {};
+          
+          // 从 strength_result.level 提取 strength 字段
+          const strength = strengthResult.level || yongShenData.strength || '未知';
+          
+          // 确保所有数组字段都是数组类型
+          const getArray = (value: any): string[] => {
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') return [value];
+            return [];
+          };
+          
           return {
-            strength: yongShenData.strength || '未知',
-            yongShen: Array.isArray(yongShenData.favorable) 
-              ? yongShenData.favorable 
+            strength,
+            yongShen: getArray(yongShenData.favorable).length > 0 
+              ? getArray(yongShenData.favorable)
               : (yongShenData.primary ? [yongShenData.primary] : []),
-            xiShen: Array.isArray(yongShenData.xi_shen) ? yongShenData.xi_shen : [],
-            jiShen: Array.isArray(yongShenData.ji_shen) ? yongShenData.ji_shen : []
+            xiShen: getArray(yongShenData.xi_shen),
+            jiShen: getArray(yongShenData.ji_shen)
           };
         })(),
         liuNian: fortune.liuNian || {},
         todayTenGod: fortune.liuRi?.gan || ''
       };
+      
+      // 运行时数据验证
+      const validateFortuneData = (data: DailyFortune): boolean => {
+        try {
+          // 验证必需字段
+          if (typeof data.totalScore !== 'number' || isNaN(data.totalScore)) {
+            console.error('[VALIDATION] totalScore 无效:', data.totalScore);
+            return false;
+          }
+          
+          if (!data.mainTheme || typeof data.mainTheme !== 'object') {
+            console.error('[VALIDATION] mainTheme 无效:', data.mainTheme);
+            return false;
+          }
+          
+          if (!data.dimensions || typeof data.dimensions !== 'object') {
+            console.error('[VALIDATION] dimensions 无效:', data.dimensions);
+            return false;
+          }
+          
+          // 验证 dimensions 结构
+          const requiredDimensions = ['career', 'wealth', 'romance', 'health', 'academic', 'travel'];
+          for (const key of requiredDimensions) {
+            const dim = data.dimensions[key];
+            if (!dim || typeof dim !== 'object') {
+              console.warn(`[VALIDATION] dimension ${key} 缺失，使用默认值`);
+              data.dimensions[key] = {
+                score: 50,
+                level: '平',
+                tag: '平',
+                inference: '运势平稳'
+              };
+            } else if (typeof dim.score !== 'number') {
+              console.warn(`[VALIDATION] dimension ${key}.score 无效，使用默认值`);
+              dim.score = 50;
+            }
+          }
+          
+          // 验证 yongShen 结构
+          if (data.yongShen) {
+            if (!Array.isArray(data.yongShen.yongShen)) {
+              console.warn('[VALIDATION] yongShen.yongShen 不是数组，转换为数组');
+              data.yongShen.yongShen = [];
+            }
+            if (!Array.isArray(data.yongShen.xiShen)) {
+              console.warn('[VALIDATION] yongShen.xiShen 不是数组，转换为数组');
+              data.yongShen.xiShen = [];
+            }
+            if (!Array.isArray(data.yongShen.jiShen)) {
+              console.warn('[VALIDATION] yongShen.jiShen 不是数组，转换为数组');
+              data.yongShen.jiShen = [];
+            }
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('[VALIDATION] 数据验证失败:', error);
+          return false;
+        }
+      };
+      
+      // 执行验证
+      if (!validateFortuneData(transformedData)) {
+        console.error('[ERROR] 数据验证失败，但继续使用数据');
+      }
       
       return transformedData;
     }
@@ -959,7 +1036,7 @@ export default function App() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setIsEditingYongShen(true);
-                                    setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
+                                    setEditYongShenValue(fortune.yongShen?.yongShen?.[0] || '');
                                   }}
                                   className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                                   type="button"
@@ -984,20 +1061,20 @@ export default function App() {
                               <div>
                                 <div className="text-[10px] text-gray-400 mb-2">{t('ui:todayPage.dayMasterStrength')}</div>
                                 <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                                  fortune.yongShen.strength === '身旺' ? 'bg-red-100 text-red-700' :
-                                  fortune.yongShen.strength === '身弱' ? 'bg-blue-100 text-blue-700' :
+                                  fortune.yongShen?.strength === '身旺' ? 'bg-red-100 text-red-700' :
+                                  fortune.yongShen?.strength === '身弱' ? 'bg-blue-100 text-blue-700' :
                                   'bg-gray-100 text-gray-700'
                                 }`}>
-                                  {fortune.yongShen.strength === '身旺' ? t('bazi:strength.strong') : 
-                                   fortune.yongShen.strength === '身弱' ? t('bazi:strength.weak') : 
-                                   fortune.yongShen.strength}
+                                  {fortune.yongShen?.strength === '身旺' ? t('bazi:strength.strong') : 
+                                   fortune.yongShen?.strength === '身弱' ? t('bazi:strength.weak') : 
+                                   fortune.yongShen?.strength || '未知'}
                                 </div>
                               </div>
                               <div className="col-span-2">
                                 <div className="text-[10px] text-gray-400 mb-2 flex items-center justify-between">
                                   <span>{t('bazi:terms.yongShen')}</span>
                                   <div className="flex items-center gap-2">
-                                    {fortune.yongShen.isCustom && (
+                                    {fortune.yongShen?.isCustom && (
                                       <span className="text-[10px] px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full font-medium">{t('ui:todayPage.custom')}</span>
                                     )}
                                   </div>
@@ -1050,8 +1127,8 @@ export default function App() {
                                   </div>
                                 ) : (
                                   <div className="flex flex-wrap gap-1">
-                                    {fortune.yongShen.yongShen && fortune.yongShen.yongShen.length > 0 ? (
-                                      (Array.isArray(fortune.yongShen?.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
+                                    {fortune.yongShen?.yongShen && fortune.yongShen.yongShen.length > 0 ? (
+                                      (Array.isArray(fortune.yongShen.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
                                         <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
                                           {elem}
                                         </span>
@@ -1065,8 +1142,8 @@ export default function App() {
                               <div>
                                 <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.xiShen')}</div>
                                 <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
-                                    (Array.isArray(fortune.yongShen?.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
+                                  {fortune.yongShen?.xiShen && fortune.yongShen.xiShen.length > 0 ? (
+                                    (Array.isArray(fortune.yongShen.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
                                       <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
                                         {elem}
                                       </span>
@@ -1079,8 +1156,8 @@ export default function App() {
                               <div>
                                 <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.jiShen')}</div>
                                 <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
-                                    (Array.isArray(fortune.yongShen?.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
+                                  {fortune.yongShen?.jiShen && fortune.yongShen.jiShen.length > 0 ? (
+                                    (Array.isArray(fortune.yongShen.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
                                       <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
                                         {elem}
                                       </span>

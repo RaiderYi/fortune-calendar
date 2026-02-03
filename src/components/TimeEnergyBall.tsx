@@ -96,22 +96,33 @@ export default function TimeEnergyBall({ currentTime, dayMaster }: TimeEnergyBal
         if (dayMasterElement && shichenElement) {
           const relationData = ELEMENT_RELATION[dayMasterElement];
           
-          if (relationData.sheng.includes(shichenElement)) {
-            setRelation('生');
-            setRelationKey('generate');
-            setEnergyLevel('high');
-          } else if (relationData.ke.includes(shichenElement)) {
-            setRelation('克');
-            setRelationKey('restrict');
-            setEnergyLevel('high');
-          } else if (relationData.beiSheng.includes(shichenElement)) {
-            setRelation('被生');
-            setRelationKey('beGenerated');
-            setEnergyLevel('high');
-          } else if (relationData.beiKe.includes(shichenElement)) {
-            setRelation('被克');
-            setRelationKey('beRestricted');
-            setEnergyLevel('low');
+          // 检查 relationData 是否存在
+          if (relationData) {
+            if (Array.isArray(relationData.sheng) && relationData.sheng.includes(shichenElement)) {
+              setRelation('生');
+              setRelationKey('generate');
+              setEnergyLevel('high');
+            } else if (Array.isArray(relationData.ke) && relationData.ke.includes(shichenElement)) {
+              setRelation('克');
+              setRelationKey('restrict');
+              setEnergyLevel('high');
+            } else if (Array.isArray(relationData.beiSheng) && relationData.beiSheng.includes(shichenElement)) {
+              setRelation('被生');
+              setRelationKey('beGenerated');
+              setEnergyLevel('high');
+            } else if (Array.isArray(relationData.beiKe) && relationData.beiKe.includes(shichenElement)) {
+              setRelation('被克');
+              setRelationKey('beRestricted');
+              setEnergyLevel('low');
+            } else if (dayMasterElement === shichenElement) {
+              setRelation('同');
+              setRelationKey('same');
+              setEnergyLevel('medium');
+            } else {
+              setRelation('平');
+              setRelationKey('neutral');
+              setEnergyLevel('medium');
+            }
           } else if (dayMasterElement === shichenElement) {
             setRelation('同');
             setRelationKey('same');

@@ -241,7 +241,7 @@ export default function TodayPage({
                           onClick={(e) => {
                             e.stopPropagation();
                             setIsEditingYongShen(true);
-                            setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
+                            setEditYongShenValue(fortune.yongShen?.yongShen?.[0] || '');
                           }}
                           className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                           type="button"
@@ -266,20 +266,20 @@ export default function TodayPage({
                       <div>
                         <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2">{t('ui:todayPage.dayMasterStrength')}</div>
                         <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                          fortune.yongShen.strength === '身旺' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
-                          fortune.yongShen.strength === '身弱' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
+                          fortune.yongShen?.strength === '身旺' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+                          fortune.yongShen?.strength === '身弱' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
                           'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                         }`}>
-                          {fortune.yongShen.strength === '身旺' ? t('bazi:strength.strong') : 
-                           fortune.yongShen.strength === '身弱' ? t('bazi:strength.weak') : 
-                           fortune.yongShen.strength}
+                          {fortune.yongShen?.strength === '身旺' ? t('bazi:strength.strong') : 
+                           fortune.yongShen?.strength === '身弱' ? t('bazi:strength.weak') : 
+                           fortune.yongShen?.strength || '未知'}
                         </div>
                       </div>
                       <div className="col-span-2">
                         <div className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 flex items-center justify-between">
                           <TermButton term={t('bazi:terms.yongShen')} className="text-gray-400 dark:text-gray-500" />
                           <div className="flex items-center gap-2">
-                            {fortune.yongShen.isCustom && (
+                            {fortune.yongShen?.isCustom && (
                               <span className="text-[10px] px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full font-medium">{t('ui:todayPage.custom')}</span>
                             )}
                             {onCustomYongShenChange && !isEditingYongShen && (
@@ -287,7 +287,7 @@ export default function TodayPage({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setIsEditingYongShen(true);
-                                  setEditYongShenValue(fortune.yongShen.yongShen && fortune.yongShen.yongShen[0] ? fortune.yongShen.yongShen[0] : '');
+                                  setEditYongShenValue(fortune.yongShen?.yongShen?.[0] || '');
                                 }}
                                 className="text-xs px-3 py-1.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg cursor-pointer font-medium transition-colors shadow-sm"
                                 type="button"
@@ -347,8 +347,8 @@ export default function TodayPage({
                           </div>
                         ) : (
                           <div className="flex flex-wrap gap-1">
-                            {fortune.yongShen.yongShen && fortune.yongShen.yongShen.length > 0 ? (
-                              (Array.isArray(fortune.yongShen?.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
+                            {fortune.yongShen?.yongShen && fortune.yongShen.yongShen.length > 0 ? (
+                              (Array.isArray(fortune.yongShen.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
                                 <TermButton
                                   key={idx}
                                   term={elem}
@@ -366,8 +366,8 @@ export default function TodayPage({
                           <TermButton term={t('bazi:terms.xiShen')} className="text-gray-400 dark:text-gray-500" />
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          {fortune.yongShen.xiShen && fortune.yongShen.xiShen.length > 0 ? (
-                            (Array.isArray(fortune.yongShen?.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
+                          {fortune.yongShen?.xiShen && fortune.yongShen.xiShen.length > 0 ? (
+                            (Array.isArray(fortune.yongShen.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
                               <TermButton
                                 key={idx}
                                 term={elem}
@@ -384,8 +384,8 @@ export default function TodayPage({
                           <TermButton term={t('bazi:terms.jiShen')} className="text-gray-400 dark:text-gray-500" />
                         </div>
                         <div className="flex flex-wrap gap-1">
-                          {fortune.yongShen.jiShen && fortune.yongShen.jiShen.length > 0 ? (
-                            (Array.isArray(fortune.yongShen?.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
+                          {fortune.yongShen?.jiShen && fortune.yongShen.jiShen.length > 0 ? (
+                            (Array.isArray(fortune.yongShen.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
                               <TermButton
                                 key={idx}
                                 term={elem}
