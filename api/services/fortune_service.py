@@ -73,14 +73,26 @@ class FortuneService:
             if custom_yongshen:
                 analysis_result['yong_shen_result'] = _create_custom_yongshen(custom_yongshen, bazi)
 
-            # 4. 计算当前流年流月流日
-            now = datetime.datetime.now()
-            liu_nian = calculate_liu_nian(now.year)
-            liu_yue = calculate_liu_yue(now.year, now.month, now.day)
-            liu_ri = calculate_liu_ri(now.year, now.month, now.day)
+            # 4. 获取目标日期（前端传递的date参数，如果未提供则使用当前日期）
+            target_date_str = data.get('date')
+            if target_date_str:
+                # 解析目标日期
+                try:
+                    from ..utils.date_utils import parse_date
+                except ImportError:
+                    from utils.date_utils import parse_date
+                target_dt = parse_date(target_date_str)
+            else:
+                # 如果未提供目标日期，使用当前日期
+                target_dt = datetime.datetime.now()
             
-            # 4.1 计算当前大运
-            dayun = calculate_dayun(birth_dt, now.year, gender, longitude)
+            # 4.1 计算目标日期的流年流月流日
+            liu_nian = calculate_liu_nian(target_dt.year)
+            liu_yue = calculate_liu_yue(target_dt.year, target_dt.month, target_dt.day)
+            liu_ri = calculate_liu_ri(target_dt.year, target_dt.month, target_dt.day)
+            
+            # 4.2 计算目标日期所在的大运
+            dayun = calculate_dayun(birth_dt, target_dt.year, gender, longitude)
 
             # 5. 计算运势评分 (V5.0)
             yongshen_data = analysis_result.get('yong_shen_result', {})

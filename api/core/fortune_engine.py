@@ -279,33 +279,56 @@ def _check_tiangan_interaction(gan1, gan2, yongshen, is_weak):
 
 
 def _check_dizhi_interaction(bazi_zhis, liu_ri_zhi, day_zhi, yongshen):
-    """检测地支互动 - 优化版，提高判断准确性"""
+    """检测地支互动 - 符合《渊海子平》传统规则"""
     score = 0
     descriptions = []
 
-    # 检查六冲
+    # 检查六冲（符合传统命理：冲日支最凶，冲忌神为吉，冲用神为凶）
     liu_chong_table = DIZHI_INTERACTIONS['liu_chong']
     liu_chong_scores = DIZHI_INTERACTIONS['liu_chong_scores']
+    
+    # 检查六合（符合传统命理：合化有利有弊，需看合化后的五行）
+    liu_he_table = DIZHI_INTERACTIONS['liu_he']
+    liu_he_scores = DIZHI_INTERACTIONS['liu_he_scores']
     
     favorable_list = yongshen.get('favorable', [])
     unfavorable_list = yongshen.get('unfavorable', [])
 
+    # 检查六冲
     for bazi_zhi in bazi_zhis:
         if liu_chong_table.get(liu_ri_zhi) == bazi_zhi:
             if bazi_zhi == day_zhi:
+                # 冲日支最凶（符合《渊海子平》理论）
                 score += liu_chong_scores['clash_root']
                 descriptions.append(f"六冲日支（{liu_ri_zhi}冲{bazi_zhi}），动荡不安")
             else:
                 zhi_element = WU_XING_MAP.get(bazi_zhi)
                 if zhi_element in unfavorable_list:
+                    # 冲忌神为吉（符合《滴天髓》用神为纲的原则）
                     score += liu_chong_scores['clash_favorable']
                     descriptions.append(f"六冲去忌神（{liu_ri_zhi}冲{bazi_zhi}），变动中求吉")
                 elif zhi_element in favorable_list:
+                    # 冲用神为凶（符合《滴天髓》用神为纲的原则）
                     score += liu_chong_scores['clash_unfavorable']
                     descriptions.append(f"六冲用神（{liu_ri_zhi}冲{bazi_zhi}），防备突发")
                 else:
                     score += liu_chong_scores.get('clash_neutral', -2)
                     descriptions.append(f"六冲（{liu_ri_zhi}冲{bazi_zhi}），有变动")
+    
+    # 检查六合（符合《渊海子平》理论：六合有合化作用）
+    if liu_he_table.get(liu_ri_zhi) == day_zhi:
+        # 流日地支与日支六合
+        zhi_element = WU_XING_MAP.get(liu_ri_zhi)
+        if zhi_element in favorable_list:
+            score += liu_he_scores['favorable']
+            descriptions.append(f"六合日支（{liu_ri_zhi}合{day_zhi}），和谐有利")
+        elif zhi_element in unfavorable_list:
+            score += liu_he_scores['unfavorable']
+            descriptions.append(f"六合日支（{liu_ri_zhi}合{day_zhi}），合化不利")
+        else:
+            # 六合但合化后可能不利（需看具体情况）
+            score += liu_he_scores.get('bind_favorable', -2)
+            descriptions.append(f"六合日支（{liu_ri_zhi}合{day_zhi}），有合化")
 
     return score, descriptions
 
