@@ -8,10 +8,8 @@ from http.server import BaseHTTPRequestHandler
 import json
 import datetime
 from urllib.parse import parse_qs, urlparse
-from functools import lru_cache  # ← 新增
-import hashlib                   # ← 新增
-import urllib.request
-import os
+from functools import lru_cache
+import hashlib
 import urllib.request
 import os
 
@@ -3205,31 +3203,57 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         """处理 POST 请求 - 路由到不同接口"""
-        # 解析路径
-        parsed_path = urlparse(self.path)
-        path = parsed_path.path
-        
-        # 路由到 AI 聊天接口
-        if '/ai-chat' in path or path.endswith('/ai-chat'):
-            self._handle_ai_chat()
-            return
-        
-        # 路由到认证接口
-        if '/auth/' in path or '/auth' in path:
-            self._handle_auth(path)
-            return
-        
-        # 路由到运势分析接口（/fortune 或 /api/fortune）
-        if '/fortune' in path or path == '/' or path == '/api' or path == '':
-            self._handle_fortune()
-            return
-        
-        # 未知路径
-        self._send_json_response(404, {
-            'success': False,
-            'error': f'Unknown endpoint: {path}',
-            'available_endpoints': ['/api/fortune', '/api/ai-chat', '/api/auth/register', '/api/auth/login']
-        })
+        try:
+            # 解析路径
+            parsed_path = urlparse(self.path)
+            path = parsed_path.path
+            
+            # 路由到 AI 聊天接口
+            if '/ai-chat' in path or path.endswith('/ai-chat'):
+                self._handle_ai_chat()
+                return
+            
+            # 路由到认证接口
+            if '/auth/' in path or '/auth' in path:
+                self._handle_auth(path)
+                return
+            
+            # 路由到运势分析接口（/fortune 或 /api/fortune）
+            if '/fortune' in path or path == '/' or path == '/api' or path == '':
+                self._handle_fortune()
+                return
+            
+            # 未知路径
+            self._send_json_response(404, {
+                'success': False,
+                'error': f'Unknown endpoint: {path}',
+                'available_endpoints': ['/api/fortune', '/api/ai-chat', '/api/auth/register', '/api/auth/login']
+            })
+        except Exception as e:
+            # 最外层错误处理，确保总是返回响应
+            import traceback
+            error_trace = traceback.format_exc()
+            error_message = str(e)
+            
+            print(f"POST 请求处理错误: {error_message}")
+            print(f"错误堆栈: {error_trace}")
+            
+            try:
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': error_message,
+                    'message': '服务器内部错误，请稍后重试'
+                })
+            except:
+                # 如果连错误响应都发送失败，尝试最基本的响应
+                try:
+                    self.send_response(500)
+                    self.send_header('Content-Type', 'text/plain; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(b'Internal Server Error')
+                except:
+                    pass
     
     def _handle_ai_chat(self):
         """处理 AI 聊天请求"""
@@ -3669,12 +3693,24 @@ def _hash_password(password):
         """处理运势分析请求（原有逻辑）"""
         # Vercel中路径是 / 而不是 /api/fortune
         try:
-            # 读取请求体
-            content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length)
-            data = json.loads(body.decode('utf-8'))
+            # 读取请求体（添加错误处理）
+            try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                if content_length <= 0:
+                    raise ValueError('Invalid Content-Length')
+                body = self.rfile.read(content_length)
+                if not body:
+                    raise ValueError('Empty request body')
+                data = json.loads(body.decode('utf-8'))
+            except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as e:
+                self._send_json_response(400, {
+                    'success': False,
+                    'error': f'Invalid request: {str(e)}',
+                    'message': '请求格式错误，请检查输入参数'
+                })
+                return
 
-            # 解析参数
+            # 解析参数（添加验证）
             date_str = data.get('date', datetime.datetime.now().strftime('%Y-%m-%d'))
             birth_date_str = data.get('birthDate', '1990-01-01')
             birth_time_str = data.get('birthTime', '12:00')
@@ -3682,11 +3718,27 @@ def _hash_password(password):
             gender = data.get('gender', 'male')  # 新增：性别参数（male/female）
             custom_yongshen = data.get('customYongShen')  # 新增：用户自定义用神
 
+            # 验证必需参数
+            if not birth_date_str or not birth_time_str:
+                self._send_json_response(400, {
+                    'success': False,
+                    'error': 'Missing required parameters: birthDate and birthTime are required',
+                    'message': '缺少必需参数：出生日期和出生时间'
+                })
+                return
+
             # 转换经度为浮点数
             try:
                 longitude = float(longitude_str)
-            except:
+                # 验证经度范围
+                if longitude < -180 or longitude > 180:
+                    longitude = 116.4
+            except (ValueError, TypeError):
                 longitude = 116.4
+            
+            # 验证性别
+            if gender not in ['male', 'female']:
+                gender = 'male'
 
             # 生成缓存键
             cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
@@ -3870,17 +3922,31 @@ def _hash_password(password):
             print(f"运势计算错误: {error_message}")
             print(f"错误堆栈: {error_trace}")
             
-            error_response = {
-                'success': False,
-                'error': error_message,
-                'message': '运势数据计算失败，请检查输入参数',
-                # 生产环境不返回 traceback，开发环境可以返回
-                'traceback': error_trace if os.environ.get('VERCEL_ENV') != 'production' else None
-            }
+            # 确保响应头还没有发送
+            try:
+                error_response = {
+                    'success': False,
+                    'error': error_message,
+                    'message': '运势数据计算失败，请检查输入参数',
+                    # 生产环境不返回 traceback，开发环境可以返回
+                    'traceback': error_trace if os.environ.get('VERCEL_ENV') != 'production' else None
+                }
 
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
 
-            self.wfile.write(json.dumps(error_response, ensure_ascii=False).encode('utf-8'))
+                self.wfile.write(json.dumps(error_response, ensure_ascii=False).encode('utf-8'))
+            except Exception as send_error:
+                # 如果发送错误响应也失败，记录到日志
+                print(f"发送错误响应失败: {send_error}")
+                # 尝试发送最基本的错误响应
+                try:
+                    self.send_response(500)
+                    self.send_header('Content-Type', 'text/plain; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(b'Internal Server Error')
+                except:
+                    pass  # 如果连这个都失败，只能让 Vercel 处理
