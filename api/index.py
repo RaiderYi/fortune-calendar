@@ -4049,48 +4049,79 @@ def _hash_password(password):
                 total_score = score_result['score']
 
             # 5. 生成各维度评分
-            if use_v5 and dimensions_v5:
-                # 使用 V5 计算的维度
-                dimensions = dimensions_v5
-            else:
-                # 使用 V3.1 的维度生成
-                dimensions = generate_dimension_scores(total_score, liu_ri['gan'])
+            try:
+                if use_v5 and dimensions_v5:
+                    # 使用 V5 计算的维度
+                    dimensions = dimensions_v5
+                else:
+                    # 使用 V3.1 的维度生成
+                    liu_ri_gan = liu_ri.get('gan', '甲')  # 安全访问，提供默认值
+                    dimensions = generate_dimension_scores(total_score, liu_ri_gan)
+            except Exception as dim_error:
+                print(f"[ERROR] 维度评分生成失败: {dim_error}")
+                import traceback
+                print(traceback.format_exc())
+                # 使用默认维度
+                dimensions = {
+                    'career': {'score': 50, 'level': '平', 'tag': '事业运', 'inference': '运势平稳'},
+                    'wealth': {'score': 50, 'level': '平', 'tag': '财运', 'inference': '财运平稳'},
+                    'romance': {'score': 50, 'level': '平', 'tag': '感情运', 'inference': '感情平稳'},
+                    'health': {'score': 50, 'level': '平', 'tag': '健康运', 'inference': '健康平稳'},
+                    'academic': {'score': 50, 'level': '平', 'tag': '学业运', 'inference': '学业平稳'},
+                    'travel': {'score': 50, 'level': '平', 'tag': '出行运', 'inference': '出行平稳'}
+                }
 
             # 6. 生成宜忌
-            todo = generate_todo(
-                analysis['yong_shen']['primary'],
-                analysis['yong_shen']['ji_shen']
-            )
+            try:
+                yong_shen_primary = analysis.get('yong_shen', {}).get('primary', '木')
+                yong_shen_ji_shen = analysis.get('yong_shen', {}).get('ji_shen', [])
+                todo = generate_todo(yong_shen_primary, yong_shen_ji_shen)
+            except Exception as todo_error:
+                print(f"[ERROR] 宜忌生成失败: {todo_error}")
+                import traceback
+                print(traceback.format_exc())
+                todo = [{'label': '宜', 'content': '顺势而为', 'type': 'up'}, {'label': '忌', 'content': '避免冲动', 'type': 'down'}]
 
             # 7. 生成主题（基于流日十神）
-            main_theme = generate_main_theme(
-                total_score,
-                bazi['day_gan'],  # 日主天干
-                liu_ri['gan']     # 流日天干
-            )
+            try:
+                day_gan = bazi.get('day_gan', '甲')  # 安全访问，提供默认值
+                liu_ri_gan = liu_ri.get('gan', '甲')  # 安全访问，提供默认值
+                main_theme = generate_main_theme(total_score, day_gan, liu_ri_gan)
+            except Exception as theme_error:
+                print(f"[ERROR] 主题生成失败: {theme_error}")
+                import traceback
+                print(traceback.format_exc())
+                main_theme = {
+                    'keyword': '平稳',
+                    'subKeyword': '运势平稳',
+                    'emoji': '📊',
+                    'description': '今日运势平稳，宜稳扎稳打'
+                }
 
             # 8. 构建响应
             print("[DEBUG] 开始构建响应...")
-            response = {
-                'dateStr': current_date.strftime('%m.%d'),
-                'weekDay': get_week_day_cn(current_date),
-                'lunarStr': f"{bazi['solar_term']}",
-                'totalScore': total_score,
-                'pillars': {
-                    'year': bazi['year'],
-                    'month': bazi['month'],
-                    'day': bazi['day']
-                },
-                'mainTheme': main_theme,
-                'dimensions': dimensions,
-                'todo': todo,
-                'baziDetail': {
-                    'year': bazi['year'],
-                    'month': bazi['month'],
-                    'day': bazi['day'],
-                    'hour': bazi['hour'],
-                    'dayMaster': bazi['day_gan']
-                },
+            try:
+                # 安全访问所有字典键
+                response = {
+                    'dateStr': current_date.strftime('%m.%d'),
+                    'weekDay': get_week_day_cn(current_date),
+                    'lunarStr': bazi.get('solar_term', '未知'),
+                    'totalScore': total_score,
+                    'pillars': {
+                        'year': bazi.get('year', '未知'),
+                        'month': bazi.get('month', '未知'),
+                        'day': bazi.get('day', '未知')
+                    },
+                    'mainTheme': main_theme,
+                    'dimensions': dimensions,
+                    'todo': todo,
+                    'baziDetail': {
+                        'year': bazi.get('year', '未知'),
+                        'month': bazi.get('month', '未知'),
+                        'day': bazi.get('day', '未知'),
+                        'hour': bazi.get('hour', '未知'),
+                        'dayMaster': bazi.get('day_gan', '未知')
+                    },
                 'yongShen': {
                     'strength': analysis.get('strength', {}).get('level', '未知'),
                     'yongShen': [yongshen_v5['primary']] if (use_v5 and yongshen_v5 and 'primary' in yongshen_v5) else [analysis.get('yong_shen', {}).get('primary', '')],
@@ -4099,20 +4130,31 @@ def _hash_password(password):
                     'isCustom': bool(custom_yongshen)  # 标记是否为自定义用神
                 },
                 'liuNian': {
-                    'year': liu_nian['gan_zhi'],
-                    'month': liu_yue['gan_zhi'],
-                    'day': liu_ri['gan_zhi'],
-                    'yearGan': liu_nian['gan'],
-                    'yearZhi': liu_nian['zhi'],
-                    'monthGan': liu_yue['gan'],
-                    'monthZhi': liu_yue['zhi'],
-                    'dayGan': liu_ri['gan'],
-                    'dayZhi': liu_ri['zhi']
+                    'year': liu_nian.get('gan_zhi', '未知'),
+                    'month': liu_yue.get('gan_zhi', '未知'),
+                    'day': liu_ri.get('gan_zhi', '未知'),
+                    'yearGan': liu_nian.get('gan', '未知'),
+                    'yearZhi': liu_nian.get('zhi', '未知'),
+                    'monthGan': liu_yue.get('gan', '未知'),
+                    'monthZhi': liu_yue.get('zhi', '未知'),
+                    'dayGan': liu_ri.get('gan', '未知'),
+                    'dayZhi': liu_ri.get('zhi', '未知')
                 },
                 'dayun': dayun_info,
                 'gender': gender,
-                'todayTenGod': calculate_ten_god(bazi['day_gan'], liu_ri['gan'])
-            }
+                'todayTenGod': calculate_ten_god(bazi.get('day_gan', '甲'), liu_ri.get('gan', '甲'))
+                }
+            except Exception as response_error:
+                print(f"[ERROR] 响应构建失败: {response_error}")
+                import traceback
+                print(traceback.format_exc())
+                # 返回基本错误响应
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': f'响应构建失败: {str(response_error)}',
+                    'message': '响应数据构建过程中出错'
+                })
+                return
             
             # ========== V5.0 新增响应字段 ==========
             if use_v5 and yongshen_v5 and element_analysis and score_result_v5:
