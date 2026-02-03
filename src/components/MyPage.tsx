@@ -4,11 +4,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail } from 'lucide-react';
+import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell } from 'lucide-react';
 import LifeMap from './LifeMap';
 import ContactModal from './ContactModal';
+import LoginModal from './LoginModal';
 import { getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
+import { useAuth } from '../contexts/AuthContext';
 import type { UserProfile } from './ProfileSettings';
 import { useTranslation } from 'react-i18next';
 
@@ -33,10 +35,21 @@ export default function MyPage({
   const isEnglish = i18n.language === 'en';
   const [showLifeMap, setShowLifeMap] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const checkinStats = getCheckinStats();
   const achievementStats = getAchievementStats();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const menuItems = [
+    // 登录/登出（放在最前面）
+    !isAuthenticated ? {
+      id: 'login',
+      label: isEnglish ? 'Login / Register' : '登录 / 注册',
+      icon: LogIn,
+      color: 'indigo',
+      onClick: () => setShowLogin(true),
+      highlight: true,
+    } : null,
     {
       id: 'profile',
       label: t('menu.profile'),
@@ -44,6 +57,15 @@ export default function MyPage({
       color: 'indigo',
       onClick: onSettingsClick,
     },
+    // 云同步（仅登录后显示）
+    isAuthenticated ? {
+      id: 'cloud',
+      label: isEnglish ? 'Cloud Sync' : '云端同步',
+      icon: Cloud,
+      color: 'blue',
+      onClick: () => {/* TODO: 打开同步设置 */},
+      badge: isEnglish ? 'Synced' : '已同步',
+    } : null,
     {
       id: 'checkin',
       label: t('menu.checkin'),
@@ -95,7 +117,23 @@ export default function MyPage({
       color: 'gray',
       onClick: onSettingsClick,
     },
-  ];
+    // 登出（仅登录后显示）
+    isAuthenticated ? {
+      id: 'logout',
+      label: isEnglish ? 'Logout' : '退出登录',
+      icon: LogOut,
+      color: 'gray',
+      onClick: logout,
+    } : null,
+  ].filter(Boolean) as Array<{
+    id: string;
+    label: string;
+    icon: any;
+    color: string;
+    onClick: () => void;
+    badge?: string;
+    highlight?: boolean;
+  }>;
 
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; icon: string }> = {
@@ -119,9 +157,29 @@ export default function MyPage({
               <User size={32} />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold">{userProfile.name}</h2>
-              <p className="text-white/80 text-sm mt-1">{userProfile.city}</p>
+              <h2 className="text-2xl font-bold">
+                {isAuthenticated && user ? user.name : userProfile.name}
+              </h2>
+              <p className="text-white/80 text-sm mt-1">
+                {isAuthenticated && user?.email ? user.email : userProfile.city}
+              </p>
+              {isAuthenticated && (
+                <span className="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-white/20 rounded-full text-xs">
+                  <Cloud size={12} />
+                  {isEnglish ? 'Synced' : '已同步'}
+                </span>
+              )}
             </div>
+            {!isAuthenticated && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowLogin(true)}
+                className="bg-white text-indigo-600 px-4 py-2 rounded-xl font-bold text-sm"
+              >
+                {isEnglish ? 'Login' : '登录'}
+              </motion.button>
+            )}
           </div>
         </div>
 
@@ -142,6 +200,7 @@ export default function MyPage({
           {menuItems.map((item) => {
             const Icon = item.icon;
             const colors = getColorClasses(item.color);
+            const isHighlight = 'highlight' in item && item.highlight;
             
             return (
               <motion.button
@@ -149,20 +208,30 @@ export default function MyPage({
                 onClick={item.onClick}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4"
+                className={`w-full p-4 rounded-2xl shadow-sm border flex items-center gap-4 ${
+                  isHighlight
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 border-indigo-400 text-white'
+                    : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
+                }`}
               >
-                <div className={`${colors.bg} rounded-xl p-3`}>
-                  <Icon size={20} className={colors.icon} />
+                <div className={isHighlight ? 'bg-white/20 rounded-xl p-3' : `${colors.bg} rounded-xl p-3`}>
+                  <Icon size={20} className={isHighlight ? 'text-white' : colors.icon} />
                 </div>
                 <div className="flex-1 text-left">
-                  <div className="font-bold text-gray-800 dark:text-gray-200">{item.label}</div>
+                  <div className={`font-bold ${isHighlight ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>
+                    {item.label}
+                  </div>
                 </div>
                 {item.badge && (
-                  <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-full text-xs font-bold">
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    isHighlight
+                      ? 'bg-white/20 text-white'
+                      : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                  }`}>
                     {item.badge}
                   </div>
                 )}
-                <div className="text-gray-400 dark:text-gray-500">›</div>
+                <div className={isHighlight ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}>›</div>
               </motion.button>
             );
           })}
@@ -180,6 +249,12 @@ export default function MyPage({
       <ContactModal
         isOpen={showContact}
         onClose={() => setShowContact(false)}
+      />
+
+      {/* 登录/注册 */}
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
       />
     </div>
   );

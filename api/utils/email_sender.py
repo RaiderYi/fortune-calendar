@@ -15,8 +15,8 @@ import smtplib
 EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'smtp')  # smtp, sendgrid, mailgun
 SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.qq.com')
 SMTP_PORT = int(os.environ.get('SMTP_PORT', '465'))
-SMTP_USER = os.environ.get('SMTP_USER', '')
-SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+SMTP_USER = os.environ.get('SMTP_USER', '429507312@qq.com')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', 'qvlvbtmjecfpbjhj')
 SMTP_USE_SSL = os.environ.get('SMTP_USE_SSL', 'true').lower() == 'true'
 
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
