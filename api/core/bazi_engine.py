@@ -383,7 +383,96 @@ def analyze_bazi_enhanced(bazi):
 
 def calculate_ten_god(day_gan, target_gan):
     """计算十神"""
+    if day_gan not in TIAN_GAN or target_gan not in TIAN_GAN:
+        return "比肩"  # 默认值
     day_idx = TIAN_GAN.index(day_gan)
     target_idx = TIAN_GAN.index(target_gan)
     diff = (target_idx - day_idx) % 10
     return SHI_SHEN[diff]
+
+
+# ==================== 缓存和工具函数 ====================
+
+from functools import lru_cache
+import hashlib
+
+
+def generate_bazi_cache_key(birth_date_str, birth_time_str, longitude):
+    """生成八字分析的缓存键"""
+    key_str = f"{birth_date_str}_{birth_time_str}_{longitude}"
+    return hashlib.md5(key_str.encode('utf-8')).hexdigest()
+
+
+@lru_cache(maxsize=100)
+def _analyze_bazi_internal(cache_key, birth_date_str, birth_time_str, longitude):
+    """内部八字分析函数（带LRU缓存）"""
+    # 延迟导入避免循环依赖
+    from ..utils.date_utils import parse_datetime
+    from ..core.lunar import calculate_bazi
+    
+    birth_dt = parse_datetime(birth_date_str, birth_time_str)
+    bazi = calculate_bazi(birth_dt, longitude)
+    return analyze_bazi_enhanced(bazi)
+
+
+def analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude):
+    """带缓存的八字分析"""
+    try:
+        result = _analyze_bazi_internal(cache_key, birth_date_str, birth_time_str, longitude)
+        return {
+            'strength_result': result['strength'],
+            'yong_shen_result': result['yong_shen']
+        }
+    except Exception as e:
+        print(f"[ERROR] analyze_bazi_cached 失败: {e}")
+        # 降级处理：不使用缓存
+        from ..utils.date_utils import parse_datetime
+        from ..core.lunar import calculate_bazi
+        
+        birth_dt = parse_datetime(birth_date_str, birth_time_str)
+        bazi = calculate_bazi(birth_dt, longitude)
+        result = analyze_bazi_enhanced(bazi)
+        return {
+            'strength_result': result['strength'],
+            'yong_shen_result': result['yong_shen']
+        }
+
+
+def _create_custom_yongshen(custom_yongshen, bazi):
+    """根据用户自定义创建用神结果"""
+    if not custom_yongshen or not isinstance(custom_yongshen, (str, list)):
+        return None
+    
+    # 如果是字符串，转换为列表
+    if isinstance(custom_yongshen, str):
+        yong_shen_list = [custom_yongshen]
+    else:
+        yong_shen_list = custom_yongshen
+    
+    # 验证用神是否有效（必须是五行之一）
+    valid_elements = ['木', '火', '土', '金', '水']
+    yong_shen_list = [y for y in yong_shen_list if y in valid_elements]
+    
+    if not yong_shen_list:
+        return None
+    
+    # 推导喜神和忌神
+    xi_shen = []
+    ji_shen = []
+    
+    for element in valid_elements:
+        if element in yong_shen_list:
+            continue
+        # 检查是否能生用神（喜神）
+        if any(WU_XING_SHENG.get(element) == yong for yong in yong_shen_list):
+            xi_shen.append(element)
+        # 检查是否能克用神（忌神）
+        elif any(WU_XING_KE.get(element) == yong for yong in yong_shen_list):
+            ji_shen.append(element)
+    
+    return {
+        'yong_shen': yong_shen_list,
+        'xi_shen': xi_shen,
+        'ji_shen': ji_shen,
+        'is_custom': True
+    }
