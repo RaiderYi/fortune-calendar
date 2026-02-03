@@ -3556,36 +3556,176 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             raise Exception(f'调用 DeepSeek API 时出错: {str(e)}')
     
-    # ==================== 用户存储（内存，生产环境应使用数据库）====================
+    # ==================== 认证相关方法 ====================
+    
+    def _handle_auth(self, path):
+        """处理认证相关请求"""
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8')) if body else {}
+            
+            if '/register' in path:
+                self._auth_register(data)
+            elif '/login' in path:
+                self._auth_login(data)
+            elif '/refresh' in path:
+                self._auth_refresh(data)
+            elif '/verify' in path:
+                self._auth_verify()
+            elif '/reset-password' in path:
+                self._auth_reset_password(data)
+            else:
+                self._send_json_response(404, {'success': False, 'error': 'Not Found'})
+        except Exception as e:
+            self._send_json_response(500, {'success': False, 'error': str(e)})
 
-# 全局用户存储字典（实际应使用数据库或 Vercel KV）
-_users_store = {}
-_passwords_store = {}
+    def do_GET(self):
+        """处理 GET 请求"""
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        response = {'success': True, 'message': 'Fortune Calendar API', 'version': '1.0'}
+        self.wfile.write(safe_json_dumps(response).encode('utf-8'))
 
-def _get_user_by_email(email):
-    """根据邮箱获取用户"""
-    for user_id, user in _users_store.items():
-        if user.get('email') == email:
-            return user
-    return None
+    def do_POST(self):
+        """处理 POST 请求 - 路由到不同接口"""
+        try:
+            # 解析路径
+            parsed_path = urlparse(self.path)
+            path = parsed_path.path
+            
+            # 路由到 AI 聊天接口
+            if '/ai-chat' in path or path.endswith('/ai-chat'):
+                self._handle_ai_chat()
+                return
+            
+            # 路由到认证接口
+            if '/auth/' in path or '/auth' in path:
+                self._handle_auth(path)
+                return
+            
+            # 路由到运势分析接口（/fortune 或 /api/fortune）
+            if '/fortune' in path or path == '/' or path == '/api' or path == '':
+                self._handle_fortune()
+                return
+            
+            # 未知路径
+            self._send_json_response(404, {
+                'success': False,
+                'error': f'Unknown endpoint: {path}',
+                'available_endpoints': ['/api/fortune', '/api/ai-chat', '/api/auth/register', '/api/auth/login']
+            })
+        except Exception as e:
+            # 最外层错误处理，确保总是返回响应
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"[ERROR] POST 请求处理错误: {str(e)}")
+            print(f"[ERROR] 错误堆栈: {error_trace}")
+            try:
+                self._send_json_response(500, {
+                    'success': False,
+                    'error': str(e),
+                    'message': '服务器内部错误'
+                })
+            except:
+                # 如果连错误响应都发送失败，尝试发送最基本的响应
+                try:
+                    self.send_response(500)
+                    self.send_header('Content-Type', 'text/plain; charset=utf-8')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(b'Internal Server Error')
+                except:
+                    pass  # 如果连这个都失败，只能让 Vercel 处理
 
-def _get_user_by_phone(phone):
-    """根据手机号获取用户"""
-    for user_id, user in _users_store.items():
-        if user.get('phone') == phone:
-            return user
-    return None
+    def _handle_ai_chat(self):
+        """处理 AI 聊天请求"""
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8')) if body else {}
+            
+            message = data.get('message', '')
+            if not message:
+                self._send_json_response(400, {'success': False, 'error': '消息内容不能为空'})
+                return
+            
+            # 获取 API Key
+            api_key = os.environ.get('DEEPSEEK_API_KEY', '')
+            if not api_key:
+                self._send_json_response(500, {'success': False, 'error': 'API Key 未配置'})
+                return
+            
+            # 构建系统提示词
+            system_prompt = self._build_bazi_system_prompt()
+            
+            # 调用 API
+            response_text = self._call_deepseek_api(api_key, [
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': message}
+            ])
+            
+            self._send_json_response(200, {
+                'success': True,
+                'response': response_text
+            })
+        except Exception as e:
+            import traceback
+            print(f"[ERROR] AI 聊天处理错误: {str(e)}")
+            print(traceback.format_exc())
+            self._send_json_response(500, {
+                'success': False,
+                'error': str(e),
+                'message': 'AI 聊天处理失败'
+            })
+    
+    def _build_bazi_system_prompt(self):
+        """构建八字系统提示词"""
+        return """你是一位精通中国传统命理学的AI助手，专门解答关于八字（四柱）命理的问题。
 
-def _save_user(user_id, user_data, password_hash):
-    """保存用户"""
-    _users_store[user_id] = user_data
-    _passwords_store[user_id] = password_hash
+你的知识包括：
+1. 天干地支、五行生克
+2. 十神、用神、喜神、忌神
+3. 大运、流年、流月、流日
+4. 神煞、格局分析
+5. 运势评分和预测
 
-def _hash_password(password):
-    """哈希密码"""
-    return hashlib.sha256(password.encode()).hexdigest()
-
-# ==================== 认证相关方法 ====================
+请用专业但易懂的语言回答用户的问题。"""
+    
+    def _call_deepseek_api(self, api_key, messages):
+        """调用 DeepSeek API"""
+        url = 'https://api.deepseek.com/v1/chat/completions'
+        
+        payload = {
+            'model': 'deepseek-chat',
+            'messages': messages,
+            'temperature': 0.7,
+            'max_tokens': 2000
+        }
+        
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode('utf-8'),
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {api_key}'
+            }
+        )
+        
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                if 'choices' in result and len(result['choices']) > 0:
+                    return result['choices'][0]['message']['content']
+                else:
+                    raise Exception(f'DeepSeek API 返回异常: {json.dumps(result, ensure_ascii=False)}')
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8')
+            raise Exception(f'DeepSeek API 请求失败: {e.code} - {error_body}')
+        except Exception as e:
+            raise Exception(f'调用 DeepSeek API 时出错: {str(e)}')
     
     def _handle_auth(self, path):
         """处理认证相关请求"""
