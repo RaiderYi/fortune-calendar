@@ -82,17 +82,25 @@ class FortuneService:
                 except ImportError:
                     from utils.date_utils import parse_date
                 target_dt = parse_date(target_date_str)
+                # 调试日志：记录接收到的日期参数
+                print(f"[DEBUG] 接收到目标日期参数: {target_date_str}, 解析为: {target_dt}")
             else:
                 # 如果未提供目标日期，使用当前日期
                 target_dt = datetime.datetime.now()
+                print(f"[DEBUG] 未提供目标日期，使用当前日期: {target_dt}")
             
             # 4.1 计算目标日期的流年流月流日
             liu_nian = calculate_liu_nian(target_dt.year)
             liu_yue = calculate_liu_yue(target_dt.year, target_dt.month, target_dt.day)
             liu_ri = calculate_liu_ri(target_dt.year, target_dt.month, target_dt.day)
             
+            # 调试日志：记录流年流月流日
+            print(f"[DEBUG] 流年: {liu_nian['gan']}{liu_nian['zhi']}, 流月: {liu_yue['gan']}{liu_yue['zhi']}, 流日: {liu_ri['gan']}{liu_ri['zhi']}")
+            
             # 4.2 计算目标日期所在的大运
             dayun = calculate_dayun(birth_dt, target_dt.year, gender, longitude)
+            if dayun:
+                print(f"[DEBUG] 大运: {dayun.get('current_gan', '')}{dayun.get('current_zhi', '')}")
 
             # 5. 计算运势评分 (V5.0)
             yongshen_data = analysis_result.get('yong_shen_result', {})
@@ -118,6 +126,9 @@ class FortuneService:
                 liu_nian, liu_yue, liu_ri, dayun=dayun
             )
             total_score = score_result_v5['total_score']
+            
+            # 调试日志：记录分数
+            print(f"[DEBUG] 计算得分: {total_score}, 流日: {liu_ri['gan']}{liu_ri['zhi']}")
 
             # 6. 生成维度评分和建议
             # 计算神煞（用于维度计算）- 从 calculate_fortune_score_v5 的结果中获取
@@ -127,13 +138,22 @@ class FortuneService:
                 bazi, liu_ri, total_score, yongshen_data, element_analysis, shensha_result
             )
             
+            # 生成随机数生成器，确保主题和宜忌的一致性
+            seed_str = f"{bazi['day_gan']}{bazi['day_zhi']}{liu_ri['gan']}{liu_ri['zhi']}"
+            import random
+            rng = random.Random(hash(seed_str))
+            
             todo_list = generate_todo(
-                yongshen_data.get('yong_shen', ['木'])[0],
-                yongshen_data.get('ji_shen', [])
+                yongshen_data.get('primary', '木'),
+                yongshen_data.get('ji_shen', []),
+                liu_ri=liu_ri,
+                bazi=bazi,
+                yongshen=yongshen_data,
+                rng=rng
             )
             
             main_theme = generate_main_theme(
-                total_score, bazi['day_gan'], liu_ri['gan']
+                total_score, bazi['day_gan'], liu_ri['gan'], rng=rng
             )
 
             # 7. 构建完整响应

@@ -19,7 +19,11 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
     Celestial-Quant V5.0 完整算法
     """
     # 改进随机种子：结合用户八字和流日，增加个性化波动
+    # 使用独立的 Random 实例，避免全局状态影响
     seed_str = f"{bazi['day_gan']}{bazi['day_zhi']}{bazi['year_gan']}{bazi['month_zhi']}{liu_ri['gan']}{liu_ri['zhi']}"
+    rng = random.Random(hash(seed_str))
+    
+    # 为了向后兼容，也设置全局随机种子（但优先使用 rng）
     random.seed(hash(seed_str))
 
     # 基础分（大运修正）
@@ -545,21 +549,36 @@ def calculate_dimensions_v5(bazi, liu_ri, overall_score, yongshen,
     return dimensions
 
 
-def generate_main_theme(total_score, day_gan, liu_ri_gan):
-    """生成主题关键词"""
+def generate_main_theme(total_score, day_gan, liu_ri_gan, rng=None):
+    """生成主题关键词
+    
+    参数:
+        total_score: 总分
+        day_gan: 日干
+        liu_ri_gan: 流日天干
+        rng: Random 实例，如果为 None 则使用全局 random
+    """
+    if rng is None:
+        rng = random
+    
     ten_god = calculate_ten_god(day_gan, liu_ri_gan)
     theme_info = TEN_GOD_THEMES.get(ten_god, TEN_GOD_THEMES['食神'])
     descriptions = theme_info['descriptions']
+    
+    # 根据流日天干增加变化性
+    gan_index = hash(liu_ri_gan) % len(descriptions) if descriptions else 0
 
     if total_score >= 85:
         sub_keyword = '运势极佳'
-        description = random.choice(descriptions[:3])
+        # 使用流日天干作为索引，确保不同流日返回不同描述
+        description = descriptions[gan_index % min(3, len(descriptions))]
     elif total_score >= 70:
         sub_keyword = '运势良好'
-        description = random.choice(descriptions)
+        description = descriptions[gan_index % len(descriptions)]
     elif total_score >= 50:
         sub_keyword = '运势平稳'
-        description = random.choice(descriptions[2:])
+        start_idx = max(0, len(descriptions) - 3)
+        description = descriptions[(gan_index % 3) + start_idx] if len(descriptions) > start_idx else descriptions[0]
     else:
         sub_keyword = '需多谨慎'
         description = f'今日{theme_info["keyword"]}，宜谨慎行事，三思而后行'
@@ -574,34 +593,87 @@ def generate_main_theme(total_score, day_gan, liu_ri_gan):
     }
 
 
-def generate_todo(yong_shen_element, ji_shen_list):
-    """根据用神和忌神生成宜忌建议"""
+def generate_todo(yong_shen_element, ji_shen_list, liu_ri=None, bazi=None, yongshen=None, rng=None):
+    """根据用神、忌神和流日生成宜忌建议
+    
+    参数:
+        yong_shen_element: 用神元素
+        ji_shen_list: 忌神列表
+        liu_ri: 流日信息（包含 gan, zhi）
+        bazi: 八字信息（包含 day_zhi）
+        yongshen: 用神完整信息
+        rng: Random 实例，如果为 None 则使用全局 random
+    """
+    if rng is None:
+        rng = random
+    
     todo_items = []
+    favorable_list = yongshen.get('favorable', []) if yongshen else []
+    unfavorable_list = yongshen.get('unfavorable', []) if yongshen else []
     
-    # 宜做的事情（基于用神）
-    if yong_shen_element == '木':
-        todo_items.append({'type': '宜', 'content': '多接触绿色植物，向东发展，多读书学习'})
-    elif yong_shen_element == '火':
-        todo_items.append({'type': '宜', 'content': '多晒太阳，向南发展，多社交活动'})
-    elif yong_shen_element == '土':
-        todo_items.append({'type': '宜', 'content': '稳定发展，多接地气，保持耐心'})
-    elif yong_shen_element == '金':
-        todo_items.append({'type': '宜', 'content': '向西发展，多接触金属，保持果断'})
-    elif yong_shen_element == '水':
-        todo_items.append({'type': '宜', 'content': '多喝水，向北发展，保持冷静'})
+    # 根据流日天干与用神的关系生成宜忌
+    if liu_ri:
+        liu_ri_gan = liu_ri.get('gan', '')
+        liu_ri_zhi = liu_ri.get('zhi', '')
+        ri_gan_element = WU_XING_MAP.get(liu_ri_gan, '')
+        
+        # 如果流日天干是用神，宜积极行动
+        if ri_gan_element in favorable_list or ri_gan_element == yong_shen_element:
+            todo_items.append({'type': '宜', 'content': '积极行动，把握机会，主动出击'})
+            todo_items.append({'type': '宜', 'content': '适合做重要决策，推进重要事项'})
+        # 如果流日天干是忌神，忌重大决策
+        elif ri_gan_element in unfavorable_list:
+            todo_items.append({'type': '忌', 'content': '避免重大决策，谨慎投资理财'})
+            todo_items.append({'type': '忌', 'content': '不宜冲动行事，三思而后行'})
+        
+        # 根据流日地支与日支的关系
+        if bazi and bazi.get('day_zhi'):
+            day_zhi = bazi['day_zhi']
+            # 检查六冲
+            if DIZHI_INTERACTIONS['liu_chong'].get(liu_ri_zhi) == day_zhi:
+                todo_items.append({'type': '忌', 'content': '避免出行变动，注意安全'})
+                todo_items.append({'type': '忌', 'content': '不宜做重大改变，保持稳定'})
+            # 检查六合
+            elif DIZHI_INTERACTIONS['liu_he'].get(liu_ri_zhi) == day_zhi:
+                todo_items.append({'type': '宜', 'content': '适合合作社交，增进人际关系'})
+                todo_items.append({'type': '宜', 'content': '利于团队协作，共同发展'})
     
-    # 忌做的事情（基于忌神）
-    if ji_shen_list:
+    # 基于用神的通用建议（如果流日相关建议不足）
+    if len(todo_items) < 2:
+        if yong_shen_element == '木':
+            todo_items.append({'type': '宜', 'content': '多接触绿色植物，向东发展，多读书学习'})
+        elif yong_shen_element == '火':
+            todo_items.append({'type': '宜', 'content': '多晒太阳，向南发展，多社交活动'})
+        elif yong_shen_element == '土':
+            todo_items.append({'type': '宜', 'content': '稳定发展，多接地气，保持耐心'})
+        elif yong_shen_element == '金':
+            todo_items.append({'type': '宜', 'content': '向西发展，多接触金属，保持果断'})
+        elif yong_shen_element == '水':
+            todo_items.append({'type': '宜', 'content': '多喝水，向北发展，保持冷静'})
+    
+    # 基于忌神的通用建议
+    if ji_shen_list and len(todo_items) < 4:
         todo_items.append({'type': '忌', 'content': '避免冲动决策，谨慎投资，注意人际关系'})
     
-    # 随机添加一些通用建议
+    # 根据流日天干选择通用建议（确保不同日期有不同建议）
     general_suggestions = [
         {'type': '宜', 'content': '保持积极心态，多与人交流'},
         {'type': '宜', 'content': '规律作息，均衡饮食'},
+        {'type': '宜', 'content': '专注当下，做好手头工作'},
         {'type': '忌', 'content': '避免冲动决策，三思而后行'},
-        {'type': '忌', 'content': '减少不必要的争执'}
+        {'type': '忌', 'content': '减少不必要的争执'},
+        {'type': '忌', 'content': '注意情绪管理，避免过度焦虑'}
     ]
-    random.shuffle(general_suggestions)
-    todo_items.extend(general_suggestions[:2])  # 随机选2条
     
-    return todo_items
+    # 使用流日天干作为索引，确保不同日期选择不同建议
+    if liu_ri:
+        gan_index = hash(liu_ri.get('gan', '')) % len(general_suggestions)
+        selected = [general_suggestions[gan_index % len(general_suggestions)],
+                   general_suggestions[(gan_index + 1) % len(general_suggestions)]]
+    else:
+        rng.shuffle(general_suggestions)
+        selected = general_suggestions[:2]
+    
+    todo_items.extend(selected)
+    
+    return todo_items[:6]  # 最多返回6条
