@@ -44,6 +44,10 @@ const ContactModal = lazy(() => import('./components/ContactModal'));
 const LifeMap = lazy(() => import('./components/LifeMap'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const TaskPanel = lazy(() => import('./components/TaskPanel'));
+const ReportModal = lazy(() => import('./components/ReportModal'));
+const DiaryModal = lazy(() => import('./components/DiaryModal'));
+const DiaryReview = lazy(() => import('./components/DiaryReview'));
+const DeveloperDashboard = lazy(() => import('./components/DeveloperDashboard'));
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
