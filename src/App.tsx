@@ -198,6 +198,10 @@ export default function App() {
   const [editYongShenValue, setEditYongShenValue] = useState(''); // 编辑用神值（桌面端）
   const [showNotificationSettings, setShowNotificationSettings] = useState(false); // 通知设置
   const [showTaskPanel, setShowTaskPanel] = useState(false); // 任务面板
+  const [showReport, setShowReport] = useState(false); // 运势报告
+  const [showDiary, setShowDiary] = useState(false); // 日记编辑
+  const [showDiaryReview, setShowDiaryReview] = useState(false); // 日记回顾
+  const [showDeveloperDashboard, setShowDeveloperDashboard] = useState(false); // 开发者仪表板
 
   // 手势支持：左右滑动切换日期
   const swipeHandlers = useSwipeGesture({
