@@ -37,6 +37,7 @@ interface DailyFortune {
 }
 
 interface TodayPageProps {
+  onDiaryClick?: () => void;
   fortune: DailyFortune | null;
   isLoading: boolean;
   currentDate: Date;

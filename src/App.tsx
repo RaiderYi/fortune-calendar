@@ -23,6 +23,8 @@ import CollapsibleSection from './components/CollapsibleSection';
 import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
+import { updateTaskProgress } from './utils/taskStorage';
+import { useNotification } from './hooks/useNotification';
 import { useToast } from './contexts/ToastContext';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 
@@ -40,6 +42,8 @@ const FeedbackModal = lazy(() => import('./components/FeedbackModal'));
 const AIDeduction = lazy(() => import('./components/AIDeduction'));
 const ContactModal = lazy(() => import('./components/ContactModal'));
 const LifeMap = lazy(() => import('./components/LifeMap'));
+const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
+const TaskPanel = lazy(() => import('./components/TaskPanel'));
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
   Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
@@ -158,6 +162,7 @@ interface DailyFortune {
 export default function App() {
   const { showToast } = useToast();
   const haptics = useHaptics(); // 震动反馈
+  const notification = useNotification(); // 通知功能
   const [currentDate, setCurrentDate] = useState(new Date());
   const [fortune, setFortune] = useState<DailyFortune | null>(null);
   const [showBazi, setShowBazi] = useState(false);
@@ -187,6 +192,8 @@ export default function App() {
   const [showLifeMap, setShowLifeMap] = useState(false); // 人生大图景
   const [isEditingYongShen, setIsEditingYongShen] = useState(false); // 编辑用神状态（桌面端）
   const [editYongShenValue, setEditYongShenValue] = useState(''); // 编辑用神值（桌面端）
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false); // 通知设置
+  const [showTaskPanel, setShowTaskPanel] = useState(false); // 任务面板
 
   // 手势支持：左右滑动切换日期
   const swipeHandlers = useSwipeGesture({
@@ -549,6 +556,9 @@ export default function App() {
         };
         saveHistory(historyRecord);
 
+        // 更新任务进度：查看今日运势
+        updateTaskProgress('daily_view');
+
         // 颜色映射逻辑
         const keyword = backendData.mainTheme.keyword;
         let themeKey = 'default';
@@ -731,6 +741,8 @@ export default function App() {
                   setAiInitialQuestion(undefined);
                   setShowAIDeduction(true);
                 }}
+                onTaskClick={() => setShowTaskPanel(true)}
+                onNotificationSettingsClick={() => setShowNotificationSettings(true)}
               />
 
               {/* --- 日期选择 --- */}
@@ -833,6 +845,9 @@ export default function App() {
                   onAchievementClick={() => setShowAchievements(true)}
                   onKnowledgeClick={() => setShowKnowledge(true)}
                   onFeedbackClick={() => setShowFeedback(true)}
+                  onReportClick={() => setShowReport(true)}
+                  onDiaryReviewClick={() => setShowDiaryReview(true)}
+                  onDeveloperDashboardClick={() => setShowDeveloperDashboard(true)}
                 />
               </motion.div>
             )}
@@ -1415,6 +1430,8 @@ export default function App() {
                 checkin_30: record.consecutiveDays,
                 checkin_100: record.consecutiveDays,
               });
+              // 更新任务进度：每日签到
+              updateTaskProgress('daily_checkin');
             }}
           />
 
@@ -1484,6 +1501,61 @@ export default function App() {
             onClose={() => setShowLifeMap(false)}
             userProfile={userProfile}
           />
+
+          {/* 通知设置 */}
+          <Suspense fallback={null}>
+            <NotificationSettings
+              isOpen={showNotificationSettings}
+              onClose={() => setShowNotificationSettings(false)}
+            />
+          </Suspense>
+
+          {/* 任务面板 */}
+          <Suspense fallback={null}>
+            <TaskPanel
+              isOpen={showTaskPanel}
+              onClose={() => setShowTaskPanel(false)}
+            />
+          </Suspense>
+
+          {/* 运势报告 */}
+          <Suspense fallback={null}>
+            <ReportModal
+              isOpen={showReport}
+              onClose={() => setShowReport(false)}
+            />
+          </Suspense>
+
+          {/* 日记编辑 */}
+          {fortune && (
+            <Suspense fallback={null}>
+              <DiaryModal
+                isOpen={showDiary}
+                onClose={() => setShowDiary(false)}
+                date={fortune.dateStr || new Date().toISOString().split('T')[0]}
+                fortuneScore={fortune.totalScore}
+                onSave={() => {
+                  updateTaskProgress('daily_diary');
+                }}
+              />
+            </Suspense>
+          )}
+
+          {/* 日记回顾 */}
+          <Suspense fallback={null}>
+            <DiaryReview
+              isOpen={showDiaryReview}
+              onClose={() => setShowDiaryReview(false)}
+            />
+          </Suspense>
+
+          {/* 开发者仪表板 */}
+          <Suspense fallback={null}>
+            <DeveloperDashboard
+              isOpen={showDeveloperDashboard}
+              onClose={() => setShowDeveloperDashboard(false)}
+            />
+          </Suspense>
         </Suspense>
 
       </div>

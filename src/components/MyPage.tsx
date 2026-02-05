@@ -21,6 +21,9 @@ interface MyPageProps {
   onAchievementClick: () => void;
   onKnowledgeClick: () => void;
   onFeedbackClick: () => void;
+  onReportClick?: () => void;
+  onDiaryReviewClick?: () => void;
+  onDeveloperDashboardClick?: () => void;
 }
 
 export default function MyPage({
@@ -30,6 +33,9 @@ export default function MyPage({
   onAchievementClick,
   onKnowledgeClick,
   onFeedbackClick,
+  onReportClick,
+  onDiaryReviewClick,
+  onDeveloperDashboardClick,
 }: MyPageProps) {
   const { t, i18n } = useTranslation('ui');
   const isEnglish = i18n.language === 'en';
@@ -96,6 +102,28 @@ export default function MyPage({
       color: 'purple',
       onClick: onFeedbackClick,
     },
+    onReportClick ? {
+      id: 'report',
+      label: isEnglish ? 'Fortune Report' : '运势报告',
+      icon: FileText,
+      color: 'purple',
+      onClick: onReportClick,
+    } : null,
+    onDiaryReviewClick ? {
+      id: 'diary',
+      label: isEnglish ? 'Diary Review' : '日记回顾',
+      icon: BookOpen,
+      color: 'indigo',
+      onClick: onDiaryReviewClick,
+    } : null,
+    onDeveloperDashboardClick ? {
+      id: 'developer',
+      label: isEnglish ? 'Developer Dashboard' : '开发者统计',
+      icon: BarChart3,
+      color: 'gray',
+      onClick: onDeveloperDashboardClick,
+      highlight: true,
+    } : null,
     {
       id: 'contact',
       label: t('menu.contact'),

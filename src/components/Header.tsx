@@ -1,4 +1,4 @@
-import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun } from 'lucide-react';
+import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun, Target, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isCheckedInToday, getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
@@ -17,6 +17,8 @@ interface HeaderProps {
   onAchievementClick: () => void;
   onKnowledgeClick: () => void;
   onAIClick: () => void;
+  onTaskClick?: () => void;
+  onNotificationSettingsClick?: () => void;
 }
 
 export default function Header({ 
@@ -28,7 +30,9 @@ export default function Header({
   onCheckinClick,
   onAchievementClick,
   onKnowledgeClick,
-  onAIClick
+  onAIClick,
+  onTaskClick,
+  onNotificationSettingsClick
 }: HeaderProps) {
   const { effectiveTheme, toggleTheme } = useTheme();
   const { t } = useTranslation('ui');

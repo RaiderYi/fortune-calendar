@@ -98,6 +98,11 @@ class handler(BaseHTTPRequestHandler):
                 self._handle_fortune_route(data)
                 return
 
+            # 4. 统计分析接口 (/api/analytics/*)
+            if '/analytics/' in path:
+                self._handle_analytics_route(path, data)
+                return
+
             # 未知路径
             self._send_json_response(404, {
                 'success': False,
