@@ -20,10 +20,12 @@ import MyPage from './components/MyPage';
 import DailySignThemeSelector, { type DailySignTheme } from './components/DailySignThemeSelector';
 import TimeEnergyBall from './components/TimeEnergyBall';
 import CollapsibleSection from './components/CollapsibleSection';
+import YongShenEditor from './components/YongShenEditor';
 import { updateAchievements, checkNewUnlocks } from './utils/achievementStorage';
 import { saveHistory } from './utils/historyStorage';
 import type { HistoryRecord } from './utils/historyStorage';
 import { updateTaskProgress } from './utils/taskStorage';
+import { getCustomYongShen, setCustomYongShen as persistCustomYongShen } from './utils/yongShenStorage';
 import { useNotification } from './hooks/useNotification';
 import { useToast } from './contexts/ToastContext';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
@@ -194,8 +196,6 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<TabType>('today'); // 当前 Tab
   const [showContact, setShowContact] = useState(false); // 联系我们
   const [showLifeMap, setShowLifeMap] = useState(false); // 人生大图景
-  const [isEditingYongShen, setIsEditingYongShen] = useState(false); // 编辑用神状态（桌面端）
-  const [editYongShenValue, setEditYongShenValue] = useState(''); // 编辑用神值（桌面端）
   const [showNotificationSettings, setShowNotificationSettings] = useState(false); // 通知设置
   const [showTaskPanel, setShowTaskPanel] = useState(false); // 任务面板
   const [showReport, setShowReport] = useState(false); // 运势报告
@@ -241,7 +241,19 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [dailySignTheme, setDailySignTheme] = useState<DailySignTheme>('minimal');
   const [showThemeSelector, setShowThemeSelector] = useState(false);
-  const [customYongShen, setCustomYongShen] = useState<string | null>(null); // 用户自定义用神
+  const [customYongShen, setCustomYongShenState] = useState<string | string[] | null>(null); // 用户自定义用神
+
+  // 从 storage 加载自定义用神（随 profile 变化）
+  useEffect(() => {
+    const stored = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+    setCustomYongShenState(stored);
+  }, [userProfile.birthDate, userProfile.birthTime]);
+
+  // 统一 setter：更新 state 并持久化
+  const setCustomYongShen = useCallback((value: string | string[] | null) => {
+    setCustomYongShenState(value);
+    persistCustomYongShen(userProfile.birthDate, userProfile.birthTime, value);
+  }, [userProfile.birthDate, userProfile.birthTime]);
 
   // i18n 相关
   const { t, i18n } = useTranslation(['common', 'ui', 'fortune', 'bazi']);
@@ -275,14 +287,17 @@ export default function App() {
   }, [i18n]);
 
   // --- 核心：调用后端接口（带重试和缓存） ---
-  const fetchFortuneData = useCallback(async (date: Date, profile: UserProfile, yongShen: string | null) => {
+  const fetchFortuneData = useCallback(async (date: Date, profile: UserProfile, yongShen: string | string[] | null) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     
     // 缓存键
-    const cacheKey = `fortune:${dateStr}:${profile.birthDate}:${profile.birthTime}:${yongShen || 'auto'}`;
+    const yongShenKey = yongShen
+      ? (Array.isArray(yongShen) ? yongShen.join(',') : yongShen)
+      : 'auto';
+    const cacheKey = `fortune:${dateStr}:${profile.birthDate}:${profile.birthTime}:${yongShenKey}`;
     
     // 先检查缓存
     const cached = getCachedData<DailyFortune>(cacheKey);
@@ -1063,149 +1078,11 @@ export default function App() {
 
                         {/* 用神喜忌 */}
                         {fortune.yongShen && (
-                          <CollapsibleSection
-                            title={t('ui:todayPage.yongShenXiJi')}
-                            icon={<TrendingUp size={14} />}
-                            defaultExpanded={true}
-                            headerAction={
-                              !isEditingYongShen ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsEditingYongShen(true);
-                                    setEditYongShenValue(fortune.yongShen?.yongShen?.[0] || '');
-                                  }}
-                                  className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md hover:shadow-lg whitespace-nowrap"
-                                  type="button"
-                                >
-                                  ✏️ {t('ui:todayPage.editYongShen')}
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsEditingYongShen(false);
-                                  }}
-                                  className="text-sm px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg cursor-pointer font-semibold transition-all shadow-md whitespace-nowrap"
-                                  type="button"
-                                >
-                                  {t('ui:todayPage.cancel')}
-                                </button>
-                              )
-                            }
-                          >
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <div className="text-[10px] text-gray-400 mb-2">{t('ui:todayPage.dayMasterStrength')}</div>
-                                <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
-                                  fortune.yongShen?.strength === '身旺' ? 'bg-red-100 text-red-700' :
-                                  fortune.yongShen?.strength === '身弱' ? 'bg-blue-100 text-blue-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
-                                  {fortune.yongShen?.strength === '身旺' ? t('bazi:strength.strong') : 
-                                   fortune.yongShen?.strength === '身弱' ? t('bazi:strength.weak') : 
-                                   fortune.yongShen?.strength || '未知'}
-                                </div>
-                              </div>
-                              <div className="col-span-2">
-                                <div className="text-[10px] text-gray-400 mb-2 flex items-center justify-between">
-                                  <span>{t('bazi:terms.yongShen')}</span>
-                                  <div className="flex items-center gap-2">
-                                    {fortune.yongShen?.isCustom && (
-                                      <span className="text-[10px] px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full font-medium">{t('ui:todayPage.custom')}</span>
-                                    )}
-                                  </div>
-                                </div>
-                                {isEditingYongShen ? (
-                                  <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
-                                    <select
-                                      value={editYongShenValue}
-                                      onChange={(e) => {
-                                        e.stopPropagation();
-                                        setEditYongShenValue(e.target.value);
-                                      }}
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 w-full"
-                                    >
-                                      <option value="">{t('ui:todayPage.selectYongShen')}</option>
-                                      <option value="木">{t('bazi:elements.wood')}</option>
-                                      <option value="火">{t('bazi:elements.fire')}</option>
-                                      <option value="土">{t('bazi:elements.earth')}</option>
-                                      <option value="金">{t('bazi:elements.metal')}</option>
-                                      <option value="水">{t('bazi:elements.water')}</option>
-                                    </select>
-                                    <div className="flex gap-2">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (editYongShenValue) {
-                                            setCustomYongShen(editYongShenValue);
-                                            setIsEditingYongShen(false);
-                                          }
-                                        }}
-                                        disabled={!editYongShenValue}
-                                        className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition"
-                                        type="button"
-                                      >
-                                        {t('ui:todayPage.save')}
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setCustomYongShen(null);
-                                          setIsEditingYongShen(false);
-                                        }}
-                                        className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition"
-                                        type="button"
-                                      >
-                                        {t('ui:todayPage.reset')}
-                                      </button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="flex flex-wrap gap-1">
-                                    {fortune.yongShen?.yongShen && fortune.yongShen.yongShen.length > 0 ? (
-                                      (Array.isArray(fortune.yongShen.yongShen) ? fortune.yongShen.yongShen : []).map((elem, idx) => (
-                                        <span key={idx} className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                          {elem}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-xs text-gray-400">{t('ui:todayPage.noData')}</span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              <div>
-                                <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.xiShen')}</div>
-                                <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen?.xiShen && fortune.yongShen.xiShen.length > 0 ? (
-                                    (Array.isArray(fortune.yongShen.xiShen) ? fortune.yongShen.xiShen : []).map((elem, idx) => (
-                                      <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">
-                                        {elem}
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="text-xs text-gray-400">{t('ui:todayPage.noData')}</span>
-                                  )}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-[10px] text-gray-400 mb-2">{t('bazi:terms.jiShen')}</div>
-                                <div className="flex flex-wrap gap-1">
-                                  {fortune.yongShen?.jiShen && fortune.yongShen.jiShen.length > 0 ? (
-                                    (Array.isArray(fortune.yongShen.jiShen) ? fortune.yongShen.jiShen : []).map((elem, idx) => (
-                                      <span key={idx} className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
-                                        {elem}
-                                      </span>
-                                    ))
-                                  ) : (
-                                    <span className="text-xs text-gray-400">{t('ui:todayPage.noData')}</span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </CollapsibleSection>
+                          <YongShenEditor
+                            yongShen={fortune.yongShen}
+                            onChange={setCustomYongShen}
+                            darkMode={false}
+                          />
                         )}
 
                         {/* 大运信息 */}

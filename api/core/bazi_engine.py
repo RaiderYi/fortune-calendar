@@ -474,5 +474,9 @@ def _create_custom_yongshen(custom_yongshen, bazi):
         'yong_shen': yong_shen_list,
         'xi_shen': xi_shen,
         'ji_shen': ji_shen,
-        'is_custom': True
+        'is_custom': True,
+        # 与 EnhancedYongShenDeriver 输出一致，供 fortune_engine 使用
+        'favorable': yong_shen_list,
+        'unfavorable': ji_shen,
+        'primary': yong_shen_list[0] if yong_shen_list else None,
     }

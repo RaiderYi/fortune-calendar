@@ -111,6 +111,7 @@
     "dayMasterStrength": "Day Master Strength",
     "custom": "Custom",
     "selectYongShen": "Select Yong Shen",
+    "selectYongShenHint": "Select up to 2 elements",
     "save": "Save",
     "reset": "Reset",
     "noData": "No data",

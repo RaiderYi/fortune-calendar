@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, TrendingUp, Calendar, Loader2, Star, Lightbulb, ChevronRight, AlertTriangle, Sparkles, BookOpen } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceArea, ReferenceDot } from 'recharts';
 import type { UserProfile } from './ProfileSettings';
+import { getCustomYongShen } from '../utils/yongShenStorage';
 import { useTranslation } from 'react-i18next';
 
 interface LifeMapProps {
@@ -175,6 +176,7 @@ export default function LifeMap({
         
         // 调用年运势API（流年主导，每年分数差异化）
         try {
+          const customYongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
           const res = await fetch('/api/fortune-year', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -184,6 +186,7 @@ export default function LifeMap({
               birthTime: userProfile.birthTime,
               longitude: userProfile.longitude || 116.4,
               gender: userProfile.gender || 'male',
+              customYongShen: customYongShen || undefined,
             }),
           });
 
