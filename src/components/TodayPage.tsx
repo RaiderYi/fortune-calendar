@@ -7,7 +7,7 @@ import FortuneCard from './FortuneCard';
 import DimensionCard from './DimensionCard';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './SkeletonLoader';
 import { useState } from 'react';
-import { TrendingUp, Sparkles, Crown, Loader2, Share2 } from 'lucide-react';
+import { TrendingUp, Sparkles, Crown, Loader2, Share2, PenLine } from 'lucide-react';
 import CollapsibleSection from './CollapsibleSection';
 import BaziTermTooltip from './BaziTermTooltip';
 import { useTranslation } from 'react-i18next';
@@ -79,6 +79,7 @@ export default function TodayPage({
   baziContext,
   customYongShen,
   onCustomYongShenChange,
+  onDiaryClick,
 }: TodayPageProps) {
   const { t } = useTranslation(['ui', 'bazi']);
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
@@ -469,6 +470,18 @@ export default function TodayPage({
             className="flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 font-bold transition hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <Sparkles size={18} />
+          </motion.button>
+        )}
+        {onDiaryClick && (
+          <motion.button
+            onClick={onDiaryClick}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-3 rounded-full shadow-lg font-bold transition"
+            aria-label={t('ui:todayPage.diary', { defaultValue: '写日记' })}
+          >
+            <PenLine size={18} />
+            <span className="text-sm">{t('ui:todayPage.diary', { defaultValue: '写日记' })}</span>
           </motion.button>
         )}
         <motion.button

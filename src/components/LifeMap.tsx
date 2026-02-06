@@ -173,14 +173,13 @@ export default function LifeMap({
       for (let i = 0; i < 10; i++) {
         const year = currentYear + i;
         
-        // 调用API获取该年的运势（使用年初日期）
+        // 调用年运势API（流年主导，每年分数差异化）
         try {
-          const dateStr = `${year}-01-15`; // 使用年初日期
-          const res = await fetch('/api/fortune', {
+          const res = await fetch('/api/fortune-year', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              date: dateStr,
+              year,
               birthDate: userProfile.birthDate,
               birthTime: userProfile.birthTime,
               longitude: userProfile.longitude || 116.4,
@@ -189,12 +188,14 @@ export default function LifeMap({
           });
 
           if (res.ok) {
-            const fortune = await res.json();
-            const liuNian = fortune.liuNian;
+            const json = await res.json();
+            const fortune = json.data || json;
+            const liuNian = fortune.liuNian || {};
+            const ganZhi = liuNian.gan_zhi || (liuNian.gan && liuNian.zhi ? `${liuNian.gan}${liuNian.zhi}` : `${year}年`);
             
             data.push({
               year,
-              ganZhi: liuNian?.year || `${year}年`,
+              ganZhi: ganZhi || `${year}年`,
               career: fortune.dimensions?.career?.score || 50,
               wealth: fortune.dimensions?.wealth?.score || 50,
               romance: fortune.dimensions?.romance?.score || 50,

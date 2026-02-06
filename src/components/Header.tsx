@@ -1,4 +1,4 @@
-import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun, Target, Bell } from 'lucide-react';
+import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun, Target, Bell, ListTodo, BellRing } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isCheckedInToday, getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
@@ -118,6 +118,34 @@ export default function Header({
             />
           )}
         </motion.button>
+
+        {/* 任务按钮 */}
+        {onTaskClick && (
+          <motion.button
+            onClick={onTaskClick}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
+            aria-label={t('header.task', { defaultValue: '任务' })}
+            title={t('header.task', { defaultValue: '任务' })}
+          >
+            <ListTodo size={20} className="text-gray-600 dark:text-gray-300" />
+          </motion.button>
+        )}
+
+        {/* 通知设置按钮 */}
+        {onNotificationSettingsClick && (
+          <motion.button
+            onClick={onNotificationSettingsClick}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
+            aria-label={t('header.notification', { defaultValue: '通知设置' })}
+            title={t('header.notification', { defaultValue: '通知设置' })}
+          >
+            <BellRing size={20} className="text-gray-600 dark:text-gray-300" />
+          </motion.button>
+        )}
 
         {/* 日历按钮 */}
         <motion.button

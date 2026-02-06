@@ -113,6 +113,40 @@ def calculate_fortune_score_v5(bazi, element_analysis, yongshen,
     }
 
 
+def calculate_fortune_score_year(bazi, element_analysis, yongshen,
+                                 liu_nian, liu_yue, liu_ri, dayun=None):
+    """
+    年运势评分 - 用于十年趋势
+    权重：流年 50%、大运 30%、流月 20%，流日忽略
+    确保每年分数有显著差异
+    """
+    # 固定种子，减少随机波动
+    seed_str = f"year_{bazi['day_gan']}{bazi['year_gan']}{liu_nian['gan']}{liu_nian['zhi']}"
+    random.seed(hash(seed_str))
+
+    base_score = FORTUNE_WEIGHTS_V5['base_score']
+    dayun_adjust = 0
+    if dayun:
+        dayun_gan_element = WU_XING_MAP.get(dayun.get('current_gan'))
+        if dayun_gan_element in yongshen.get('favorable', []):
+            dayun_adjust = FORTUNE_WEIGHTS_V5['dayun_adjust']['favorable']
+        elif dayun_gan_element in yongshen.get('unfavorable', []):
+            dayun_adjust = FORTUNE_WEIGHTS_V5['dayun_adjust']['unfavorable']
+
+    liunian_score = _calculate_liunian_score(liu_nian, yongshen)
+    liuyue_score = _calculate_liuyue_score(liu_yue, yongshen)
+
+    # 年运势权重：流年 50%、大运 30%、流月 20%
+    # 原权重下 liunian*0.2, liuyue*0.25，放大流年、缩小流日影响
+    liunian_weighted = liunian_score * 2.5   # 约 50% 贡献
+    liuyue_weighted = liuyue_score * 0.8     # 约 20% 贡献
+    dayun_weighted = dayun_adjust * 1.5      # 大运 30% 体现
+
+    total = base_score + dayun_weighted + liunian_weighted + liuyue_weighted
+    final_score = max(20, min(100, int(total)))
+    return final_score
+
+
 def _calculate_liunian_score(liu_nian, yongshen):
     """计算流年影响 - 修复权重计算逻辑"""
     liunian_weight = FORTUNE_WEIGHTS_V5['liunian']['weight']

@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell } from 'lucide-react';
+import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell, FileText, BarChart3 } from 'lucide-react';
 import LifeMap from './LifeMap';
 import ContactModal from './ContactModal';
 import LoginModal from './LoginModal';

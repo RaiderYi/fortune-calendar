@@ -806,6 +806,7 @@ export default function App() {
                   onThemeChange={setDailySignTheme}
                   showThemeSelector={showThemeSelector}
                   onToggleThemeSelector={() => setShowThemeSelector(!showThemeSelector)}
+                  onDiaryClick={() => setShowDiary(true)}
                   baziContext={fortune ? {
                     baziDetail: fortune.baziDetail,
                     yongShen: fortune.yongShen,
@@ -931,6 +932,8 @@ export default function App() {
                 setAiInitialQuestion(undefined);
                 setShowAIDeduction(true);
               }}
+              onTaskClick={() => setShowTaskPanel(true)}
+              onNotificationSettingsClick={() => setShowNotificationSettings(true)}
             />
 
             {/* 日期选择 */}
@@ -986,17 +989,28 @@ export default function App() {
                       todayTenGod={fortune.todayTenGod}
                     />
 
-                    {/* 反馈按钮 */}
+                    {/* 反馈与日记按钮 */}
                     {fortune && (
-                      <motion.button
-                        onClick={() => setShowFeedback(true)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
-                      >
-                        <TrendingUp size={16} />
-                        {t('ui:desktop.feedbackAccuracy')}
-                      </motion.button>
+                      <div className="grid grid-cols-2 gap-3">
+                        <motion.button
+                          onClick={() => setShowFeedback(true)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
+                        >
+                          <TrendingUp size={16} />
+                          {t('ui:desktop.feedbackAccuracy')}
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setShowDiary(true)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition"
+                        >
+                          <BookOpen size={16} />
+                          {t('ui:todayPage.diary', { defaultValue: '写日记' })}
+                        </motion.button>
+                      </div>
                     )}
 
                     {/* Todo List */}

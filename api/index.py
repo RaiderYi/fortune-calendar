@@ -98,6 +98,11 @@ class handler(BaseHTTPRequestHandler):
                 self._handle_fortune_route(data)
                 return
 
+            # 3.1 年运势接口 (/api/fortune-year) - 十年趋势
+            if path.endswith('/fortune-year'):
+                self._handle_fortune_year_route(data)
+                return
+
             # 4. 统计分析接口 (/api/analytics/*)
             if '/analytics/' in path:
                 self._handle_analytics_route(path, data)
@@ -163,5 +168,11 @@ class handler(BaseHTTPRequestHandler):
     def _handle_fortune_route(self, data):
         """处理运势路由"""
         result = FortuneService.handle_fortune_request(data)
+        status_code = result.pop('code', 200)
+        self._send_json_response(status_code, result)
+
+    def _handle_fortune_year_route(self, data):
+        """处理年运势路由 - 十年趋势"""
+        result = FortuneService.handle_fortune_year_request(data)
         status_code = result.pop('code', 200)
         self._send_json_response(status_code, result)

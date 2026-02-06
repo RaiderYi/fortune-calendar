@@ -12,12 +12,12 @@ import sys
 try:
     from ..core.lunar import (
         calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
-        get_day_gan_zhi, get_hour_gan_zhi, calculate_dayun
+        get_day_gan_zhi, get_hour_gan_zhi, calculate_dayun, get_solar_term_for_year
     )
     from ..core.bazi_engine import analyze_bazi_cached, calculate_ten_god
     from ..core.fortune_engine import (
-        calculate_fortune_score_v5, calculate_dimensions_v5,
-        generate_main_theme, generate_todo
+        calculate_fortune_score_v5, calculate_fortune_score_year,
+        calculate_dimensions_v5, generate_main_theme, generate_todo
     )
     from ..utils.json_utils import clean_for_json
 except ImportError:
@@ -27,12 +27,12 @@ except ImportError:
         sys.path.insert(0, api_dir)
     from core.lunar import (
         calculate_bazi, calculate_liu_nian, calculate_liu_yue, calculate_liu_ri,
-        get_day_gan_zhi, get_hour_gan_zhi, calculate_dayun
+        get_day_gan_zhi, get_hour_gan_zhi, calculate_dayun, get_solar_term_for_year
     )
     from core.bazi_engine import analyze_bazi_cached, calculate_ten_god
     from core.fortune_engine import (
-        calculate_fortune_score_v5, calculate_dimensions_v5,
-        generate_main_theme, generate_todo
+        calculate_fortune_score_v5, calculate_fortune_score_year,
+        calculate_dimensions_v5, generate_main_theme, generate_todo
     )
     from utils.json_utils import clean_for_json
 
@@ -178,6 +178,88 @@ class FortuneService:
             return {
                 'success': False, 
                 'error': str(e), 
+                'traceback': traceback.format_exc(),
+                'code': 500
+            }
+
+    @staticmethod
+    def handle_fortune_year_request(data):
+        """处理年运势请求 - 用于十年趋势，每年分数差异化"""
+        try:
+            birth_date_str = data.get('birthDate')
+            birth_time_str = data.get('birthTime', '12:00')
+            longitude = float(data.get('longitude', 120.0))
+            gender = data.get('gender', 'male')
+            year = int(data.get('year', datetime.datetime.now().year))
+
+            if not birth_date_str:
+                return {'success': False, 'error': '出生日期必填', 'code': 400}
+
+            try:
+                from ..utils.date_utils import parse_datetime
+            except ImportError:
+                from utils.date_utils import parse_datetime
+            birth_dt = parse_datetime(birth_date_str, birth_time_str)
+
+            bazi = calculate_bazi(birth_dt, longitude)
+
+            try:
+                from ..core.bazi_engine import generate_bazi_cache_key, _create_custom_yongshen
+            except ImportError:
+                from core.bazi_engine import generate_bazi_cache_key, _create_custom_yongshen
+            cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
+            analysis_result = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
+
+            custom_yongshen = data.get('customYongShen')
+            if custom_yongshen:
+                analysis_result['yong_shen_result'] = _create_custom_yongshen(custom_yongshen, bazi)
+
+            # 使用立春（节气索引2）作为年代表日
+            lichun_month, lichun_day = get_solar_term_for_year(year, 2)
+            target_dt = datetime.datetime(year, lichun_month, lichun_day, 12, 0, 0)
+
+            liu_nian = calculate_liu_nian(target_dt.year)
+            liu_yue = calculate_liu_yue(target_dt.year, target_dt.month, target_dt.day)
+            liu_ri = calculate_liu_ri(target_dt.year, target_dt.month, target_dt.day)
+            dayun = calculate_dayun(birth_dt, target_dt.year, gender, longitude)
+
+            yongshen_data = analysis_result.get('yong_shen_result', {})
+            strength_result = analysis_result.get('strength_result', {})
+            level = strength_result.get('level', '中和')
+            level_to_pattern = {'身弱': 'Weak', '身旺': 'Strong', '中和': 'Neutral'}
+            pattern = level_to_pattern.get(level, 'Neutral')
+            element_analysis = {
+                'pattern': pattern,
+                'score': strength_result.get('score', 0.5),
+                'level': level
+            }
+
+            total_score = calculate_fortune_score_year(
+                bazi, element_analysis, yongshen_data,
+                liu_nian, liu_yue, liu_ri, dayun=dayun
+            )
+
+            shensha_result = {'total_score': 0, 'details': [], 'dimension_boosts': {}}
+            dimensions = calculate_dimensions_v5(
+                bazi, liu_ri, total_score, yongshen_data, element_analysis, shensha_result
+            )
+
+            return {
+                'success': True,
+                'data': {
+                    'totalScore': total_score,
+                    'dimensions': clean_for_json(dimensions),
+                    'liuNian': clean_for_json(liu_nian),
+                    'year': year
+                },
+                'code': 200
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                'success': False,
+                'error': str(e),
                 'traceback': traceback.format_exc(),
                 'code': 500
             }
