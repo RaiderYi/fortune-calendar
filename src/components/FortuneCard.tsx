@@ -81,9 +81,11 @@ function FortuneCard({
   const generateDeepAnalysis = () => {
     const analysis: string[] = [];
 
-    // 运势形成原因
-    if (liuNian && todayTenGod) {
-      analysis.push(`今日流日为${liuNian.dayGan}${liuNian.dayZhi}，十神为${todayTenGod}。`);
+    // 运势形成原因（流日来自 liuRi，兼容 dayGan/dayZhi 或 gan/zhi）
+    const dayGan = liuNian?.dayGan ?? (liuNian as any)?.gan;
+    const dayZhi = liuNian?.dayZhi ?? (liuNian as any)?.zhi;
+    if ((dayGan || dayZhi) && todayTenGod) {
+      analysis.push(`今日流日为${dayGan || ''}${dayZhi || ''}，十神为${todayTenGod}。`);
     }
 
     if (yongShen) {
@@ -92,14 +94,14 @@ function FortuneCard({
         analysis.push(`您的八字${yongShen.strength || '未知'}，用神为${yongShenList.join('、')}。`);
       }
       
-      if (liuNian) {
-        const dayGanElement = getElementFromGan(liuNian.dayGan);
+      if (dayGan) {
+        const dayGanElement = getElementFromGan(dayGan);
         if (yongShenList.includes(dayGanElement)) {
-          analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的用神相合，运势较为顺畅。`);
+          analysis.push(`今日流日天干${dayGan}属${dayGanElement}，与您的用神相合，运势较为顺畅。`);
         } else {
           const jiShenList = Array.isArray(yongShen.jiShen) ? yongShen.jiShen : [];
           if (jiShenList.includes(dayGanElement)) {
-            analysis.push(`今日流日天干${liuNian.dayGan}属${dayGanElement}，与您的忌神相冲，需谨慎行事。`);
+            analysis.push(`今日流日天干${dayGan}属${dayGanElement}，与您的忌神相冲，需谨慎行事。`);
           }
         }
       }

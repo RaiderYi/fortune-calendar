@@ -28,6 +28,8 @@ import { updateTaskProgress } from './utils/taskStorage';
 import { getCustomYongShen, setCustomYongShen as persistCustomYongShen } from './utils/yongShenStorage';
 import { useNotification } from './hooks/useNotification';
 import { useToast } from './contexts/ToastContext';
+import { useAuth } from './contexts/AuthContext';
+import LoginModal from './components/LoginModal';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 
 // ==========================================
@@ -202,6 +204,8 @@ export default function App() {
   const [showDiary, setShowDiary] = useState(false); // 日记编辑
   const [showDiaryReview, setShowDiaryReview] = useState(false); // 日记回顾
   const [showDeveloperDashboard, setShowDeveloperDashboard] = useState(false); // 开发者仪表板
+  const [showLogin, setShowLogin] = useState(false); // 登录/注册弹窗
+  const { isAuthenticated } = useAuth();
 
   // 手势支持：左右滑动切换日期
   const swipeHandlers = useSwipeGesture({
@@ -427,7 +431,13 @@ export default function App() {
             jiShen: getArray(yongShenData.ji_shen)
           };
         })(),
-        liuNian: fortune.liuNian || {},
+        liuNian: {
+          ...(fortune.liuNian || {}),
+          yearGan: fortune.liuNian?.gan,
+          yearZhi: fortune.liuNian?.zhi,
+          dayGan: fortune.liuRi?.gan,
+          dayZhi: fortune.liuRi?.zhi,
+        },
         todayTenGod: fortune.liuRi?.gan || ''
       };
       
@@ -766,6 +776,8 @@ export default function App() {
                 }}
                 onTaskClick={() => setShowTaskPanel(true)}
                 onNotificationSettingsClick={() => setShowNotificationSettings(true)}
+                onLoginClick={() => setShowLogin(true)}
+                isAuthenticated={isAuthenticated}
               />
 
               {/* --- 日期选择 --- */}
@@ -872,6 +884,7 @@ export default function App() {
                   onReportClick={() => setShowReport(true)}
                   onDiaryReviewClick={() => setShowDiaryReview(true)}
                   onDeveloperDashboardClick={() => setShowDeveloperDashboard(true)}
+                  onOpenLogin={() => setShowLogin(true)}
                 />
               </motion.div>
             )}
@@ -949,6 +962,8 @@ export default function App() {
               }}
               onTaskClick={() => setShowTaskPanel(true)}
               onNotificationSettingsClick={() => setShowNotificationSettings(true)}
+              onLoginClick={() => setShowLogin(true)}
+              isAuthenticated={isAuthenticated}
             />
 
             {/* 日期选择 */}
@@ -1394,11 +1409,21 @@ export default function App() {
             onClose={() => setShowContact(false)}
           />
 
+          {/* 登录/注册 */}
+          <LoginModal
+            isOpen={showLogin}
+            onClose={() => setShowLogin(false)}
+          />
+
           {/* 人生大图景 */}
           <LifeMap
             isOpen={showLifeMap}
             onClose={() => setShowLifeMap(false)}
             userProfile={userProfile}
+            onOpenYongShenSettings={() => {
+              setShowLifeMap(false);
+              setCurrentTab('today');
+            }}
           />
 
           {/* 通知设置 */}

@@ -1,4 +1,4 @@
-import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun, Target, Bell, ListTodo, BellRing } from 'lucide-react';
+import { Settings, Sparkles, Clock, TrendingUp, Calendar, Award, Trophy, BookOpen, Moon, Sun, Target, Bell, ListTodo, BellRing, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isCheckedInToday, getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
@@ -19,6 +19,9 @@ interface HeaderProps {
   onAIClick: () => void;
   onTaskClick?: () => void;
   onNotificationSettingsClick?: () => void;
+  /** 未登录时显示登录图标，点击后回调 */
+  onLoginClick?: () => void;
+  isAuthenticated?: boolean;
 }
 
 export default function Header({ 
@@ -32,7 +35,9 @@ export default function Header({
   onKnowledgeClick,
   onAIClick,
   onTaskClick,
-  onNotificationSettingsClick
+  onNotificationSettingsClick,
+  onLoginClick,
+  isAuthenticated = true,
 }: HeaderProps) {
   const { effectiveTheme, toggleTheme } = useTheme();
   const { t } = useTranslation('ui');
@@ -56,6 +61,19 @@ export default function Header({
       </div>
       
       <div className="flex items-center gap-2 lg:gap-3">
+        {/* 登录入口（未登录时显示） */}
+        {!isAuthenticated && onLoginClick && (
+          <motion.button
+            onClick={onLoginClick}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 bg-indigo-500 hover:bg-indigo-600 rounded-full transition text-white"
+            aria-label={t('header.login', { defaultValue: '登录' })}
+            title={t('header.login', { defaultValue: '登录 / 注册' })}
+          >
+            <LogIn size={20} />
+          </motion.button>
+        )}
         {/* AI 咨询按钮 */}
         <motion.button
           onClick={onAIClick}

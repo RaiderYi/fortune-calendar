@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell, FileText, BarChart3 } from 'lucide-react';
 import LifeMap from './LifeMap';
 import ContactModal from './ContactModal';
-import LoginModal from './LoginModal';
 import { getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,6 +23,8 @@ interface MyPageProps {
   onReportClick?: () => void;
   onDiaryReviewClick?: () => void;
   onDeveloperDashboardClick?: () => void;
+  /** 打开登录/注册弹窗（由 App 控制，点击登录菜单时调用） */
+  onOpenLogin?: () => void;
 }
 
 export default function MyPage({
@@ -36,24 +37,33 @@ export default function MyPage({
   onReportClick,
   onDiaryReviewClick,
   onDeveloperDashboardClick,
+  onOpenLogin,
 }: MyPageProps) {
   const { t, i18n } = useTranslation('ui');
   const isEnglish = i18n.language === 'en';
   const [showLifeMap, setShowLifeMap] = useState(false);
   const [showContact, setShowContact] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const checkinStats = getCheckinStats();
   const achievementStats = getAchievementStats();
   const { user, isAuthenticated, logout } = useAuth();
 
   const menuItems = [
     // 登录/登出（放在最前面）
-    !isAuthenticated ? {
+    !isAuthenticated && onOpenLogin ? {
       id: 'login',
       label: isEnglish ? 'Login / Register' : '登录 / 注册',
       icon: LogIn,
       color: 'indigo',
-      onClick: () => setShowLogin(true),
+      onClick: onOpenLogin,
+      highlight: true,
+    } : null,
+    // 开发者统计（管理员入口，放在靠前位置）
+    onDeveloperDashboardClick ? {
+      id: 'developer',
+      label: isEnglish ? 'Developer Dashboard' : '开发者统计',
+      icon: BarChart3,
+      color: 'gray',
+      onClick: onDeveloperDashboardClick,
       highlight: true,
     } : null,
     {
@@ -115,14 +125,6 @@ export default function MyPage({
       icon: BookOpen,
       color: 'indigo',
       onClick: onDiaryReviewClick,
-    } : null,
-    onDeveloperDashboardClick ? {
-      id: 'developer',
-      label: isEnglish ? 'Developer Dashboard' : '开发者统计',
-      icon: BarChart3,
-      color: 'gray',
-      onClick: onDeveloperDashboardClick,
-      highlight: true,
     } : null,
     {
       id: 'contact',
@@ -277,12 +279,6 @@ export default function MyPage({
       <ContactModal
         isOpen={showContact}
         onClose={() => setShowContact(false)}
-      />
-
-      {/* 登录/注册 */}
-      <LoginModal
-        isOpen={showLogin}
-        onClose={() => setShowLogin(false)}
       />
     </div>
   );

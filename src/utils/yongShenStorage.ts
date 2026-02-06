@@ -5,8 +5,32 @@
 
 const KEY_PREFIX = 'custom_yong_shen';
 
+/** 统一日期格式为 YYYY-MM-DD */
+function normalizeBirthDate(date: string): string {
+  if (!date) return '';
+  const match = date.match(/^(\d{4})-?(\d{1,2})-?(\d{1,2})/);
+  if (match) {
+    const [, y, m, d] = match;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return date;
+}
+
+/** 统一时间格式为 HH:mm */
+function normalizeBirthTime(time: string): string {
+  if (!time) return '12:00';
+  const match = time.match(/^(\d{1,2}):?(\d{0,2})/);
+  if (match) {
+    const [, h, min = '0'] = match;
+    return `${h.padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+  }
+  return time;
+}
+
 function getStorageKey(birthDate: string, birthTime: string): string {
-  const normalized = `${birthDate}_${birthTime || '12:00'}`.replace(/\s/g, '');
+  const d = normalizeBirthDate(birthDate);
+  const t = normalizeBirthTime(birthTime || '12:00');
+  const normalized = `${d}_${t}`.replace(/\s/g, '');
   return `${KEY_PREFIX}_${normalized}`;
 }
 

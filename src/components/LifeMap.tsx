@@ -15,6 +15,8 @@ interface LifeMapProps {
   isOpen: boolean;
   onClose: () => void;
   userProfile: UserProfile;
+  /** 点击「去设置」时回调，用于关闭 LifeMap 并跳转到用神设置（如今日页） */
+  onOpenYongShenSettings?: () => void;
 }
 
 interface DayunData {
@@ -45,6 +47,7 @@ export default function LifeMap({
   isOpen,
   onClose,
   userProfile,
+  onOpenYongShenSettings,
 }: LifeMapProps) {
   const { t, i18n } = useTranslation(['ui', 'fortune']);
   const isEnglish = i18n.language === 'en';
@@ -382,6 +385,29 @@ export default function LifeMap({
 
             {/* 内容区域 */}
             <div className="flex-1 overflow-y-auto p-6">
+              {/* 用神未设置时的提示 */}
+              {!isLoading && !getCustomYongShen(userProfile.birthDate, userProfile.birthTime) && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <Lightbulb size={20} className="text-amber-600 shrink-0" />
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      {isEnglish ? 'Set Yong Shen for more accurate year fortune' : '设置用神后可获得更准确的年运势'}
+                    </p>
+                  </div>
+                  {onOpenYongShenSettings && (
+                    <button
+                      onClick={onOpenYongShenSettings}
+                      className="shrink-0 px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-800/50 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-800 transition"
+                    >
+                      {isEnglish ? 'Set' : '去设置'}
+                    </button>
+                  )}
+                </motion.div>
+              )}
               {isLoading ? (
                 <div className="flex items-center justify-center h-64">
                   <Loader2 size={32} className="animate-spin text-indigo-500" />
