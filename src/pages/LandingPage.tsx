@@ -67,7 +67,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
                   ? 'Discover your daily fortune, annual trends, and personalized suggestions based on traditional Bazi.'
                   : '探索您的每日运势、流年走向，基于传统八字为您提供个性化建议。'}
               </p>
-              <Link to="/app">
+              <Link to="/app/today">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -118,7 +118,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
             <p className="text-gray-600 dark:text-gray-400 mb-8">
               {isEnglish ? 'Enter your birth info and get personalized daily insights.' : '输入您的出生信息，获取个性化每日运势。'}
             </p>
-            <Link to="/app">
+            <Link to="/app/today">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

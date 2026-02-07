@@ -2,6 +2,7 @@
 // 底部 Tab 导航组件
 // ==========================================
 
+import { Link, useLocation } from 'react-router-dom';
 import { Home, Calendar, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -10,11 +11,17 @@ export type TabType = 'today' | 'calendar' | 'my';
 
 interface BottomNavProps {
   currentTab: TabType;
-  onTabChange: (tab: TabType) => void;
 }
 
-export default function BottomNav({ currentTab, onTabChange }: BottomNavProps) {
+const tabToPath: Record<TabType, string> = {
+  today: '/app/today',
+  calendar: '/app/calendar',
+  my: '/app/me',
+};
+
+export default function BottomNav({ currentTab }: BottomNavProps) {
   const { t } = useTranslation('common');
+  const location = useLocation();
   
   const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
     { id: 'today', label: t('nav.today'), icon: Home },
@@ -27,14 +34,13 @@ export default function BottomNav({ currentTab, onTabChange }: BottomNavProps) {
       <div className="flex items-center justify-around h-16 px-2 safe-area-bottom">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = currentTab === tab.id;
+          const to = tabToPath[tab.id];
+          const isActive = location.pathname === to || currentTab === tab.id;
           
           return (
-            <motion.button
+            <Link
               key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              to={to}
               className="flex flex-col items-center justify-center gap-1 flex-1 h-full relative"
             >
               {isActive && (
@@ -61,7 +67,7 @@ export default function BottomNav({ currentTab, onTabChange }: BottomNavProps) {
               >
                 {tab.label}
               </span>
-            </motion.button>
+            </Link>
           );
         })}
       </div>

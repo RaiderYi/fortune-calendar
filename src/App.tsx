@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { updateSEOMeta } from './utils/seo';
@@ -198,7 +198,9 @@ export default function App() {
   const [showFeedback, setShowFeedback] = useState(false); // 反馈弹窗
   const [showAIDeduction, setShowAIDeduction] = useState(false); // AI 推演
   const [aiInitialQuestion, setAiInitialQuestion] = useState<string | undefined>(undefined); // AI 预设问题
-  const [currentTab, setCurrentTab] = useState<TabType>('today'); // 当前 Tab
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentTab: TabType = location.pathname.includes('/app/calendar') ? 'calendar' : location.pathname.includes('/app/me') ? 'my' : 'today';
   const [showContact, setShowContact] = useState(false); // 联系我们
   const [showLifeMap, setShowLifeMap] = useState(false); // 人生大图景
   const [showNotificationSettings, setShowNotificationSettings] = useState(false); // 通知设置
@@ -735,7 +737,8 @@ export default function App() {
     <>
       <Routes>
         <Route path="/" element={<LandingPage onLoginClick={() => setShowLogin(true)} />} />
-        <Route path="/app" element={
+        <Route path="/app" element={<Navigate to="/app/today" replace />} />
+        <Route path="/app/:tab" element={
           <>
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <div className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
@@ -762,22 +765,22 @@ export default function App() {
                 userName={userProfile.name}
                 onSettingsClick={() => {
                   setIsSettingsOpen(true);
-                  setCurrentTab('my');
+                  navigate('/app/me');
                 }}
-                onHistoryClick={() => setCurrentTab('calendar')}
-                onTrendsClick={() => setCurrentTab('calendar')}
-                onCalendarClick={() => setCurrentTab('calendar')}
+                onHistoryClick={() => navigate('/app/calendar')}
+                onTrendsClick={() => navigate('/app/calendar')}
+                onCalendarClick={() => navigate('/app/calendar')}
                 onCheckinClick={() => {
                   setShowCheckin(true);
-                  setCurrentTab('my');
+                  navigate('/app/me');
                 }}
                 onAchievementClick={() => {
                   setShowAchievements(true);
-                  setCurrentTab('my');
+                  navigate('/app/me');
                 }}
                 onKnowledgeClick={() => {
                   setShowKnowledge(true);
-                  setCurrentTab('my');
+                  navigate('/app/me');
                 }}
                 onAIClick={() => {
                   setAiInitialQuestion(undefined);
@@ -868,7 +871,7 @@ export default function App() {
                   currentDate={currentDate}
                   onDateChange={(date) => {
                     setCurrentDate(date);
-                    setCurrentTab('today');
+                    navigate('/app/today');
                   }}
                 />
               </motion.div>
@@ -900,7 +903,7 @@ export default function App() {
           </AnimatePresence>
 
           {/* 底部导航栏 */}
-          <BottomNav currentTab={currentTab} onTabChange={setCurrentTab} />
+          <BottomNav currentTab={currentTab} />
         </div>
         {/* ========== 移动端布局结束 ========== */}
 
@@ -1425,7 +1428,7 @@ export default function App() {
             userProfile={userProfile}
             onOpenYongShenSettings={() => {
               setShowLifeMap(false);
-              setCurrentTab('today');
+              navigate('/app/today');
             }}
           />
 

@@ -18,13 +18,14 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
   const { t, i18n } = useTranslation('ui');
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const isApp = location.pathname.startsWith('/app');
   const isEnglish = i18n.language === 'en';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { to: '/', label: isEnglish ? 'Home' : '首页' },
-    { to: '/app', label: isEnglish ? 'Fortune' : '运势应用' },
+    { to: '/app/today', label: isEnglish ? 'Today' : '今日运势' },
+    { to: '/app/calendar', label: isEnglish ? 'Calendar' : '日历' },
+    { to: '/app/me', label: isEnglish ? 'Me' : '我的' },
   ];
 
   return (
@@ -47,7 +48,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                 key={item.to}
                 to={item.to}
                 className={`text-sm font-medium transition ${
-                  location.pathname === item.to || (item.to === '/app' && isApp)
+                  location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to))
                     ? 'text-indigo-600 dark:text-indigo-400'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
@@ -103,7 +104,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                   to={item.to}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block py-2 px-3 rounded-lg text-sm font-medium ${
-                    location.pathname === item.to || (item.to === '/app' && isApp)
+                    location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to))
                       ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}

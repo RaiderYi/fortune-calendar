@@ -39,8 +39,18 @@ export default function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link to="/app" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
-                  {isEnglish ? 'Fortune App' : '运势应用'}
+                <Link to="/app/today" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  {isEnglish ? 'Today' : '今日运势'}
+                </Link>
+              </li>
+              <li>
+                <Link to="/app/calendar" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  {isEnglish ? 'Calendar' : '日历'}
+                </Link>
+              </li>
+              <li>
+                <Link to="/app/me" className="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                  {isEnglish ? 'Me' : '我的'}
                 </Link>
               </li>
             </ul>
@@ -52,11 +62,11 @@ export default function SiteFooter() {
               {isEnglish ? 'Contact' : '联系我们'}
             </h3>
             <a
-              href="mailto:hello@fortunecalendar.com"
+              href="mailto:429507312@qq.com"
               className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
             >
               <Mail size={16} />
-              hello@fortunecalendar.com
+              429507312@qq.com
             </a>
           </div>
         </div>
