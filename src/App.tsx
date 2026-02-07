@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { updateSEOMeta } from './utils/seo';
@@ -30,6 +31,8 @@ import { useNotification } from './hooks/useNotification';
 import { useToast } from './contexts/ToastContext';
 import { useAuth } from './contexts/AuthContext';
 import LoginModal from './components/LoginModal';
+import SiteHeader from './components/layout/SiteHeader';
+import LandingPage from './pages/LandingPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 
 // ==========================================
@@ -729,17 +732,23 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
-      {/* 首次使用引导 */}
-      {showOnboarding && (
-        <Onboarding
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
-      )}
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/app" element={
+          <>
+            <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <div className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
+              {/* 首次使用引导 */}
+              {showOnboarding && (
+                <Onboarding
+                  onComplete={handleOnboardingComplete}
+                  onSkip={handleOnboardingSkip}
+                />
+              )}
 
-      {/* 响应式布局容器：移动端单列，PC端三栏 */}
-      <div className="w-full max-w-[448px] lg:max-w-7xl mx-auto bg-[#F5F5F7] dark:bg-slate-900 min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
+              {/* 响应式布局容器：全宽，移动端单列，PC端三栏 */}
+              <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#F5F5F7] dark:bg-slate-900 min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
         
         {/* ========== 移动端：单列布局 ========== */}
         <div 
@@ -1409,12 +1418,6 @@ export default function App() {
             onClose={() => setShowContact(false)}
           />
 
-          {/* 登录/注册 */}
-          <LoginModal
-            isOpen={showLogin}
-            onClose={() => setShowLogin(false)}
-          />
-
           {/* 人生大图景 */}
           <LifeMap
             isOpen={showLifeMap}
@@ -1480,9 +1483,17 @@ export default function App() {
               onClose={() => setShowDeveloperDashboard(false)}
             />
           </Suspense>
-        </Suspense>
 
-      </div>
-    </div>
+              </div>
+            </div>
+          </>
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+      />
+    </>
   );
 }
