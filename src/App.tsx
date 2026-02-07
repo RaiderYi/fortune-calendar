@@ -1483,6 +1483,7 @@ export default function App() {
               onClose={() => setShowDeveloperDashboard(false)}
             />
           </Suspense>
+        </Suspense>
 
               </div>
             </div>
