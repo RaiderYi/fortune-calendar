@@ -135,6 +135,10 @@
   "aiDeduction": {
     "welcome": "Welcome to AI Fortune Consulting",
     "description": "I have understood your Bazi information and can provide professional fortune analysis",
+    "viewTodayFirst": "Please view today's fortune first so AI can provide personalized analysis based on your Bazi",
+    "goToToday": "View Today's Fortune",
+    "thinking": "AI is thinking...",
+    "enterHint": "Press Enter to send, Shift + Enter for new line",
     "quickQuestions": {
       "wealth": "Detailed Wealth Analysis",
       "career": "Career Development Advice",

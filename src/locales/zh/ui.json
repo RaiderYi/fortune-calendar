@@ -135,6 +135,10 @@
   "aiDeduction": {
     "welcome": "欢迎使用 AI 命理咨询",
     "description": "我已经了解了您的八字信息，可以为您提供专业的命理分析",
+    "viewTodayFirst": "请先查看今日运势，以便 AI 基于您的八字提供个性化分析",
+    "goToToday": "查看今日运势",
+    "thinking": "AI 正在思考...",
+    "enterHint": "按 Enter 发送，Shift + Enter 换行",
     "quickQuestions": {
       "wealth": "详解今日财运",
       "career": "事业发展建议",

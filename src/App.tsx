@@ -40,21 +40,22 @@ import BlogPage from './pages/BlogPage';
 import PricingPage from './pages/PricingPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 import QuickActionsSidebar from './components/QuickActionsSidebar';
+import { AppContextProvider } from './contexts/AppContext';
+import HistoryPage from './pages/app/HistoryPage';
+import TrendsPage from './pages/app/TrendsPage';
+import CheckinPage from './pages/app/CheckinPage';
+import AchievementPage from './pages/app/AchievementPage';
+import KnowledgePage from './pages/app/KnowledgePage';
+import AIPage from './pages/app/AIPage';
+import LifeMapPage from './pages/app/LifeMapPage';
 
 // ==========================================
 // 懒加载非核心组件（性能优化）
 // ==========================================
-const HistoryDrawer = lazy(() => import('./components/HistoryDrawer'));
-const TrendsView = lazy(() => import('./components/TrendsView'));
 const CalendarView = lazy(() => import('./components/CalendarView'));
-const CheckinModal = lazy(() => import('./components/CheckinModal'));
-const AchievementView = lazy(() => import('./components/AchievementView'));
 const FortuneCompare = lazy(() => import('./components/FortuneCompare'));
-const KnowledgeBase = lazy(() => import('./components/KnowledgeBase'));
 const FeedbackModal = lazy(() => import('./components/FeedbackModal'));
-const AIDeduction = lazy(() => import('./components/AIDeduction'));
 const ContactModal = lazy(() => import('./components/ContactModal'));
-const LifeMap = lazy(() => import('./components/LifeMap'));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
 const TaskPanel = lazy(() => import('./components/TaskPanel'));
 const ReportModal = lazy(() => import('./components/ReportModal'));
@@ -194,21 +195,16 @@ export default function App() {
   // UI 状态
   const [currentThemeStyle, setCurrentThemeStyle] = useState(SAFE_THEMES['default']);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [showHistory, setShowHistory] = useState(false); // 历史记录抽屉
-  const [showTrends, setShowTrends] = useState(false); // 趋势视图
   const [showCalendar, setShowCalendar] = useState(false); // 日历视图
-  const [showCheckin, setShowCheckin] = useState(false); // 签到弹窗
-  const [showAchievements, setShowAchievements] = useState(false); // 成就展示
   const [showCompare, setShowCompare] = useState(false); // 运势对比
-  const [showKnowledge, setShowKnowledge] = useState(false); // 知识库
   const [showFeedback, setShowFeedback] = useState(false); // 反馈弹窗
-  const [showAIDeduction, setShowAIDeduction] = useState(false); // AI 推演
-  const [aiInitialQuestion, setAiInitialQuestion] = useState<string | undefined>(undefined); // AI 预设问题
   const location = useLocation();
   const navigate = useNavigate();
-  const currentTab: TabType = location.pathname.includes('/app/calendar') ? 'calendar' : location.pathname.includes('/app/me') ? 'my' : 'today';
+  const pathname = location.pathname;
+  const FEATURE_PATHS = ['/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap'];
+  const isFeaturePage = FEATURE_PATHS.some((p) => pathname.startsWith(p));
+  const currentTab: TabType = pathname.includes('/app/calendar') ? 'calendar' : pathname.includes('/app/me') ? 'my' : 'today';
   const [showContact, setShowContact] = useState(false); // 联系我们
-  const [showLifeMap, setShowLifeMap] = useState(false); // 人生大图景
   const [showNotificationSettings, setShowNotificationSettings] = useState(false); // 通知设置
   const [showTaskPanel, setShowTaskPanel] = useState(false); // 任务面板
   const [showReport, setShowReport] = useState(false); // 运势报告
@@ -753,7 +749,26 @@ export default function App() {
         <Route path="/pricing" element={<PricingPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/app" element={<Navigate to="/app/today" replace />} />
         <Route path="/app/:tab" element={
-          <>
+          <AppContextProvider
+            value={{
+              currentDate,
+              setCurrentDate,
+              fortune,
+              userProfile,
+              changeDate,
+              onCompareClick: () => setShowCompare(true),
+              onCheckinSuccess: (record) => {
+                haptics.success();
+                updateAchievements({
+                  checkin_3: record.consecutiveDays,
+                  checkin_7: record.consecutiveDays,
+                  checkin_30: record.consecutiveDays,
+                  checkin_100: record.consecutiveDays,
+                });
+                updateTaskProgress('daily_checkin');
+              },
+            }}
+          >
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <div id="main" className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
               {/* 首次使用引导 */}
@@ -772,8 +787,8 @@ export default function App() {
           className="flex flex-col lg:hidden min-h-screen"
           {...swipeHandlers}
         >
-          {/* --- 顶部导航（仅在今日Tab显示） --- */}
-          {currentTab === 'today' && (
+          {/* --- 顶部导航（仅在今日Tab显示，非功能页） --- */}
+          {!isFeaturePage && currentTab === 'today' && (
             <>
         <Header
           userName={userProfile.name}
@@ -781,25 +796,13 @@ export default function App() {
                   setIsSettingsOpen(true);
                   navigate('/app/me');
                 }}
-                onHistoryClick={() => navigate('/app/calendar')}
-                onTrendsClick={() => navigate('/app/calendar')}
+                onHistoryClick={() => navigate('/app/history')}
+                onTrendsClick={() => navigate('/app/trends')}
                 onCalendarClick={() => navigate('/app/calendar')}
-                onCheckinClick={() => {
-                  setShowCheckin(true);
-                  navigate('/app/me');
-                }}
-                onAchievementClick={() => {
-                  setShowAchievements(true);
-                  navigate('/app/me');
-                }}
-                onKnowledgeClick={() => {
-                  setShowKnowledge(true);
-                  navigate('/app/me');
-                }}
-                onAIClick={() => {
-                  setAiInitialQuestion(undefined);
-                  setShowAIDeduction(true);
-                }}
+                onCheckinClick={() => navigate('/app/checkin')}
+                onAchievementClick={() => navigate('/app/achievements')}
+                onKnowledgeClick={() => navigate('/app/knowledge')}
+                onAIClick={() => navigate('/app/ai')}
                 onTaskClick={() => setShowTaskPanel(true)}
                 onNotificationSettingsClick={() => setShowNotificationSettings(true)}
                 onLoginClick={() => setShowLogin(true)}
@@ -819,16 +822,34 @@ export default function App() {
           )}
 
           {/* 时辰能量球 */}
-          {currentTab === 'today' && fortune && (
+          {!isFeaturePage && currentTab === 'today' && fortune && (
             <TimeEnergyBall
               currentTime={new Date()}
               dayMaster={fortune.baziDetail?.dayMaster}
             />
           )}
 
-          {/* --- Tab 内容区 --- */}
+          {/* --- Tab 内容区（含功能页） --- */}
           <AnimatePresence mode="wait">
-            {currentTab === 'today' && (
+            {isFeaturePage && (
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 min-h-0"
+              >
+                {pathname.startsWith('/app/history') && <HistoryPage />}
+                {pathname.startsWith('/app/trends') && <TrendsPage />}
+                {pathname.startsWith('/app/checkin') && <CheckinPage />}
+                {pathname.startsWith('/app/achievements') && <AchievementPage />}
+                {pathname.startsWith('/app/knowledge') && <KnowledgePage />}
+                {pathname.startsWith('/app/ai') && <AIPage />}
+                {pathname.startsWith('/app/lifemap') && <LifeMapPage />}
+              </motion.div>
+            )}
+            {!isFeaturePage && currentTab === 'today' && (
               <motion.div
                 key="today"
                 initial={{ opacity: 0, x: -20 }}
@@ -846,10 +867,7 @@ export default function App() {
                   onToggleBazi={() => setShowBazi(!showBazi)}
                   currentThemeStyle={currentThemeStyle}
                   onFeedbackClick={() => setShowFeedback(true)}
-                  onAIClick={() => {
-                  setAiInitialQuestion(undefined);
-                  setShowAIDeduction(true);
-                }}
+                  onAIClick={() => navigate('/app/ai')}
                   onGenerateImage={handleGenerateImage}
                   isGenerating={isGenerating}
                   contentRef={contentRef}
@@ -903,9 +921,9 @@ export default function App() {
                 <MyPage
                   userProfile={userProfile}
                   onSettingsClick={() => setIsSettingsOpen(true)}
-                  onCheckinClick={() => setShowCheckin(true)}
-                  onAchievementClick={() => setShowAchievements(true)}
-                  onKnowledgeClick={() => setShowKnowledge(true)}
+                  onCheckinClick={() => navigate('/app/checkin')}
+                  onAchievementClick={() => navigate('/app/achievements')}
+                  onKnowledgeClick={() => navigate('/app/knowledge')}
                   onFeedbackClick={() => setShowFeedback(true)}
                   onReportClick={() => setShowReport(true)}
                   onDiaryReviewClick={() => setShowDiaryReview(true)}
@@ -972,38 +990,50 @@ export default function App() {
 
           {/* 中间栏：核心运势内容 (col-span-6) */}
           <div className="lg:col-span-6 space-y-4">
-            {/* 顶部导航 */}
-            <Header
-              userName={userProfile.name}
-              onSettingsClick={() => setIsSettingsOpen(true)}
-          onHistoryClick={() => setShowHistory(true)}
-          onTrendsClick={() => setShowTrends(true)}
-          onCalendarClick={() => setShowCalendar(true)}
-              onCheckinClick={() => setShowCheckin(true)}
-              onAchievementClick={() => setShowAchievements(true)}
-              onKnowledgeClick={() => setShowKnowledge(true)}
-              onAIClick={() => {
-                setAiInitialQuestion(undefined);
-                setShowAIDeduction(true);
-              }}
-              onTaskClick={() => setShowTaskPanel(true)}
-              onNotificationSettingsClick={() => setShowNotificationSettings(true)}
-              onLoginClick={() => setShowLogin(true)}
-              isAuthenticated={isAuthenticated}
-            />
+            {/* 顶部导航（非功能页显示） */}
+            {!isFeaturePage && (
+              <>
+                <Header
+                  userName={userProfile.name}
+                  onSettingsClick={() => setIsSettingsOpen(true)}
+                  onHistoryClick={() => navigate('/app/history')}
+                  onTrendsClick={() => navigate('/app/trends')}
+                  onCalendarClick={() => setShowCalendar(true)}
+                  onCheckinClick={() => navigate('/app/checkin')}
+                  onAchievementClick={() => navigate('/app/achievements')}
+                  onKnowledgeClick={() => navigate('/app/knowledge')}
+                  onAIClick={() => navigate('/app/ai')}
+                  onTaskClick={() => setShowTaskPanel(true)}
+                  onNotificationSettingsClick={() => setShowNotificationSettings(true)}
+                  onLoginClick={() => setShowLogin(true)}
+                  isAuthenticated={isAuthenticated}
+                />
 
-            {/* 日期选择 */}
-        <DateSelector
-          currentDate={currentDate}
-          weekDay={fortune?.weekDay}
-          lunarStr={fortune?.lunarStr}
-          onPrevDay={() => changeDate(-1)}
-          onNextDay={() => changeDate(1)}
-          onDateChange={setCurrentDate}
-        />
+                {/* 日期选择 */}
+                <DateSelector
+                  currentDate={currentDate}
+                  weekDay={fortune?.weekDay}
+                  lunarStr={fortune?.lunarStr}
+                  onPrevDay={() => changeDate(-1)}
+                  onNextDay={() => changeDate(1)}
+                  onDateChange={setCurrentDate}
+                />
+              </>
+            )}
 
             {/* 核心内容区 */}
             <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)]">
+              {isFeaturePage ? (
+                <>
+                  {pathname.startsWith('/app/history') && <HistoryPage />}
+                  {pathname.startsWith('/app/trends') && <TrendsPage />}
+                  {pathname.startsWith('/app/checkin') && <CheckinPage />}
+                  {pathname.startsWith('/app/achievements') && <AchievementPage />}
+                  {pathname.startsWith('/app/knowledge') && <KnowledgePage />}
+                  {pathname.startsWith('/app/ai') && <AIPage />}
+                  {pathname.startsWith('/app/lifemap') && <LifeMapPage />}
+                </>
+              ) : (
               <AnimatePresence mode="wait">
           {isLoading || !fortune ? (
                   <motion.div
@@ -1175,21 +1205,19 @@ export default function App() {
                   </motion.div>
           )}
               </AnimatePresence>
+              )}
             </div>
         </div>
 
           {/* 右侧栏：成就与快捷操作 */}
           <QuickActionsSidebar
-            onCheckin={() => setShowCheckin(true)}
-            onAchievements={() => setShowAchievements(true)}
-            onHistory={() => setShowHistory(true)}
-            onTrends={() => setShowTrends(true)}
-            onKnowledge={() => setShowKnowledge(true)}
-            onAIDeduction={() => {
-              setAiInitialQuestion(undefined);
-              setShowAIDeduction(true);
-            }}
-            onLifeMap={() => setShowLifeMap(true)}
+            onCheckin={() => navigate('/app/checkin')}
+            onAchievements={() => navigate('/app/achievements')}
+            onHistory={() => navigate('/app/history')}
+            onTrends={() => navigate('/app/trends')}
+            onKnowledge={() => navigate('/app/knowledge')}
+            onAIDeduction={() => navigate('/app/ai')}
+            onLifeMap={() => navigate('/app/lifemap')}
             onContact={() => setShowContact(true)}
             onGenerateImage={handleGenerateImage}
             isGenerating={isGenerating}
@@ -1239,27 +1267,6 @@ export default function App() {
 
         {/* ========== 懒加载弹窗组件 ========== */}
         <Suspense fallback={<LazyLoadFallback fullScreen />}>
-        {/* 历史记录抽屉 */}
-        <HistoryDrawer
-          isOpen={showHistory}
-          onClose={() => setShowHistory(false)}
-          onSelectDate={(date) => {
-            setCurrentDate(date);
-            setShowHistory(false);
-          }}
-            onCompareClick={() => setShowCompare(true)}
-        />
-
-        {/* 趋势视图 */}
-        <TrendsView
-          isOpen={showTrends}
-          onClose={() => setShowTrends(false)}
-          onSelectDate={(date) => {
-            setCurrentDate(date);
-            setShowTrends(false);
-          }}
-        />
-
         {/* 日历视图 */}
         {showCalendar && (
           <CalendarView
@@ -1281,29 +1288,6 @@ export default function App() {
           />
         )}
 
-          {/* 签到弹窗 */}
-          <CheckinModal
-            isOpen={showCheckin}
-            onClose={() => setShowCheckin(false)}
-            onCheckinSuccess={(record) => {
-              haptics.success(); // 签到成功震动反馈
-              updateAchievements({
-                checkin_3: record.consecutiveDays,
-                checkin_7: record.consecutiveDays,
-                checkin_30: record.consecutiveDays,
-                checkin_100: record.consecutiveDays,
-              });
-              // 更新任务进度：每日签到
-              updateTaskProgress('daily_checkin');
-            }}
-          />
-
-          {/* 成就展示 */}
-          <AchievementView
-            isOpen={showAchievements}
-            onClose={() => setShowAchievements(false)}
-          />
-
           {/* 运势对比 */}
           <FortuneCompare
             isOpen={showCompare}
@@ -1312,12 +1296,6 @@ export default function App() {
               setCurrentDate(date);
               setShowCompare(false);
             }}
-          />
-
-          {/* 知识库 */}
-          <KnowledgeBase
-            isOpen={showKnowledge}
-            onClose={() => setShowKnowledge(false)}
           />
 
           {/* 反馈弹窗 */}
@@ -1332,41 +1310,10 @@ export default function App() {
             />
           )}
 
-          {/* AI 命理深度推演 */}
-          {fortune && (
-            <AIDeduction
-              isOpen={showAIDeduction}
-              onClose={() => {
-                setShowAIDeduction(false);
-                setAiInitialQuestion(undefined);
-              }}
-              baziContext={{
-                baziDetail: fortune.baziDetail,
-                yongShen: fortune.yongShen,
-                dimensions: fortune.dimensions,
-                mainTheme: fortune.mainTheme,
-                totalScore: fortune.totalScore,
-                liuNian: fortune.liuNian,
-              }}
-              initialQuestion={aiInitialQuestion}
-            />
-          )}
-
           {/* 联系我们 */}
           <ContactModal
             isOpen={showContact}
             onClose={() => setShowContact(false)}
-          />
-
-          {/* 人生大图景 */}
-          <LifeMap
-            isOpen={showLifeMap}
-            onClose={() => setShowLifeMap(false)}
-            userProfile={userProfile}
-            onOpenYongShenSettings={() => {
-              setShowLifeMap(false);
-              navigate('/app/today');
-            }}
           />
 
           {/* 通知设置 */}
@@ -1427,7 +1374,7 @@ export default function App() {
 
       </div>
     </div>
-          </>
+          </AppContextProvider>
         } />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
