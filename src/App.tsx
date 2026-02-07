@@ -33,6 +33,11 @@ import { useAuth } from './contexts/AuthContext';
 import LoginModal from './components/LoginModal';
 import SiteHeader from './components/layout/SiteHeader';
 import LandingPage from './pages/LandingPage';
+import FeaturesPage from './pages/FeaturesPage';
+import AboutPage from './pages/AboutPage';
+import HelpPage from './pages/HelpPage';
+import BlogPage from './pages/BlogPage';
+import PricingPage from './pages/PricingPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 
 // ==========================================
@@ -551,7 +556,7 @@ export default function App() {
           dimensionsCount: Object.keys(backendData.dimensions || {}).length
         });
         
-        setFortune({ ...backendData, dateObj: currentDate });
+          setFortune({ ...backendData, dateObj: currentDate });
 
         // 更新成就进度（查询运势）
         try {
@@ -572,41 +577,41 @@ export default function App() {
           console.error('更新成就失败:', error);
         }
 
-        // 保存到历史记录
-        const historyRecord: HistoryRecord = {
+          // 保存到历史记录
+          const historyRecord: HistoryRecord = {
           date: dateStr,
-          timestamp: Date.now(),
-          fortune: {
-            totalScore: backendData.totalScore,
-            mainTheme: {
-              keyword: backendData.mainTheme.keyword,
-              emoji: backendData.mainTheme.emoji,
+            timestamp: Date.now(),
+            fortune: {
+              totalScore: backendData.totalScore,
+              mainTheme: {
+                keyword: backendData.mainTheme.keyword,
+                emoji: backendData.mainTheme.emoji,
+              },
+              dimensions: {
+                career: { score: backendData.dimensions.career.score },
+                wealth: { score: backendData.dimensions.wealth.score },
+                romance: { score: backendData.dimensions.romance.score },
+                health: { score: backendData.dimensions.health.score },
+                academic: { score: backendData.dimensions.academic.score },
+                travel: { score: backendData.dimensions.travel.score },
+              },
             },
-            dimensions: {
-              career: { score: backendData.dimensions.career.score },
-              wealth: { score: backendData.dimensions.wealth.score },
-              romance: { score: backendData.dimensions.romance.score },
-              health: { score: backendData.dimensions.health.score },
-              academic: { score: backendData.dimensions.academic.score },
-              travel: { score: backendData.dimensions.travel.score },
-            },
-          },
-        };
-        saveHistory(historyRecord);
+          };
+          saveHistory(historyRecord);
 
         // 更新任务进度：查看今日运势
         updateTaskProgress('daily_view');
 
-        // 颜色映射逻辑
-        const keyword = backendData.mainTheme.keyword;
-        let themeKey = 'default';
-        if (['松弛', '食神', '叛逆', '伤官'].some(k => keyword.includes(k))) themeKey = '食神';
-        else if (['吸金', '偏财', '搬砖', '正财', '破财'].some(k => keyword.includes(k))) themeKey = '偏财';
-        else if (['气场', '七杀', '硬刚', '比肩'].some(k => keyword.includes(k))) themeKey = '七杀';
-        else if (['万人迷', '桃花', '上岸', '正官'].some(k => keyword.includes(k))) themeKey = '桃花';
-        else if (['锦鲤', '正印', '脑洞', '偏印'].some(k => keyword.includes(k))) themeKey = '正印';
+          // 颜色映射逻辑
+          const keyword = backendData.mainTheme.keyword;
+          let themeKey = 'default';
+          if (['松弛', '食神', '叛逆', '伤官'].some(k => keyword.includes(k))) themeKey = '食神';
+          else if (['吸金', '偏财', '搬砖', '正财', '破财'].some(k => keyword.includes(k))) themeKey = '偏财';
+          else if (['气场', '七杀', '硬刚', '比肩'].some(k => keyword.includes(k))) themeKey = '七杀';
+          else if (['万人迷', '桃花', '上岸', '正官'].some(k => keyword.includes(k))) themeKey = '桃花';
+          else if (['锦鲤', '正印', '脑洞', '偏印'].some(k => keyword.includes(k))) themeKey = '正印';
 
-        setCurrentThemeStyle(SAFE_THEMES[themeKey] || SAFE_THEMES['default']);
+          setCurrentThemeStyle(SAFE_THEMES[themeKey] || SAFE_THEMES['default']);
 
       } catch (error) {
         console.error("获取运势数据失败", error);
@@ -683,7 +688,7 @@ export default function App() {
 
       // 移除主题样式
       contentRef.current.classList.remove(themeClass);
-      
+
       setGeneratedImage(dataUrl);
       setShowBazi(originalShowBazi);
       haptics.success(); // 震动反馈
@@ -735,13 +740,21 @@ export default function App() {
 
   return (
     <>
+      <a href="#main" className="skip-link">
+        {t('ui:skipToContent', { defaultValue: 'Skip to content' })}
+      </a>
       <Routes>
         <Route path="/" element={<LandingPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/features" element={<FeaturesPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/about" element={<AboutPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/help" element={<HelpPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/blog" element={<BlogPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/pricing" element={<PricingPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/app" element={<Navigate to="/app/today" replace />} />
         <Route path="/app/:tab" element={
           <>
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
-            <div className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
+            <div id="main" className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
               {/* 首次使用引导 */}
               {showOnboarding && (
                 <Onboarding
@@ -761,8 +774,8 @@ export default function App() {
           {/* --- 顶部导航（仅在今日Tab显示） --- */}
           {currentTab === 'today' && (
             <>
-              <Header
-                userName={userProfile.name}
+        <Header
+          userName={userProfile.name}
                 onSettingsClick={() => {
                   setIsSettingsOpen(true);
                   navigate('/app/me');
@@ -962,9 +975,9 @@ export default function App() {
             <Header
               userName={userProfile.name}
               onSettingsClick={() => setIsSettingsOpen(true)}
-              onHistoryClick={() => setShowHistory(true)}
-              onTrendsClick={() => setShowTrends(true)}
-              onCalendarClick={() => setShowCalendar(true)}
+          onHistoryClick={() => setShowHistory(true)}
+          onTrendsClick={() => setShowTrends(true)}
+          onCalendarClick={() => setShowCalendar(true)}
               onCheckinClick={() => setShowCheckin(true)}
               onAchievementClick={() => setShowAchievements(true)}
               onKnowledgeClick={() => setShowKnowledge(true)}
@@ -979,19 +992,19 @@ export default function App() {
             />
 
             {/* 日期选择 */}
-            <DateSelector
-              currentDate={currentDate}
-              weekDay={fortune?.weekDay}
-              lunarStr={fortune?.lunarStr}
-              onPrevDay={() => changeDate(-1)}
-              onNextDay={() => changeDate(1)}
-              onDateChange={setCurrentDate}
-            />
+        <DateSelector
+          currentDate={currentDate}
+          weekDay={fortune?.weekDay}
+          lunarStr={fortune?.lunarStr}
+          onPrevDay={() => changeDate(-1)}
+          onNextDay={() => changeDate(1)}
+          onDateChange={setCurrentDate}
+        />
 
             {/* 核心内容区 */}
             <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)]">
               <AnimatePresence mode="wait">
-                {isLoading || !fortune ? (
+          {isLoading || !fortune ? (
                   <motion.div
                     key="loading"
                     initial={{ opacity: 0 }}
@@ -1018,14 +1031,14 @@ export default function App() {
                     ref={contentRef}
                     className="space-y-4"
                   >
-                    {/* 主运势卡片 */}
-                    <FortuneCard
-                      mainTheme={fortune.mainTheme}
-                      totalScore={fortune.totalScore}
-                      pillars={fortune.pillars}
-                      themeStyle={currentThemeStyle}
-                      showBazi={showBazi}
-                      onToggleBazi={() => setShowBazi(!showBazi)}
+              {/* 主运势卡片 */}
+              <FortuneCard
+                mainTheme={fortune.mainTheme}
+                totalScore={fortune.totalScore}
+                pillars={fortune.pillars}
+                themeStyle={currentThemeStyle}
+                showBazi={showBazi}
+                onToggleBazi={() => setShowBazi(!showBazi)}
                       yongShen={fortune.yongShen}
                       liuNian={fortune.liuNian}
                       todayTenGod={fortune.todayTenGod}
@@ -1055,114 +1068,114 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Todo List */}
+              {/* Todo List */}
                     <div className="grid grid-cols-2 gap-3">
-                      {fortune.todo.map((item, idx) => (
-                        <div key={idx} className={`p-4 rounded-2xl ${item.type === 'up' ? 'bg-white' : 'bg-gray-200/50'} flex flex-col justify-between shadow-sm border border-transparent`}
-                             style={{ backgroundColor: item.type === 'up' ? '#ffffff' : 'rgba(229, 231, 235, 0.5)' }}>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide`}
-                                style={{ backgroundColor: item.type === 'up' ? '#d1fae5' : '#ffe4e6', color: item.type === 'up' ? '#047857' : '#be123c' }}>
-                            {item.label}
-                          </span>
-                          <span className="font-bold text-gray-700 leading-tight text-sm">{item.content}</span>
-                        </div>
-                      ))}
-                    </div>
+                 {fortune.todo.map((item, idx) => (
+                   <div key={idx} className={`p-4 rounded-2xl ${item.type === 'up' ? 'bg-white' : 'bg-gray-200/50'} flex flex-col justify-between shadow-sm border border-transparent`}
+                        style={{ backgroundColor: item.type === 'up' ? '#ffffff' : 'rgba(229, 231, 235, 0.5)' }}>
+                     <span className={`text-[10px] font-black px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide`}
+                           style={{ backgroundColor: item.type === 'up' ? '#d1fae5' : '#ffe4e6', color: item.type === 'up' ? '#047857' : '#be123c' }}>
+                       {item.label}
+                     </span>
+                     <span className="font-bold text-gray-700 leading-tight text-sm">{item.content}</span>
+                   </div>
+                 ))}
+              </div>
 
-                    {/* 八字详情和用神喜忌 */}
-                    {(showBazi || fortune.baziDetail) && (
+              {/* 八字详情和用神喜忌 */}
+              {(showBazi || fortune.baziDetail) && (
                       <div className="space-y-4">
-                        {/* 八字详情 */}
-                        {fortune.baziDetail && (
-                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                  {/* 八字详情 */}
+                  {fortune.baziDetail && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
                               <Sparkles size={14} /> {t('ui:todayPage.baziDetails')}
-                            </h3>
-                            <div className="grid grid-cols-4 gap-2 text-center">
-                              <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-xl">
+                      </h3>
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-xl">
                                 <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.yearPillar')}</div>
-                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.year}</div>
-                              </div>
-                              <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl">
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.year}</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl">
                                 <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.monthPillar')}</div>
-                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.month}</div>
-                              </div>
-                              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-xl">
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.month}</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-xl">
                                 <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.dayPillar')}</div>
-                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.day}</div>
-                              </div>
-                              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-3 rounded-xl">
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.day}</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-3 rounded-xl">
                                 <div className="text-[10px] text-gray-400 mb-1">{t('ui:todayPage.hourPillar')}</div>
-                                <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.hour}</div>
-                              </div>
-                            </div>
-                            <div className="mt-3 text-center">
+                          <div className="text-lg font-bold text-gray-800">{fortune.baziDetail.hour}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-center">
                               <span className="text-xs text-gray-400">{t('ui:todayPage.dayMaster')}</span>
-                              <span className="text-sm font-bold text-indigo-600 ml-1">{fortune.baziDetail.dayMaster}</span>
-                            </div>
-                          </div>
-                        )}
+                        <span className="text-sm font-bold text-indigo-600 ml-1">{fortune.baziDetail.dayMaster}</span>
+                      </div>
+                    </div>
+                  )}
 
-                        {/* 用神喜忌 */}
-                        {fortune.yongShen && (
+                  {/* 用神喜忌 */}
+                  {fortune.yongShen && (
                           <YongShenEditor
                             yongShen={fortune.yongShen}
                             onChange={setCustomYongShen}
                             darkMode={false}
                           />
-                        )}
+                  )}
 
-                        {/* 大运信息 */}
-                        {fortune.daYun && (
-                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                  {/* 大运信息 */}
+                  {fortune.daYun && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
                               <Crown size={14} /> {t('ui:todayPage.currentDayun')}
-                            </h3>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl">
-                                  <div className="text-2xl font-black">{fortune.daYun.gan_zhi}</div>
-                                </div>
-                                <div>
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl">
+                            <div className="text-2xl font-black">{fortune.daYun.gan_zhi}</div>
+                          </div>
+                          <div>
                                   <div className="text-xs text-gray-400">{t('ui:todayPage.startAge')}</div>
                                   <div className="text-sm font-bold text-gray-800">{fortune.daYun.age}{t('ui:todayPage.yearsOld')}</div>
-                                </div>
-                              </div>
-                              <div className="text-right">
+                          </div>
+                        </div>
+                        <div className="text-right">
                                 <div className="text-xs text-gray-400">{t('ui:todayPage.dayunCycle')}</div>
-                                <div className="text-sm font-bold text-gray-800">
-                                  {fortune.daYun.start_year} - {fortune.daYun.end_year}
-                                </div>
-                              </div>
-                            </div>
+                          <div className="text-sm font-bold text-gray-800">
+                            {fortune.daYun.start_year} - {fortune.daYun.end_year}
                           </div>
-                        )}
-
-                        {/* 神煞信息 */}
-                        {fortune.shenSha && fortune.shenSha.length > 0 && (
-                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
-                              <Sparkles size={14} /> {t('ui:todayPage.todayShenSha')}
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                              {fortune.shenSha.map((ss, idx) => (
-                                <span key={idx} className="px-3 py-1.5 bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
-                                  {ss}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                        </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* 六维度运势 */}
-                    <DimensionCard dimensions={fortune.dimensions} />
+                  {/* 神煞信息 */}
+                  {fortune.shenSha && fortune.shenSha.length > 0 && (
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <h3 className="text-sm font-bold text-gray-400 mb-3 px-1 uppercase tracking-wider flex items-center gap-1">
+                              <Sparkles size={14} /> {t('ui:todayPage.todayShenSha')}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {fortune.shenSha.map((ss, idx) => (
+                          <span key={idx} className="px-3 py-1.5 bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                            {ss}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 六维度运势 */}
+              <DimensionCard dimensions={fortune.dimensions} />
                   </motion.div>
-                )}
+          )}
               </AnimatePresence>
             </div>
-          </div>
+        </div>
 
           {/* 右侧栏：成就与快捷操作 (col-span-3) */}
           <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
@@ -1248,16 +1261,16 @@ export default function App() {
 
             {/* 生成日签按钮（PC端） */}
             <motion.button
-              onClick={handleGenerateImage}
-              disabled={isGenerating || !fortune}
+             onClick={handleGenerateImage}
+             disabled={isGenerating || !fortune}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg font-bold transition hover:bg-black disabled:opacity-70"
-            >
-              {isGenerating ? <Loader2 size={18} className="animate-spin"/> : <Share2 size={18} />}
+           >
+             {isGenerating ? <Loader2 size={18} className="animate-spin"/> : <Share2 size={18} />}
               {isGenerating ? t('ui:todayPage.generating') : t('ui:todayPage.generateSign')}
             </motion.button>
-          </div>
+        </div>
         </div>
         {/* ========== PC端布局结束 ========== */}
 
@@ -1302,47 +1315,47 @@ export default function App() {
 
         {/* ========== 懒加载弹窗组件 ========== */}
         <Suspense fallback={<LazyLoadFallback fullScreen />}>
-          {/* 历史记录抽屉 */}
-          <HistoryDrawer
-            isOpen={showHistory}
-            onClose={() => setShowHistory(false)}
-            onSelectDate={(date) => {
-              setCurrentDate(date);
-              setShowHistory(false);
-            }}
+        {/* 历史记录抽屉 */}
+        <HistoryDrawer
+          isOpen={showHistory}
+          onClose={() => setShowHistory(false)}
+          onSelectDate={(date) => {
+            setCurrentDate(date);
+            setShowHistory(false);
+          }}
             onCompareClick={() => setShowCompare(true)}
-          />
+        />
 
-          {/* 趋势视图 */}
-          <TrendsView
-            isOpen={showTrends}
-            onClose={() => setShowTrends(false)}
-            onSelectDate={(date) => {
+        {/* 趋势视图 */}
+        <TrendsView
+          isOpen={showTrends}
+          onClose={() => setShowTrends(false)}
+          onSelectDate={(date) => {
+            setCurrentDate(date);
+            setShowTrends(false);
+          }}
+        />
+
+        {/* 日历视图 */}
+        {showCalendar && (
+          <CalendarView
+            currentDate={currentDate}
+            onDateSelect={(date) => {
               setCurrentDate(date);
-              setShowTrends(false);
+              setShowCalendar(false);
+            }}
+            onClose={() => setShowCalendar(false)}
+            getHistoryScore={(dateStr) => {
+              try {
+                const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+                const record = history.find((h: HistoryRecord) => h.date === dateStr);
+                  return record ? record.fortune.totalScore : null;
+              } catch {
+                return null;
+              }
             }}
           />
-
-          {/* 日历视图 */}
-          {showCalendar && (
-            <CalendarView
-              currentDate={currentDate}
-              onDateSelect={(date) => {
-                setCurrentDate(date);
-                setShowCalendar(false);
-              }}
-              onClose={() => setShowCalendar(false)}
-              getHistoryScore={(dateStr) => {
-                try {
-                  const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
-                  const record = history.find((h: HistoryRecord) => h.date === dateStr);
-                  return record ? record.fortune.totalScore : null;
-                } catch {
-                  return null;
-                }
-              }}
-            />
-          )}
+        )}
 
           {/* 签到弹窗 */}
           <CheckinModal
@@ -1488,8 +1501,8 @@ export default function App() {
           </Suspense>
         </Suspense>
 
-              </div>
-            </div>
+      </div>
+    </div>
           </>
         } />
         <Route path="*" element={<Navigate to="/" replace />} />

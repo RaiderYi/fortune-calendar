@@ -15,7 +15,7 @@ interface ContactModalProps {
 export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
   const { t, i18n } = useTranslation('ui');
   const [copied, setCopied] = useState(false);
-  const email = '429507312@qq.com';
+  const email = 'bazirili@foxmail.com';
   const isEnglish = i18n.language === 'en';
 
   const handleCopyEmail = async () => {

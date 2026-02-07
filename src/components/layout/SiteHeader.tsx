@@ -23,9 +23,10 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
 
   const navItems = [
     { to: '/', label: isEnglish ? 'Home' : '首页' },
-    { to: '/app/today', label: isEnglish ? 'Today' : '今日运势' },
-    { to: '/app/calendar', label: isEnglish ? 'Calendar' : '日历' },
-    { to: '/app/me', label: isEnglish ? 'Me' : '我的' },
+    { to: '/features', label: isEnglish ? 'Features' : '功能' },
+    { to: '/about', label: isEnglish ? 'About' : '关于' },
+    { to: '/help', label: isEnglish ? 'Help' : '帮助' },
+    { to: '/blog', label: isEnglish ? 'Blog' : '博客' },
   ];
 
   return (
@@ -42,7 +43,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8" aria-label={isEnglish ? 'Main navigation' : '主导航'}>
             {navItems.map((item) => (
               <Link
                 key={item.to}
@@ -58,12 +59,18 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
             ))}
           </nav>
 
-          {/* Right: Login + Language */}
+          {/* Right: CTA + Login + Language */}
           <div className="flex items-center gap-3">
+            <Link
+              to="/app/today"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
+            >
+              {isEnglish ? 'Get Started' : '进入应用'}
+            </Link>
             {!isAuthenticated && onLoginClick && (
               <button
                 onClick={onLoginClick}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium transition"
               >
                 <LogIn size={18} />
                 {isEnglish ? 'Login' : '登录'}
@@ -81,7 +88,9 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            aria-label={mobileMenuOpen ? (isEnglish ? 'Close menu' : '关闭菜单') : (isEnglish ? 'Open menu' : '打开菜单')}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -112,13 +121,20 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                to="/app/today"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block w-full py-3 mt-2 rounded-lg bg-indigo-500 text-white font-medium text-center"
+              >
+                {isEnglish ? 'Get Started' : '进入应用'}
+              </Link>
               {!isAuthenticated && onLoginClick && (
                 <button
                   onClick={() => {
                     onLoginClick();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3 mt-2 rounded-lg bg-indigo-500 text-white font-medium"
+                  className="w-full flex items-center justify-center gap-2 py-3 mt-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium"
                 >
                   <LogIn size={18} />
                   {isEnglish ? 'Login' : '登录'}

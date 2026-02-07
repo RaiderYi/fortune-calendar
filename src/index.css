@@ -18,6 +18,29 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Focus styles for accessibility (WCAG AA) */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* Skip to content link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px 16px;
+  background: #6366f1;
+  color: white;
+  z-index: 100;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
