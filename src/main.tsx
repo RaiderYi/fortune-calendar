@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
+import './App.css'
 import './i18n/config' // 初始化 i18n
 import App from './App.tsx'
 import { ToastProvider } from './contexts/ToastContext'

@@ -748,7 +748,7 @@ export default function App() {
               )}
 
               {/* 响应式布局容器：全宽，移动端单列，PC端三栏 */}
-              <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 bg-[#F5F5F7] dark:bg-slate-900 min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
+              <div className="w-full max-w-7xl xl:max-w-none xl:px-12 mx-auto px-4 sm:px-6 lg:px-8 bg-[#F5F5F7] dark:bg-slate-900 min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
         
         {/* ========== 移动端：单列布局 ========== */}
         <div 
