@@ -39,6 +39,7 @@ import HelpPage from './pages/HelpPage';
 import BlogPage from './pages/BlogPage';
 import PricingPage from './pages/PricingPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
+import QuickActionsSidebar from './components/QuickActionsSidebar';
 
 // ==========================================
 // 懒加载非核心组件（性能优化）
@@ -1177,100 +1178,23 @@ export default function App() {
             </div>
         </div>
 
-          {/* 右侧栏：成就与快捷操作 (col-span-3) */}
-          <div className="lg:col-span-3 space-y-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
-            {/* 成就统计卡片 */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-500 mb-3">{t('ui:desktop.achievementProgress')}</h3>
-              <motion.button
-                onClick={() => setShowAchievements(true)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium mb-3"
-              >
-                {t('ui:desktop.viewAllAchievements')}
-              </motion.button>
-              {/* 这里可以显示简化的成就列表 */}
-            </div>
-
-            {/* 快捷操作 */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-500 mb-3">{t('ui:sections.quickActions')}</h3>
-              <div className="space-y-2">
-                <motion.button
-                  onClick={() => setShowCheckin(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg text-sm font-medium"
-                >
-                  {t('ui:menu.checkin')}
-                </motion.button>
-                <motion.button
-                  onClick={() => setShowTrends(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-purple-50 text-purple-600 px-3 py-2 rounded-lg text-sm font-medium"
-                >
-                  {t('ui:header.trendAnalysis')}
-                </motion.button>
-                <motion.button
-                  onClick={() => setShowHistory(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-pink-50 text-pink-600 px-3 py-2 rounded-lg text-sm font-medium"
-                >
-                  {t('ui:menu.history')}
-                </motion.button>
-                <motion.button
-                  onClick={() => setShowKnowledge(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-yellow-50 text-yellow-600 px-3 py-2 rounded-lg text-sm font-medium"
-                >
-                  {t('ui:menu.knowledge')}
-                </motion.button>
-                <motion.button
-                  onClick={() => setShowAIDeduction(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <Sparkles size={16} />
-                  {t('ui:header.aiConsult')}
-                </motion.button>
-                <motion.button
-                  onClick={() => setShowLifeMap(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-purple-50 text-purple-600 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
-                >
-                  <TrendingUp size={16} />
-                  {t('ui:menu.lifemap')}
-                </motion.button>
-                <motion.button
-                  onClick={() => setShowContact(true)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-blue-50 text-blue-600 px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2"
-                >
-                  <Mail size={16} />
-                  {t('ui:menu.contact')}
-                </motion.button>
-              </div>
-            </div>
-
-            {/* 生成日签按钮（PC端） */}
-            <motion.button
-             onClick={handleGenerateImage}
-             disabled={isGenerating || !fortune}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg font-bold transition hover:bg-black disabled:opacity-70"
-           >
-             {isGenerating ? <Loader2 size={18} className="animate-spin"/> : <Share2 size={18} />}
-              {isGenerating ? t('ui:todayPage.generating') : t('ui:todayPage.generateSign')}
-            </motion.button>
-        </div>
+          {/* 右侧栏：成就与快捷操作 */}
+          <QuickActionsSidebar
+            onCheckin={() => setShowCheckin(true)}
+            onAchievements={() => setShowAchievements(true)}
+            onHistory={() => setShowHistory(true)}
+            onTrends={() => setShowTrends(true)}
+            onKnowledge={() => setShowKnowledge(true)}
+            onAIDeduction={() => {
+              setAiInitialQuestion(undefined);
+              setShowAIDeduction(true);
+            }}
+            onLifeMap={() => setShowLifeMap(true)}
+            onContact={() => setShowContact(true)}
+            onGenerateImage={handleGenerateImage}
+            isGenerating={isGenerating}
+            hasFortune={!!fortune}
+          />
         </div>
         {/* ========== PC端布局结束 ========== */}
 
