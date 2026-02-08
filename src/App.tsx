@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { updateSEOMeta } from './utils/seo';
 import { useHaptics } from './utils/haptics';
 import { useSwipeGesture } from './hooks/useSwipeGesture';
-import { fetchWithRetryAndCache, getCachedData, setCacheData } from './utils/apiRetry';
+import { fetchWithRetryAndCache } from './utils/apiRetry';
 import Header from './components/Header';
 import DateSelector from './components/DateSelector';
 import FortuneCard from './components/FortuneCard';
@@ -328,12 +328,8 @@ export default function App() {
       : 'auto';
     const cacheKey = `fortune:${dateStr}:${profile.birthDate}:${profile.birthTime}:${yongShenKey}`;
     
-    // 先检查缓存
-    const cached = getCachedData<DailyFortune>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
+    // 注：不直接使用 getCachedData 提前返回，因为 fetchWithRetryAndCache 缓存的是原始 API 响应，
+    // 若直接返回会导致 dateStr 等字段缺失。统一走 fetchWithRetryAndCache + transform 流程。
     const requestBody = {
       date: dateStr,
       birthDate: profile.birthDate,

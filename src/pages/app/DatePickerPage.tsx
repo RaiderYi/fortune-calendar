@@ -68,12 +68,17 @@ export default function DatePickerPage() {
         d.setDate(today.getDate() + i);
         try {
           const data = await fetchFortuneForDate(d);
-          if (data) list.push(data);
+          if (data && data.dateStr) list.push(data);
         } catch {
           // 单日失败不影响整体
         }
       }
-      list.sort((a, b) => getScore(b) - getScore(a));
+      // 按分数降序，同分时按日期升序
+      list.sort((a, b) => {
+        const sa = getScore(a), sb = getScore(b);
+        if (sb !== sa) return sb - sa;
+        return (a.dateStr || '').localeCompare(b.dateStr || '');
+      });
       setResults(list.slice(0, 10));
     } catch (err) {
       console.error('择日分析失败:', err);
@@ -88,10 +93,12 @@ export default function DatePickerPage() {
     navigate('/app/today');
   };
 
-  const formatDateLabel = (dateStr: string) => {
+  const formatDateLabel = (dateStr: string | undefined) => {
+    if (!dateStr) return isEnglish ? 'Invalid date' : '日期无效';
     const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return isEnglish ? 'Invalid date' : '日期无效';
     const weekDays = isEnglish ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    return `${dateStr} ${weekDays[d.getDay()]}`;
+    return `${dateStr} ${weekDays[d.getDay()] ?? ''}`;
   };
 
   return (
@@ -178,8 +185,13 @@ export default function DatePickerPage() {
             <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">
               {isEnglish ? 'Recommended Dates' : '推荐日期'}
             </h2>
+            {results.some((r) => getScore(r) === 100) && results.filter((r) => getScore(r) === 100).length > 2 && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {isEnglish ? 'Same-score dates sorted by date. Consider specific timing for final selection.' : '同分日期按日期排序，可根据具体事宜再择时辰。'}
+              </p>
+            )}
             <div className="space-y-2">
-              {results.map((item, idx) => (
+              {results.filter((item) => item?.dateStr).map((item, idx) => (
                 <motion.button
                   key={item.dateStr}
                   initial={{ opacity: 0, y: 10 }}
@@ -189,11 +201,11 @@ export default function DatePickerPage() {
                   className="w-full p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-between hover:border-indigo-300 dark:hover:border-indigo-600 transition text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl">{item.mainTheme?.emoji || '📅'}</div>
+                    <div className="text-2xl">{item.mainTheme?.emoji ?? '📅'}</div>
                     <div>
                       <div className="font-bold text-gray-800 dark:text-gray-200">{formatDateLabel(item.dateStr)}</div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {item.mainTheme?.keyword || '-'}
+                        {item.mainTheme?.keyword ?? '-'}
                       </div>
                     </div>
                   </div>
