@@ -13,6 +13,7 @@ import {
   setupDailyNotification,
   shouldShowNotification,
   showDailyFortuneNotification,
+  showGenericDailyNotification,
   type NotificationSettings,
 } from '../utils/notificationManager';
 
@@ -63,9 +64,26 @@ export function useNotification() {
     }
 
     const cleanup = setupDailyNotification(settings.dailyTime, () => {
-      // 这里需要获取当日的运势数据
-      // 暂时使用占位符，实际使用时需要传入真实数据
-      console.log('每日提醒触发');
+      if (shouldShowNotification('daily')) {
+        // 尝试从历史记录获取今日运势展示
+        try {
+          const todayStr = new Date().toISOString().slice(0, 10);
+          const history = JSON.parse(localStorage.getItem('fortune_history') || '[]');
+          const today = history.find((h: { date: string }) => h.date === todayStr);
+          if (today?.fortune?.mainTheme) {
+            const { totalScore, mainTheme } = today.fortune;
+            showDailyFortuneNotification(
+              totalScore ?? 0,
+              mainTheme?.keyword ?? '今日运势',
+              mainTheme?.emoji ?? '✨'
+            );
+          } else {
+            showGenericDailyNotification();
+          }
+        } catch {
+          showGenericDailyNotification();
+        }
+      }
     });
 
     return cleanup;

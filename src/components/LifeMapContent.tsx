@@ -4,16 +4,20 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { X, TrendingUp, Calendar, Loader2, Star, Lightbulb, ChevronRight, AlertTriangle, Sparkles, BookOpen } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { UserProfile } from './ProfileSettings';
 import { getCustomYongShen } from '../utils/yongShenStorage';
 import { useTranslation } from 'react-i18next';
+import { useAppContext } from '../contexts/AppContext';
 
 interface LifeMapContentProps {
   userProfile: UserProfile;
   /** 点击「去设置」时回调 */
   onOpenYongShenSettings?: () => void;
+  /** 点击「查看今日运势」时回调（关闭弹窗并跳转） */
+  onViewToday?: () => void;
 }
 
 interface DayunData {
@@ -43,15 +47,19 @@ interface YearDetail {
 export default function LifeMapContent({
   userProfile,
   onOpenYongShenSettings,
+  onViewToday,
 }: LifeMapContentProps) {
   const { t, i18n } = useTranslation(['ui', 'fortune']);
+  const navigate = useNavigate();
   const isEnglish = i18n.language === 'en';
+  const { fetchFortuneForDate, setCurrentDate } = useAppContext();
   const [dayunData, setDayunData] = useState<DayunData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDimension, setSelectedDimension] = useState<'career' | 'wealth' | 'romance' | 'health' | 'overall'>('overall');
   const [yearDetail, setYearDetail] = useState<YearDetail | null>(null);
   const [showYearDetail, setShowYearDetail] = useState(false);
   const [activeTab, setActiveTab] = useState<'chart' | 'timeline' | 'advice'>('chart');
+  const [todayFortune, setTodayFortune] = useState<{ score: number; keyword: string; emoji: string } | null>(null);
 
   const markImportantYears = (data: DayunData[]): DayunData[] => {
     if (data.length < 3) return data;
@@ -270,6 +278,18 @@ export default function LifeMapContent({
     const detail = getYearDetail(year);
     setYearDetail(detail);
     setShowYearDetail(true);
+    setTodayFortune(null);
+    if (year === new Date().getFullYear() && fetchFortuneForDate) {
+      fetchFortuneForDate(new Date()).then((data) => {
+        if (data) {
+          setTodayFortune({
+            score: data.totalScore,
+            keyword: data.mainTheme?.keyword || '',
+            emoji: data.mainTheme?.emoji || '✨',
+          });
+        }
+      });
+    }
   };
 
   const personalizedAdvice = useMemo(() => {
@@ -691,6 +711,39 @@ export default function LifeMapContent({
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              {(yearDetail.year === new Date().getFullYear() && (todayFortune || fetchFortuneForDate)) && (
+                <div className="mb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <h4 className="font-bold text-gray-700 dark:text-gray-300">
+                    {isEnglish ? 'Monthly & Daily Fortune' : '流月 · 流日'}
+                  </h4>
+                  {todayFortune && (
+                    <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                      <div>
+                        <div className="text-xs text-indigo-600 dark:text-indigo-400">{isEnglish ? 'Today' : '今日运势'}</div>
+                        <div className="font-bold text-gray-800 dark:text-gray-200">{todayFortune.emoji} {todayFortune.keyword || '-'}</div>
+                      </div>
+                      <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{todayFortune.score}</div>
+                    </div>
+                  )}
+                  <div className="text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    {isEnglish ? 'Monthly fortune follows the annual trend. View daily fortune for details.' : '本月运势与年度趋势一致，可查看每日运势获取更详细分析。'}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowYearDetail(false);
+                      if (onViewToday) {
+                        onViewToday();
+                      } else if (setCurrentDate) {
+                        setCurrentDate(new Date());
+                        navigate('/app/today');
+                      }
+                    }}
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition"
+                  >
+                    {isEnglish ? 'View Today\'s Fortune' : '查看今日运势'}
+                  </button>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">

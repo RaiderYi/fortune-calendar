@@ -4,6 +4,7 @@
 
 import type { AIChatRequest, AIChatResponse } from '../types';
 import { fetchWithRetry, getCachedData, setCacheData } from '../utils/apiRetry';
+import { checkAIRateLimit, recordAIRequest } from '../utils/aiRateLimit';
 
 const API_BASE_URL = '/api';
 
@@ -14,13 +15,23 @@ const RETRY_CONFIG = {
   backoff: 1.5,
 };
 
+/** 判断是否为限流/429 类错误 */
+function isRateLimitError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error);
+  return /429|rate limit|too many|限流|过于频繁/i.test(msg);
+}
+
 /**
- * AI 聊天请求（带重试机制）
+ * AI 聊天请求（带重试机制与客户端限流）
  */
 export async function chatWithAI(
   messages: AIChatRequest['messages'],
   baziContext: AIChatRequest['baziContext']
 ): Promise<AIChatResponse> {
+  if (!checkAIRateLimit()) {
+    return { success: false, error: '请求过于频繁，请稍后再试' };
+  }
+
   const requestBody = {
     messages,
     baziContext,
@@ -43,10 +54,13 @@ export async function chatWithAI(
         },
       }
     );
+    recordAIRequest();
     return data;
   } catch (error) {
     console.error('AI 聊天请求失败（已重试）:', error);
-    // 返回优雅降级的响应
+    if (isRateLimitError(error)) {
+      return { success: false, error: '请求过于频繁，请稍后再试' };
+    }
     return {
       success: false,
       error: '服务暂时不可用，请稍后重试',

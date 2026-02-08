@@ -13,6 +13,7 @@ import {
   Mail,
   Loader2,
   Share2,
+  Calendar,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getAchievementStats } from '../utils/achievementStorage';
@@ -25,6 +26,7 @@ interface QuickActionsSidebarProps {
   onKnowledge: () => void;
   onAIDeduction: () => void;
   onLifeMap: () => void;
+  onDatePicker: () => void;
   onContact: () => void;
   onGenerateImage: () => void;
   isGenerating: boolean;
@@ -39,6 +41,7 @@ export default function QuickActionsSidebar({
   onKnowledge,
   onAIDeduction,
   onLifeMap,
+  onDatePicker,
   onContact,
   onGenerateImage,
   isGenerating,
@@ -141,6 +144,15 @@ export default function QuickActionsSidebar({
           >
             <TrendingUp size={18} />
             {t('ui:menu.lifemap')}
+          </motion.button>
+          <motion.button
+            onClick={onDatePicker}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`w-full ${actionBtn} bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400`}
+          >
+            <Calendar size={18} />
+            {isEnglish ? 'Auspicious Date' : '择日'}
           </motion.button>
         </div>
       </div>

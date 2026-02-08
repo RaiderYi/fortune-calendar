@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, HelpCircle, BookOpen, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, BookOpen, Sparkles, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SiteHeader from '../components/layout/SiteHeader';
@@ -124,6 +124,35 @@ export default function HelpPage({ onLoginClick }: HelpPageProps) {
                 </AnimatePresence>
               </motion.div>
             ))}
+          </div>
+        </PageSection>
+
+        {/* Disclaimer - id for deep link */}
+        <PageSection>
+          <div id="disclaimer" className="scroll-mt-20">
+          <div className="flex items-center gap-2 mb-6">
+            <Info size={24} className="text-amber-600 dark:text-amber-400" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {isEnglish ? 'Disclaimer' : '免责声明'}
+            </h2>
+          </div>
+          <div className="space-y-4 max-w-3xl prose prose-gray dark:prose-invert">
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+              {isEnglish
+                ? 'Fortune predictions provided by this platform are for entertainment and reference only. They do not constitute life decision-making advice or professional consulting.'
+                : '本平台提供的运势预测仅供娱乐与参考，不构成人生决策依据或专业咨询建议。'}
+            </p>
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+              {isEnglish
+                ? 'We recommend using them as a reference for self-awareness and planning, not as a substitute for professional advice in career, health, finance, or legal matters.'
+                : '建议作为自我认知与规划时的参考，不替代专业人士在事业、健康、财务或法律等领域的建议。'}
+            </p>
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+              {isEnglish
+                ? 'By using this service, you acknowledge that you have read and understood this disclaimer.'
+                : '使用本服务即表示您已阅读并理解本免责声明。'}
+            </p>
+          </div>
           </div>
         </PageSection>
 

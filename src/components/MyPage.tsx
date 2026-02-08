@@ -4,11 +4,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell, FileText, BarChart3 } from 'lucide-react';
+import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell, FileText, BarChart3, Download, Calendar } from 'lucide-react';
 import LifeMap from './LifeMap';
 import ContactModal from './ContactModal';
 import { getCheckinStats } from '../utils/checkinStorage';
 import { getAchievementStats } from '../utils/achievementStorage';
+import { getFeedbackStats } from '../utils/feedbackStorage';
+import { exportAsJson } from '../utils/dataExport';
 import { useAuth } from '../contexts/AuthContext';
 import type { UserProfile } from './ProfileSettings';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +22,7 @@ interface MyPageProps {
   onAchievementClick: () => void;
   onKnowledgeClick: () => void;
   onFeedbackClick: () => void;
+  onDatePickerClick?: () => void;
   onReportClick?: () => void;
   onDiaryReviewClick?: () => void;
   onDeveloperDashboardClick?: () => void;
@@ -34,6 +37,7 @@ export default function MyPage({
   onAchievementClick,
   onKnowledgeClick,
   onFeedbackClick,
+  onDatePickerClick,
   onReportClick,
   onDiaryReviewClick,
   onDeveloperDashboardClick,
@@ -45,6 +49,7 @@ export default function MyPage({
   const [showContact, setShowContact] = useState(false);
   const checkinStats = getCheckinStats();
   const achievementStats = getAchievementStats();
+  const feedbackStats = getFeedbackStats();
   const { user, isAuthenticated, logout } = useAuth();
 
   const menuItems = [
@@ -127,6 +132,13 @@ export default function MyPage({
       onClick: onDiaryReviewClick,
     } : null,
     {
+      id: 'export',
+      label: isEnglish ? 'Export My Data' : '导出我的数据',
+      icon: Download,
+      color: 'blue',
+      onClick: () => exportAsJson(),
+    },
+    {
       id: 'contact',
       label: t('menu.contact'),
       icon: Mail,
@@ -140,6 +152,13 @@ export default function MyPage({
       color: 'purple',
       onClick: () => setShowLifeMap(true),
     },
+    onDatePickerClick ? {
+      id: 'datepicker',
+      label: isEnglish ? 'Auspicious Date' : '择日',
+      icon: Calendar,
+      color: 'amber',
+      onClick: onDatePickerClick,
+    } : null,
     {
       id: 'settings',
       label: t('menu.settings'),
@@ -172,6 +191,7 @@ export default function MyPage({
       yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', icon: 'text-yellow-600 dark:text-yellow-400' },
       blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', icon: 'text-blue-600 dark:text-blue-400' },
       purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', icon: 'text-purple-600 dark:text-purple-400' },
+      amber: { bg: 'bg-amber-100 dark:bg-amber-900/30', icon: 'text-amber-600 dark:text-amber-400' },
       gray: { bg: 'bg-gray-100 dark:bg-gray-800', icon: 'text-gray-600 dark:text-gray-400' },
     };
     return colors[color] || colors.gray;
@@ -204,7 +224,7 @@ export default function MyPage({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowLogin(true)}
+                onClick={() => onOpenLogin?.()}
                 className="bg-white text-indigo-600 px-4 py-2 rounded-xl font-bold text-sm"
               >
                 {isEnglish ? 'Login' : '登录'}
@@ -223,6 +243,27 @@ export default function MyPage({
             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{achievementStats.unlocked}</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{isEnglish ? 'Achievements Unlocked' : '已解锁成就'}</div>
           </div>
+          {feedbackStats.total > 0 && (
+            <>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 col-span-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{feedbackStats.accuracyRate}%</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('feedbackStats.accuracyRate')}</div>
+                  </div>
+                  <div className="text-right text-sm text-gray-500 dark:text-gray-400">
+                    {t('feedbackStats.feedbacks', { count: feedbackStats.total })}
+                    <br />
+                    <span className="text-green-600 dark:text-green-400">{feedbackStats.accurate} ✓</span>
+                    <span className="text-gray-400 mx-1">/</span>
+                    <span className="text-amber-600 dark:text-amber-400">{feedbackStats.partial} ~</span>
+                    <span className="text-gray-400 mx-1">/</span>
+                    <span className="text-red-600 dark:text-red-400">{feedbackStats.inaccurate} ✗</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* 功能菜单 */}

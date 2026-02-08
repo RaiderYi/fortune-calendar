@@ -12,7 +12,7 @@ export default function LifeMapPage() {
   const { t, i18n } = useTranslation(['ui', 'fortune']);
   const isEnglish = i18n.language === 'en';
   const navigate = useNavigate();
-  const { userProfile } = useAppContext();
+  const { userProfile, setCurrentDate } = useAppContext();
 
   return (
     <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
@@ -38,6 +38,10 @@ export default function LifeMapPage() {
       <LifeMapContent
         userProfile={userProfile}
         onOpenYongShenSettings={() => navigate('/app/today')}
+        onViewToday={() => {
+          setCurrentDate(new Date());
+          navigate('/app/today');
+        }}
       />
     </div>
   );

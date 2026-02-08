@@ -19,7 +19,37 @@
     "history": "历史记录",
     "toggleTheme": "切换主题",
     "settings": "设置",
-    "login": "登录"
+    "login": "登录",
+    "notification": "通知设置"
+  },
+  "notificationSettings": {
+    "title": "通知设置",
+    "enableNotifications": "启用通知",
+    "enableDesc": "接收每日运势提醒",
+    "dailyTime": "每日提醒时间",
+    "reminderTypes": "提醒类型",
+    "typeDaily": "每日运势",
+    "typeDailyDesc": "每天推送当日运势",
+    "typeSolarTerms": "节气与节日",
+    "typeSolarTermsDesc": "节气、传统节日提醒",
+    "typeImportant": "重要流年节点",
+    "typeImportantDesc": "大运换运等流年关键节点提醒",
+    "save": "保存",
+    "cancel": "取消",
+    "saved": "通知设置已保存",
+    "permissionRequired": "需要通知权限才能启用提醒",
+    "browserNotSupported": "您的浏览器不支持通知功能",
+    "permissionPrompt": "需要您的授权才能发送通知",
+    "permissionDenied": "通知权限已被拒绝，请在浏览器设置中允许通知",
+    "grantPermission": "授权通知权限"
+  },
+  "feedbackStats": {
+    "accuracyRate": "反馈准确率",
+    "totalFeedbacks": "共 {{count}} 条反馈",
+    "feedbacks": "{{count}} 条反馈",
+    "accurate": "准确",
+    "partial": "部分准确",
+    "inaccurate": "不准确"
   },
   "menu": {
     "profile": "个人档案",
@@ -125,7 +155,8 @@
     "viewBaziPassword": "查看今日天机密码",
     "generating": "生成中...",
     "generateSign": "生成日签",
-    "aiConsultPrompt": "请详细分析我的八字命理，包括四柱的含义、五行平衡、用神喜忌以及对我性格和运势的影响。"
+    "aiConsultPrompt": "请详细分析我的八字命理，包括四柱的含义、五行平衡、用神喜忌以及对我性格和运势的影响。",
+    "watermark": "运势日历 · 每日运势"
   },
   "fortuneCard": {
     "aiGeneratingWisdom": "AI 正在生成今日锦囊...",
@@ -148,6 +179,7 @@
       "avoid": "今日避坑指南"
     },
     "error": "AI 咨询失败，请稍后重试",
+    "rateLimit": "请求过于频繁，请稍后再试",
     "errorMessage": "抱歉，我暂时无法回答您的问题。请稍后再试。",
     "sendPlaceholder": "输入您的问题..."
   },

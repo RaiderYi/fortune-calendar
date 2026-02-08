@@ -38,6 +38,8 @@ import AboutPage from './pages/AboutPage';
 import HelpPage from './pages/HelpPage';
 import BlogPage from './pages/BlogPage';
 import PricingPage from './pages/PricingPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 import QuickActionsSidebar from './components/QuickActionsSidebar';
 import { AppContextProvider } from './contexts/AppContext';
@@ -48,6 +50,8 @@ import AchievementPage from './pages/app/AchievementPage';
 import KnowledgePage from './pages/app/KnowledgePage';
 import AIPage from './pages/app/AIPage';
 import LifeMapPage from './pages/app/LifeMapPage';
+import DatePickerPage from './pages/app/DatePickerPage';
+import DisclaimerModal, { hasAcknowledgedDisclaimer } from './components/DisclaimerModal';
 
 // ==========================================
 // 懒加载非核心组件（性能优化）
@@ -201,7 +205,7 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
-  const FEATURE_PATHS = ['/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap'];
+  const FEATURE_PATHS = ['/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap', '/app/datepicker'];
   const isFeaturePage = FEATURE_PATHS.some((p) => pathname.startsWith(p));
   const currentTab: TabType = pathname.includes('/app/calendar') ? 'calendar' : pathname.includes('/app/me') ? 'my' : 'today';
   const [showContact, setShowContact] = useState(false); // 联系我们
@@ -212,7 +216,21 @@ export default function App() {
   const [showDiaryReview, setShowDiaryReview] = useState(false); // 日记回顾
   const [showDeveloperDashboard, setShowDeveloperDashboard] = useState(false); // 开发者仪表板
   const [showLogin, setShowLogin] = useState(false); // 登录/注册弹窗
+  const [showDisclaimer, setShowDisclaimer] = useState(false); // 免责声明（首次查看运势）
   const { isAuthenticated } = useAuth();
+
+  // 首次查看运势时显示免责声明（不含 onboarding 场景）
+  useEffect(() => {
+    if (
+      !showOnboarding &&
+      fortune &&
+      currentTab === 'today' &&
+      !isFeaturePage &&
+      !hasAcknowledgedDisclaimer()
+    ) {
+      setShowDisclaimer(true);
+    }
+  }, [showOnboarding, fortune, currentTab, isFeaturePage]);
 
   // 手势支持：左右滑动切换日期
   const swipeHandlers = useSwipeGesture({
@@ -745,6 +763,8 @@ export default function App() {
         <Route path="/features" element={<FeaturesPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/about" element={<AboutPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/help" element={<HelpPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/privacy" element={<PrivacyPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/terms" element={<TermsPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/blog" element={<BlogPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/pricing" element={<PricingPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/app" element={<Navigate to="/app/today" replace />} />
@@ -757,6 +777,11 @@ export default function App() {
               userProfile,
               changeDate,
               onCompareClick: () => setShowCompare(true),
+              fetchFortuneForDate: async (date: Date) => {
+                const yongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+                const data = await fetchFortuneData(date, userProfile, yongShen);
+                return data ? { dateStr: data.dateStr, totalScore: data.totalScore, mainTheme: data.mainTheme, dimensions: data.dimensions } : null;
+              },
               onCheckinSuccess: (record) => {
                 haptics.success();
                 updateAchievements({
@@ -778,6 +803,12 @@ export default function App() {
                   onSkip={handleOnboardingSkip}
                 />
               )}
+
+              {/* 免责声明（首次查看运势时） */}
+              <DisclaimerModal
+                isOpen={showDisclaimer}
+                onClose={() => setShowDisclaimer(false)}
+              />
 
               {/* 响应式布局容器：全宽，移动端单列，PC端三栏 */}
               <div className="w-full max-w-7xl xl:max-w-none xl:px-12 mx-auto px-4 sm:px-6 lg:px-8 bg-[#F5F5F7] dark:bg-slate-900 min-h-screen flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 relative lg:shadow-2xl">
@@ -847,6 +878,7 @@ export default function App() {
                 {pathname.startsWith('/app/knowledge') && <KnowledgePage />}
                 {pathname.startsWith('/app/ai') && <AIPage />}
                 {pathname.startsWith('/app/lifemap') && <LifeMapPage />}
+                {pathname.startsWith('/app/datepicker') && <DatePickerPage />}
               </motion.div>
             )}
             {!isFeaturePage && currentTab === 'today' && (
@@ -925,6 +957,7 @@ export default function App() {
                   onAchievementClick={() => navigate('/app/achievements')}
                   onKnowledgeClick={() => navigate('/app/knowledge')}
                   onFeedbackClick={() => setShowFeedback(true)}
+                  onDatePickerClick={() => navigate('/app/datepicker')}
                   onReportClick={() => setShowReport(true)}
                   onDiaryReviewClick={() => setShowDiaryReview(true)}
                   onDeveloperDashboardClick={() => setShowDeveloperDashboard(true)}
@@ -1032,6 +1065,7 @@ export default function App() {
                   {pathname.startsWith('/app/knowledge') && <KnowledgePage />}
                   {pathname.startsWith('/app/ai') && <AIPage />}
                   {pathname.startsWith('/app/lifemap') && <LifeMapPage />}
+                  {pathname.startsWith('/app/datepicker') && <DatePickerPage />}
                 </>
               ) : (
               <AnimatePresence mode="wait">
@@ -1218,6 +1252,7 @@ export default function App() {
             onKnowledge={() => navigate('/app/knowledge')}
             onAIDeduction={() => navigate('/app/ai')}
             onLifeMap={() => navigate('/app/lifemap')}
+            onDatePicker={() => navigate('/app/datepicker')}
             onContact={() => setShowContact(true)}
             onGenerateImage={handleGenerateImage}
             isGenerating={isGenerating}

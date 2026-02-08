@@ -25,7 +25,8 @@ export default function SiteFooter() {
   const companyLinks = [
     { to: '/about', label: isEnglish ? 'About' : '关于我们' },
     { to: '/blog', label: isEnglish ? 'Blog' : '博客' },
-    { to: '/help#privacy', label: isEnglish ? 'Privacy' : '隐私政策' },
+    { to: '/privacy', label: isEnglish ? 'Privacy' : '隐私政策' },
+    { to: '/terms', label: isEnglish ? 'Terms' : '用户协议' },
   ];
 
   return (

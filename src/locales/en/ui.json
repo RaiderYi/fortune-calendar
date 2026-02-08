@@ -19,7 +19,37 @@
     "history": "History",
     "toggleTheme": "Toggle Theme",
     "settings": "Settings",
-    "login": "Login"
+    "login": "Login",
+    "notification": "Notifications"
+  },
+  "notificationSettings": {
+    "title": "Notification Settings",
+    "enableNotifications": "Enable Notifications",
+    "enableDesc": "Receive daily fortune reminders",
+    "dailyTime": "Daily Reminder Time",
+    "reminderTypes": "Reminder Types",
+    "typeDaily": "Daily Fortune",
+    "typeDailyDesc": "Daily fortune push",
+    "typeSolarTerms": "Solar Terms & Festivals",
+    "typeSolarTermsDesc": "Solar terms and traditional festival reminders",
+    "typeImportant": "Important Life Cycle Nodes",
+    "typeImportantDesc": "Da Yun change and key fortune node reminders",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saved": "Notification settings saved",
+    "permissionRequired": "Notification permission required to enable reminders",
+    "browserNotSupported": "Your browser does not support notifications",
+    "permissionPrompt": "Permission required to send notifications",
+    "permissionDenied": "Notification permission denied. Please enable in browser settings",
+    "grantPermission": "Grant Permission"
+  },
+  "feedbackStats": {
+    "accuracyRate": "Feedback Accuracy Rate",
+    "totalFeedbacks": "{{count}} feedbacks total",
+    "feedbacks": "{{count}} feedbacks",
+    "accurate": "accurate",
+    "partial": "partial",
+    "inaccurate": "inaccurate"
   },
   "menu": {
     "profile": "Profile",
@@ -125,7 +155,8 @@
     "viewBaziPassword": "View Today's Bazi Code",
     "generating": "Generating...",
     "generateSign": "Generate Daily Sign",
-    "aiConsultPrompt": "Please provide a detailed analysis of my Bazi, including the meaning of the four pillars, five elements balance, Yong Shen preferences, and their impact on my personality and fortune."
+    "aiConsultPrompt": "Please provide a detailed analysis of my Bazi, including the meaning of the four pillars, five elements balance, Yong Shen preferences, and their impact on my personality and fortune.",
+    "watermark": "Fortune Calendar · Daily Fortune"
   },
   "fortuneCard": {
     "aiGeneratingWisdom": "AI is generating today's wisdom...",
@@ -148,6 +179,7 @@
       "avoid": "Today's Avoidance Guide"
     },
     "error": "AI consultation failed, please try again later",
+    "rateLimit": "Too many requests. Please try again later.",
     "errorMessage": "Sorry, I cannot answer your question at the moment. Please try again later.",
     "sendPlaceholder": "Enter your question..."
   },

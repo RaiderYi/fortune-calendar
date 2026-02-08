@@ -78,10 +78,12 @@ export default function AIPage() {
       }
     } catch (error) {
       console.error('AI 聊天错误:', error);
-      showToast(t('aiDeduction.error'), 'error');
+      const errMsg = error instanceof Error ? error.message : t('aiDeduction.error');
+      const isRateLimit = /过于频繁|rate limit|too many/i.test(errMsg);
+      showToast(isRateLimit ? t('aiDeduction.rateLimit') : t('aiDeduction.error'), 'error');
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: t('aiDeduction.errorMessage'),
+        content: isRateLimit ? t('aiDeduction.rateLimit') : t('aiDeduction.errorMessage'),
       };
       setMessages([...newMessages, errorMessage]);
     } finally {

@@ -5,8 +5,10 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { UserProfile } from './ProfileSettings';
 import { useTranslation } from 'react-i18next';
+import { useAppContext } from '../contexts/AppContext';
 import LifeMapContent from './LifeMapContent';
 
 interface LifeMapProps {
@@ -24,6 +26,8 @@ export default function LifeMap({
   onOpenYongShenSettings,
 }: LifeMapProps) {
   const { t } = useTranslation(['ui', 'fortune']);
+  const navigate = useNavigate();
+  const { setCurrentDate } = useAppContext();
 
   return (
     <AnimatePresence>
@@ -63,6 +67,11 @@ export default function LifeMap({
             <LifeMapContent
               userProfile={userProfile}
               onOpenYongShenSettings={onOpenYongShenSettings}
+              onViewToday={() => {
+                onClose();
+                setCurrentDate(new Date());
+                navigate('/app/today');
+              }}
             />
           </motion.div>
         </>

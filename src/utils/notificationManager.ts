@@ -6,7 +6,7 @@
 export interface NotificationSettings {
   enabled: boolean;
   dailyTime: string; // HH:mm 格式
-  types: string[]; // ['daily', 'important']
+  types: string[]; // ['daily', 'important', 'solarTerms']
   soundEnabled: boolean;
 }
 
@@ -104,7 +104,12 @@ export function showNotification(
 
   try {
     const notification = new Notification(title, defaultOptions);
-    
+
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+    };
+
     // 自动关闭通知（5秒后）
     setTimeout(() => {
       notification.close();
@@ -138,6 +143,17 @@ export function showDailyFortuneNotification(
       score,
       keyword,
     },
+  });
+}
+
+/**
+ * 显示每日运势提醒（无具体数据时使用）
+ */
+export function showGenericDailyNotification(): void {
+  showNotification('今日运势已更新', {
+    body: '点击查看详细运势分析',
+    tag: 'daily-fortune-reminder',
+    requireInteraction: false,
   });
 }
 

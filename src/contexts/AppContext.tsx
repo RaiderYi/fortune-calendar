@@ -6,6 +6,13 @@ import { createContext, useContext, ReactNode } from 'react';
 import type { UserProfile } from '../components/ProfileSettings';
 import type { CheckinRecord } from '../utils/checkinStorage';
 
+interface DailyFortuneBasic {
+  dateStr: string;
+  totalScore: number;
+  mainTheme?: { keyword: string; emoji: string };
+  dimensions?: { [key: string]: { score?: number } };
+}
+
 interface AppContextValue {
   currentDate: Date;
   setCurrentDate: (date: Date) => void;
@@ -14,6 +21,8 @@ interface AppContextValue {
   changeDate: (delta: number) => void;
   onCompareClick?: () => void;
   onCheckinSuccess?: (record: CheckinRecord) => void;
+  /** 获取指定日期的运势（用于择日等） */
+  fetchFortuneForDate?: (date: Date) => Promise<DailyFortuneBasic | null>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
