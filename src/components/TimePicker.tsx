@@ -106,10 +106,13 @@ export default function TimePicker({
             </div>
 
             {/* 时间选择区域 */}
-            <div className="flex-1 overflow-hidden">
-              <div className="flex h-full">
+            <div className="flex-1 overflow-hidden min-h-0">
+              <div className="flex h-full min-h-0">
                 {/* 小时选择 */}
-                <div className="flex-1 overflow-y-auto">
+                <div
+                  className="flex-1 overflow-y-auto min-h-0 touch-pan-y overscroll-contain"
+                  style={{ WebkitOverflowScrolling: 'touch' }}
+                >
                   <div className="py-20">
                     <div ref={hourListRef} className="space-y-2 px-4">
                       {generateHours().map((hour) => (
@@ -135,7 +138,10 @@ export default function TimePicker({
                 <div className="w-px bg-gray-200 my-4" />
 
                 {/* 分钟选择 */}
-                <div className="flex-1 overflow-y-auto">
+                <div
+                  className="flex-1 overflow-y-auto min-h-0 touch-pan-y overscroll-contain"
+                  style={{ WebkitOverflowScrolling: 'touch' }}
+                >
                   <div className="py-20">
                     <div ref={minuteListRef} className="space-y-2 px-4">
                       {generateMinutes().map((minute) => (
