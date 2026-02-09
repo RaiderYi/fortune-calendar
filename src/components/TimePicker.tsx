@@ -1,8 +1,8 @@
 // ==========================================
-// 自定义时间选择器组件
+// 自定义时间选择器组件 - 双下拉框交互
 // ==========================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock } from 'lucide-react';
 
@@ -21,45 +21,12 @@ export default function TimePicker({
 }: TimePickerProps) {
   const [selectedHour, setSelectedHour] = useState(value[0]);
   const [selectedMinute, setSelectedMinute] = useState(value[1]);
-  const hourListRef = useRef<HTMLDivElement>(null);
-  const minuteListRef = useRef<HTMLDivElement>(null);
 
-  // 更新选中时间
+  // 更新选中时间（分钟取整到 5 的倍数）
   useEffect(() => {
     setSelectedHour(value[0]);
-    setSelectedMinute(value[1]);
+    setSelectedMinute(Math.round(value[1] / 5) * 5);
   }, [value]);
-
-  // 生成小时列表（0-23）
-  const generateHours = () => {
-    return Array.from({ length: 24 }, (_, i) => i);
-  };
-
-  // 生成分钟列表（0-59，每5分钟一个）
-  const generateMinutes = () => {
-    return Array.from({ length: 12 }, (_, i) => i * 5);
-  };
-
-  // 滚动到选中项
-  useEffect(() => {
-    if (isOpen) {
-      // 滚动到选中的小时
-      if (hourListRef.current) {
-        const hourElement = hourListRef.current.children[selectedHour] as HTMLElement;
-        if (hourElement) {
-          hourElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-      // 滚动到选中的分钟
-      if (minuteListRef.current) {
-        const minuteIndex = Math.floor(selectedMinute / 5);
-        const minuteElement = minuteListRef.current.children[minuteIndex] as HTMLElement;
-        if (minuteElement) {
-          minuteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
-    }
-  }, [isOpen, selectedHour, selectedMinute]);
 
   // 确认选择
   const handleConfirm = () => {
@@ -87,7 +54,7 @@ export default function TimePicker({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-[70] max-h-[70vh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-[70] overflow-hidden flex flex-col"
           >
             {/* 头部 */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -105,64 +72,31 @@ export default function TimePicker({
               </motion.button>
             </div>
 
-            {/* 时间选择区域 */}
-            <div className="flex-1 overflow-hidden min-h-0">
-              <div className="flex h-full min-h-0">
-                {/* 小时选择 */}
-                <div
-                  className="flex-1 overflow-y-auto min-h-0 touch-pan-y overscroll-contain"
-                  style={{ WebkitOverflowScrolling: 'touch' }}
-                >
-                  <div className="py-20">
-                    <div ref={hourListRef} className="space-y-2 px-4">
-                      {generateHours().map((hour) => (
-                        <motion.button
-                          key={hour}
-                          onClick={() => setSelectedHour(hour)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`w-full py-4 rounded-xl text-lg font-medium transition-colors ${
-                            selectedHour === hour
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                          }`}
-                        >
-                          {String(hour).padStart(2, '0')}时
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 分隔线 */}
-                <div className="w-px bg-gray-200 my-4" />
-
-                {/* 分钟选择 */}
-                <div
-                  className="flex-1 overflow-y-auto min-h-0 touch-pan-y overscroll-contain"
-                  style={{ WebkitOverflowScrolling: 'touch' }}
-                >
-                  <div className="py-20">
-                    <div ref={minuteListRef} className="space-y-2 px-4">
-                      {generateMinutes().map((minute) => (
-                        <motion.button
-                          key={minute}
-                          onClick={() => setSelectedMinute(minute)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`w-full py-4 rounded-xl text-lg font-medium transition-colors ${
-                            selectedMinute === minute
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                          }`}
-                        >
-                          {String(minute).padStart(2, '0')}分
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* 时间选择区域 - 双下拉框 */}
+            <div className="flex gap-3 px-4 py-6">
+              <select
+                value={String(selectedHour).padStart(2, '0')}
+                onChange={(e) => setSelectedHour(Number(e.target.value))}
+                className="flex-1 appearance-none bg-gray-100 rounded-xl px-4 py-3 text-lg font-medium border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+              >
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i} value={String(i).padStart(2, '0')}>
+                    {i}时
+                  </option>
+                ))}
+              </select>
+              <span className="self-center text-2xl font-bold text-gray-400">:</span>
+              <select
+                value={String(selectedMinute).padStart(2, '0')}
+                onChange={(e) => setSelectedMinute(Number(e.target.value))}
+                className="flex-1 appearance-none bg-gray-100 rounded-xl px-4 py-3 text-lg font-medium border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+              >
+                {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                  <option key={m} value={String(m).padStart(2, '0')}>
+                    {m}分
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* 底部按钮 */}
