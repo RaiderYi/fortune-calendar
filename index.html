@@ -20,7 +20,7 @@
     
     <link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
     <link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/?lang=en" />
-    <link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/" />
+    <link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/?lang=en" />
     
     <!-- ============================================ -->
     <!-- Open Graph (社交媒体分享) -->
@@ -34,6 +34,12 @@
     <meta property="og:image" content="https://fortunecalendar.vercel.app/og-image.png" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:image:alt" content="Fortune Calendar - Bazi Fortune App" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Fortune Calendar - Free Bazi Fortune Reading" />
+    <meta name="twitter:description" content="Accurate Bazi fortune predictions, daily fortune queries, supporting true solar time calibration for 330+ cities." />
     
     <!-- ============================================ -->
     <!-- 字体预加载 (性能优化) -->
@@ -127,7 +133,9 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "运势日历",
+      "alternateName": "Fortune Calendar",
       "description": "免费八字运势查询，每日运势预测，流年运势分析",
+      "inLanguage": ["zh-CN", "en"],
       "url": "https://fortunecalendar.vercel.app",
       "applicationCategory": "LifestyleApplication",
       "operatingSystem": "All",
@@ -142,6 +150,23 @@
         "ratingCount": "1250",
         "bestRating": "5",
         "worstRating": "1"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Fortune Calendar",
+      "description": "Free Bazi fortune reading, daily fortune predictions, annual cycle analysis",
+      "inLanguage": "en",
+      "url": "https://fortunecalendar.vercel.app/?lang=en",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
       }
     }
     </script>

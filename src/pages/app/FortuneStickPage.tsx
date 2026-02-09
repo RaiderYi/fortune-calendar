@@ -27,10 +27,14 @@ export default function FortuneStickPage() {
   );
   const [question, setQuestion] = useState('');
   const [remaining, setRemaining] = useState(getRemainingDrawsToday());
+  /** 最后一次抽签后保留结果展示，避免因 immediate unmount 导致闪退 */
+  const [showingLastDrawResult, setShowingLastDrawResult] = useState(false);
 
   const handleDraw = (stick: FortuneStick) => {
     recordDraw();
-    setRemaining(getRemainingDrawsToday());
+    const newRemaining = getRemainingDrawsToday();
+    setRemaining(newRemaining);
+    if (newRemaining === 0) setShowingLastDrawResult(true);
     const record: FortuneStickRecord = {
       id: stick.id,
       question: question || (isEnglish ? 'My question' : '我的问题'),
@@ -41,10 +45,13 @@ export default function FortuneStickPage() {
   };
 
   const handleReset = () => {
-    setRemaining(getRemainingDrawsToday());
+    const newRemaining = getRemainingDrawsToday();
+    setRemaining(newRemaining);
+    if (newRemaining === 0) setShowingLastDrawResult(false);
   };
 
   const canDraw = canDrawToday();
+  const showDrawer = canDraw || showingLastDrawResult;
 
   return (
     <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
@@ -110,12 +117,13 @@ export default function FortuneStickPage() {
             : `今日剩余抽取次数：${remaining}`}
         </div>
 
-        {canDraw ? (
+        {showDrawer ? (
           <FortuneCardDrawer
             sticks={sticks}
             question={question}
             onDraw={handleDraw}
             onReset={handleReset}
+            canDrawAgain={canDraw}
           />
         ) : (
           <motion.div

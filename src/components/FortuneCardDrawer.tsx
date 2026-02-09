@@ -23,6 +23,7 @@ interface FortuneCardDrawerProps {
   question: string;
   onDraw: (stick: FortuneStick) => void;
   onReset?: () => void;
+  canDrawAgain?: boolean;
 }
 
 const CARD_COUNT = 25;
@@ -45,6 +46,7 @@ export default function FortuneCardDrawer({
   question,
   onDraw,
   onReset,
+  canDrawAgain = true,
 }: FortuneCardDrawerProps) {
   const { i18n } = useTranslation();
   const isEnglish = i18n.language === 'en';
@@ -58,7 +60,7 @@ export default function FortuneCardDrawer({
 
   const handleDraw = useCallback(
     (clickedCardIndex: number) => {
-      if (currentDeck.length === 0 || phase !== 'idle') return;
+      if (!canDrawAgain || currentDeck.length === 0 || phase !== 'idle') return;
       const stick = currentDeck[clickedCardIndex];
       if (!stick) return;
       setPhase('shuffling');
@@ -72,7 +74,7 @@ export default function FortuneCardDrawer({
         }, 700);
       }, 600);
     },
-    [currentDeck, phase, onDraw]
+    [canDrawAgain, currentDeck, phase, onDraw]
   );
 
   const handleReset = useCallback(() => {
@@ -261,10 +263,16 @@ export default function FortuneCardDrawer({
                   onClick={handleReset}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm ${
+                    canDrawAgain
+                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 cursor-pointer'
+                      : 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-500 cursor-pointer'
+                  }`}
                 >
                   <RotateCcw size={16} />
-                  {isEnglish ? 'Draw Again' : '再抽一次'}
+                  {canDrawAgain
+                    ? (isEnglish ? 'Draw Again' : '再抽一次')
+                    : (isEnglish ? 'Back' : '返回')}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
