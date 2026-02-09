@@ -52,7 +52,7 @@ class handler(BaseHTTPRequestHandler):
             try:
                 if not self.wfile.closed:
                     self.wfile.write(json.dumps({"success": False, "error": "Internal Server Error"}).encode('utf-8'))
-            except:
+    except:
                 pass
 
     def do_OPTIONS(self):

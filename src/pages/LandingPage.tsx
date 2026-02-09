@@ -357,6 +357,24 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
           </div>
         </PageSection>
 
+        {/* Donate */}
+        <PageSection>
+          <div className="text-center">
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {isEnglish ? 'Buy the creator a coffee' : '请创作者喝杯咖啡'}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {isEnglish ? 'Thank you for your support.' : '感谢您的支持。'}
+            </p>
+            <img
+              src="/donate-qr.png"
+              alt={isEnglish ? 'Donation QR code' : '打赏收款码'}
+              className="w-[160px] h-[160px] mx-auto rounded-lg object-contain bg-white dark:bg-slate-800 p-2 border border-gray-200 dark:border-slate-600"
+              loading="lazy"
+            />
+          </div>
+        </PageSection>
+
         {/* Final CTA */}
         <PageSection variant="alt">
           <div className="text-center">
