@@ -38,7 +38,7 @@ export default function SiteFooter() {
           <div className="lg:col-span-2 flex flex-col gap-3">
             <Link to="/" className="flex items-center gap-2 text-gray-900 dark:text-white">
               <Sparkles size={20} className="text-indigo-500" />
-              <span className="font-bold">{t('header.title', { defaultValue: '运势日历' })}</span>
+              <span className="font-bold">{t('header.title', { defaultValue: '命运日历' })}</span>
             </Link>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {isEnglish
@@ -122,7 +122,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700 text-center text-sm text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} {t('header.title', { defaultValue: '运势日历' })}.{' '}
+          © {new Date().getFullYear()} {t('header.title', { defaultValue: '命运日历' })}.{' '}
           {isEnglish ? 'All rights reserved.' : '保留所有权利。'}
         </div>
       </div>

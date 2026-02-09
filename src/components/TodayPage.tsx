@@ -297,7 +297,7 @@ export default function TodayPage({
             {/* 日签水印（截图时包含） */}
             <div className="mt-6 pt-4 border-t border-gray-200/50 dark:border-gray-700/50 text-center">
               <p className="text-xs text-gray-400 dark:text-gray-500">
-                {t('ui:todayPage.watermark', { defaultValue: '运势日历 · 每日运势' })}
+                {t('ui:todayPage.watermark', { defaultValue: '命运日历 · 每日运势' })}
               </p>
               <p className="text-[10px] text-gray-400/80 dark:text-gray-500/80 mt-1">
                 {typeof window !== 'undefined' ? window.location.origin : ''}

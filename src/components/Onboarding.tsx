@@ -14,7 +14,7 @@ interface OnboardingProps {
 const STEPS = [
   {
     id: 1,
-    title: '欢迎使用运势日历',
+    title: '欢迎使用命运日历',
     description: '基于传统八字命理，为您提供每日运势分析和建议',
     icon: Sparkles,
     color: 'from-purple-500 to-indigo-600',

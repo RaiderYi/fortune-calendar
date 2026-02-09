@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-运势评分引擎
+运势评分引擎 - 基于《滴天髓》与《渊海子平》
+
+理论模型：
+- 滴天髓：用神为纲，大运/流年/流月/流日五行与用神关系决定吉凶
+- 渊海子平：十神（日主与流日天干）、六冲六合（流日地支与日支）
+
+作用关系：八字(日主+用神) <- 大运 <- 流年 <- 流月 <- 流日
+
 包含：V5.0 算法、六大维度计算、主题生成
 """
 
@@ -148,7 +155,7 @@ def calculate_fortune_score_year(bazi, element_analysis, yongshen,
 
 
 def _calculate_liunian_score(liu_nian, yongshen):
-    """计算流年影响 - 修复权重计算逻辑"""
+    """计算流年影响（滴天髓：用神为纲，流年干支五行与用神关系）"""
     liunian_weight = FORTUNE_WEIGHTS_V5['liunian']['weight']
     stem_ratio = FORTUNE_WEIGHTS_V5['liunian']['stem_ratio']
     branch_ratio = FORTUNE_WEIGHTS_V5['liunian']['branch_ratio']
@@ -182,15 +189,12 @@ def _calculate_liunian_score(liu_nian, yongshen):
     else:
         nian_zhi_bonus = random.randint(-1, 1)
 
-    # 修复：直接使用权重，不再除以固定值
-    # 基础分数范围约 -10 到 +10，乘以权重后得到最终影响
     base_score = nian_gan_bonus * stem_ratio + nian_zhi_bonus * branch_ratio
-    # 使用权重作为比例因子，确保配置的权重正确生效
-    return base_score * liunian_weight * 10  # 乘以10以保持合理的分数范围
+    return base_score * liunian_weight * 6  # 权重乘数 10→6，与流月流日一致
 
 
 def _calculate_liuyue_score(liu_yue, yongshen):
-    """计算流月影响 - 修复权重计算逻辑，加入地支计算"""
+    """计算流月影响（滴天髓：用神为纲，流月干支五行与用神关系）"""
     liuyue_weight = FORTUNE_WEIGHTS_V5['liuyue']['weight']
     # 如果配置了 stem_ratio 和 branch_ratio，使用它们；否则只使用天干
     stem_ratio = FORTUNE_WEIGHTS_V5['liuyue'].get('stem_ratio', 1.0)
@@ -205,15 +209,15 @@ def _calculate_liuyue_score(liu_yue, yongshen):
 
     # 天干计算
     if yue_gan_element == primary:
-        yue_gan_bonus = 13 + random.randint(-2, 2)  # 减少随机范围
+        yue_gan_bonus = 13 + random.randint(-2, 2)
     elif yue_gan_element in favorable_list:
         yue_gan_bonus = 8 + random.randint(-1, 1)
     elif yue_gan_element in unfavorable_list:
         yue_gan_bonus = -9 + random.randint(-1, 1)
     else:
-        yue_gan_bonus = random.randint(-2, 2)  # 减少随机范围
+        yue_gan_bonus = random.randint(-2, 2)
 
-    # 地支计算（新增）
+    # 地支计算
     yue_zhi_bonus = 0
     if branch_ratio > 0:
         if yue_zhi_element == primary:
@@ -225,13 +229,13 @@ def _calculate_liuyue_score(liu_yue, yongshen):
         else:
             yue_zhi_bonus = random.randint(-2, 2)
 
-    # 修复：直接使用权重，不再除以固定值
     base_score = yue_gan_bonus * stem_ratio + yue_zhi_bonus * branch_ratio
-    return base_score * liuyue_weight * 10  # 乘以10以保持合理的分数范围
+    raw = base_score * liuyue_weight * 6  # 权重乘数 10→6
+    return raw * 0.6  # 约 60% 缩放，使流月贡献更温和
 
 
 def _calculate_liuri_score(liu_ri, yongshen):
-    """计算流日影响 - 修复权重计算逻辑"""
+    """计算流日影响（滴天髓：用神为纲，流日干支五行与用神关系）"""
     liuri_weight = FORTUNE_WEIGHTS_V5['liuri']['weight']
     stem_ratio = FORTUNE_WEIGHTS_V5['liuri']['stem_ratio']
     branch_ratio = FORTUNE_WEIGHTS_V5['liuri']['branch_ratio']
@@ -243,30 +247,30 @@ def _calculate_liuri_score(liu_ri, yongshen):
     unfavorable_list = yongshen.get('unfavorable', [])
     primary = yongshen.get('primary')
 
+    # 系数约 45% 缩放，避免总分轻易破百（理论不变，仅调数值）
     if ri_gan_element == primary:
-        ri_gan_bonus = 38 + random.randint(-3, 3)  # 减少随机范围，提高基础值
+        ri_gan_bonus = 18 + random.randint(-2, 2)
     elif ri_gan_element in favorable_list:
-        ri_gan_bonus = 22 + random.randint(-2, 2)
+        ri_gan_bonus = 10 + random.randint(-1, 1)
     elif ri_gan_element in unfavorable_list:
-        ri_gan_bonus = -20 + random.randint(-2, 1)
+        ri_gan_bonus = -10 + random.randint(-1, 1)
     else:
-        ri_gan_bonus = random.randint(-4, 4)
+        ri_gan_bonus = random.randint(-2, 2)
 
     ri_zhi_element = WU_XING_MAP.get(liu_ri['zhi'])
     ri_zhi_bonus = 0
 
     if ri_zhi_element == primary:
-        ri_zhi_bonus = 27 + random.randint(-2, 2)
+        ri_zhi_bonus = 13 + random.randint(-1, 1)
     elif ri_zhi_element in favorable_list:
-        ri_zhi_bonus = 17 + random.randint(-1, 1)
+        ri_zhi_bonus = 8 + random.randint(-1, 1)
     elif ri_zhi_element in unfavorable_list:
-        ri_zhi_bonus = -14 + random.randint(-1, 1)
+        ri_zhi_bonus = -7 + random.randint(-1, 0)
     else:
-        ri_zhi_bonus = random.randint(-3, 3)
+        ri_zhi_bonus = random.randint(-2, 2)
 
-    # 修复：直接使用权重，不再除以固定值
     base_score = ri_gan_bonus * stem_ratio + ri_zhi_bonus * branch_ratio
-    return base_score * liuri_weight * 10  # 乘以10以保持合理的分数范围
+    return base_score * liuri_weight * 6  # 权重乘数 10→6，使流日贡献约 60 分封顶
 
 
 def _check_tiangan_interaction(gan1, gan2, yongshen, is_weak):

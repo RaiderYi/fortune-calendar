@@ -172,7 +172,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <CalendarIcon className="w-8 h-8" />
-              <h2 className="text-2xl font-bold">运势日历</h2>
+              <h2 className="text-2xl font-bold">命运日历</h2>
             </div>
             <button
               onClick={onClose}

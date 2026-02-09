@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: '运势日历 - Fortune Calendar',
-        short_name: '运势日历',
+        name: '命运日历 - Fortune Calendar',
+        short_name: '命运日历',
         description: '免费八字运势查询，每日运势预测',
         theme_color: '#6366f1',
         background_color: '#f5f5f7',

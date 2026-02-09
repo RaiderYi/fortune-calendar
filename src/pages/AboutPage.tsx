@@ -72,7 +72,7 @@ export default function AboutPage({ onLoginClick }: AboutPageProps) {
           <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed mb-6">
             {isEnglish
               ? 'Fortune Calendar was born from the belief that traditional Bazi wisdom can be made accessible and actionable for modern life. We combine precise astronomical algorithms with AI-powered analysis to deliver daily fortune insights that help you plan your day, week, and year.'
-              : '运势日历源于一个信念：传统八字智慧可以为现代生活所用。我们结合精准的天文算法与 AI 分析，为您提供每日运势洞察，助您规划每一天、每一周、每一年。'}
+              : '命运日历源于一个信念：传统八字智慧可以为现代生活所用。我们结合精准的天文算法与 AI 分析，为您提供每日运势洞察，助您规划每一天、每一周、每一年。'}
           </p>
           <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
             {isEnglish

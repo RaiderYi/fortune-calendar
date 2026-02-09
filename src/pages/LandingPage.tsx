@@ -172,7 +172,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
                 {isEnglish ? 'Bazi + Time = Personalized Life Guide' : '八字 + 时辰 = 个性化生活决策指南'}
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">
-                {isEnglish ? 'Fortune Calendar' : '运势日历'}
+                {isEnglish ? 'Fortune Calendar' : '命运日历'}
               </h1>
               <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-2 leading-relaxed">
                 {isEnglish ? 'Get personalized fortune insights in one minute.' : '每天花一分钟，获取个性化运势建议。'}

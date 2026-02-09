@@ -39,7 +39,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
             className="flex items-center gap-2 text-gray-900 dark:text-white hover:opacity-80 transition"
           >
             <Sparkles size={24} className="text-indigo-500" />
-            <span className="text-lg font-bold">{t('header.title', { defaultValue: '运势日历' })}</span>
+            <span className="text-lg font-bold">{t('header.title', { defaultValue: '命运日历' })}</span>
           </Link>
 
           {/* Desktop nav */}

@@ -14,7 +14,7 @@
     "baziAcademy": "八字学堂",
     "achievements": "成就系统",
     "checkin": "每日签到",
-    "fortuneCalendar": "运势日历",
+    "fortuneCalendar": "命运日历",
     "trendAnalysis": "趋势分析",
     "history": "历史记录",
     "toggleTheme": "切换主题",
@@ -156,7 +156,7 @@
     "generating": "生成中...",
     "generateSign": "生成日签",
     "aiConsultPrompt": "请详细分析我的八字命理，包括四柱的含义、五行平衡、用神喜忌以及对我性格和运势的影响。",
-    "watermark": "运势日历 · 每日运势"
+    "watermark": "命运日历 · 每日运势"
   },
   "fortuneCard": {
     "aiGeneratingWisdom": "AI 正在生成今日锦囊...",
