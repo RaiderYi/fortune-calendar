@@ -1,0 +1,29 @@
+{
+  "sticks": [
+    { "id": 1, "level": "Excellent", "poem": "Heaven and earth align in your favor; the hour is auspicious.", "meaning": "Good timing for action. Proceed with confidence.", "fortune": "Very Lucky" },
+    { "id": 2, "level": "Neutral", "poem": "The whale stays in the river; do not rise too soon.", "meaning": "Wait for the right moment. Patience is key.", "fortune": "Neutral" },
+    { "id": 3, "level": "Unfavorable", "poem": "Braving wind and rain, you return with little gain.", "meaning": "Hard work yields little. Consider a new approach.", "fortune": "Unlucky" },
+    { "id": 4, "level": "Neutral", "poem": "The ancient mirror is whole again; a new chapter begins.", "meaning": "Second chances or fresh starts await.", "fortune": "Neutral" },
+    { "id": 5, "level": "Neutral", "poem": "Digging for water takes effort; help may come unexpectedly.", "meaning": "Persist. A helper may appear when least expected.", "fortune": "Neutral" },
+    { "id": 6, "level": "Neutral", "poem": "Integrity stands at the cliff; virtue opens all doors.", "meaning": "Act with honesty. Generosity brings reward.", "fortune": "Neutral" },
+    { "id": 7, "level": "Unfavorable", "poem": "Obstacles block the path; mud and mountains ahead.", "meaning": "Many obstacles. Travel or change with caution.", "fortune": "Unlucky" },
+    { "id": 8, "level": "Excellent", "poem": "The pine stands firm through rain and snow.", "meaning": "Strong foundation. Great things lie ahead.", "fortune": "Very Lucky" },
+    { "id": 9, "level": "Excellent", "poem": "Your heart is clear as the full moon.", "meaning": "Act with a clear conscience. All will be well.", "fortune": "Very Lucky" },
+    { "id": 10, "level": "Neutral", "poem": "The treasure lies not afar; look within.", "meaning": "Do not seek elsewhere. Cherish what you have.", "fortune": "Neutral" },
+    { "id": 11, "level": "Neutral", "poem": "Wishes await fulfillment; busy days bring guidance.", "meaning": "A guide may appear. Stay patient.", "fortune": "Neutral" },
+    { "id": 12, "level": "Excellent", "poem": "Fortune turns at the threshold; the wise emerge.", "meaning": "A turnaround is near. Set your mind and act.", "fortune": "Very Lucky" },
+    { "id": 13, "level": "Excellent", "poem": "Born of noble roots; all things flourish.", "meaning": "Strong roots. Fame and success await.", "fortune": "Very Lucky" },
+    { "id": 14, "level": "Excellent", "poem": "The crane escapes the cage; the sky is open.", "meaning": "Break free. The path ahead is clear.", "fortune": "Very Lucky" },
+    { "id": 15, "level": "Unfavorable", "poem": "Trouble draws near; the traveler seeks shelter.", "meaning": "Stay still. Find a safe place to wait.", "fortune": "Unlucky" },
+    { "id": 16, "level": "Excellent", "poem": "Worries fade; joy rises like the sun.", "meaning": "A jewel emerges. Good news approaches.", "fortune": "Very Lucky" },
+    { "id": 17, "level": "Unfavorable", "poem": "Ignore idle talk; focus on what is real.", "meaning": "Do not believe rumors. Stay grounded.", "fortune": "Unlucky" },
+    { "id": 18, "level": "Neutral", "poem": "Sun sets, moon rises; the cycle continues.", "meaning": "Follow nature. Act from the heart.", "fortune": "Neutral" },
+    { "id": 19, "level": "Unfavorable", "poem": "Rough waters ahead; wait for calm.", "meaning": "Wait for the storm to pass. Then proceed.", "fortune": "Unlucky" },
+    { "id": 20, "level": "Excellent", "poem": "Rain clears; the moon and sun shine bright.", "meaning": "Old troubles fade. New success awaits.", "fortune": "Very Lucky" },
+    { "id": 21, "level": "Excellent", "poem": "Heaven joins the paths; union brings joy.", "meaning": "Destiny favors union. Joy follows.", "fortune": "Very Lucky" },
+    { "id": 22, "level": "Neutral", "poem": "The dry field receives rain at last.", "meaning": "Relief is coming. A turn for the better.", "fortune": "Neutral" },
+    { "id": 23, "level": "Unfavorable", "poem": "Clouds obscure the moon's light.", "meaning": "Confusion now. Clarity will return.", "fortune": "Unlucky" },
+    { "id": 24, "level": "Excellent", "poem": "Wisdom lies in daily practice.", "meaning": "Ground yourself in routine. Steady progress.", "fortune": "Very Lucky" },
+    { "id": 25, "level": "Neutral", "poem": "Dangers passed; peace from now on.", "meaning": "The worst is over. Calm lies ahead.", "fortune": "Neutral" }
+  ]
+}

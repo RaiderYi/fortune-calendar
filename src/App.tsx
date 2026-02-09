@@ -51,6 +51,7 @@ import KnowledgePage from './pages/app/KnowledgePage';
 import AIPage from './pages/app/AIPage';
 import LifeMapPage from './pages/app/LifeMapPage';
 import DatePickerPage from './pages/app/DatePickerPage';
+import FortuneStickPage from './pages/app/FortuneStickPage';
 import DisclaimerModal, { hasAcknowledgedDisclaimer } from './components/DisclaimerModal';
 
 // ==========================================
@@ -205,7 +206,7 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
-  const FEATURE_PATHS = ['/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap', '/app/datepicker'];
+  const FEATURE_PATHS = ['/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap', '/app/datepicker', '/app/fortune-stick'];
   const isFeaturePage = FEATURE_PATHS.some((p) => pathname.startsWith(p));
   const currentTab: TabType = pathname.includes('/app/calendar') ? 'calendar' : pathname.includes('/app/me') ? 'my' : 'today';
   const [showContact, setShowContact] = useState(false); // 联系我们
@@ -875,6 +876,7 @@ export default function App() {
                 {pathname.startsWith('/app/ai') && <AIPage />}
                 {pathname.startsWith('/app/lifemap') && <LifeMapPage />}
                 {pathname.startsWith('/app/datepicker') && <DatePickerPage />}
+                {pathname.startsWith('/app/fortune-stick') && <FortuneStickPage />}
               </motion.div>
             )}
             {!isFeaturePage && currentTab === 'today' && (
@@ -954,6 +956,7 @@ export default function App() {
                   onKnowledgeClick={() => navigate('/app/knowledge')}
                   onFeedbackClick={() => setShowFeedback(true)}
                   onDatePickerClick={() => navigate('/app/datepicker')}
+                  onFortuneStickClick={() => navigate('/app/fortune-stick')}
                   onReportClick={() => setShowReport(true)}
                   onDiaryReviewClick={() => setShowDiaryReview(true)}
                   onDeveloperDashboardClick={() => setShowDeveloperDashboard(true)}
@@ -1062,6 +1065,7 @@ export default function App() {
                   {pathname.startsWith('/app/ai') && <AIPage />}
                   {pathname.startsWith('/app/lifemap') && <LifeMapPage />}
                   {pathname.startsWith('/app/datepicker') && <DatePickerPage />}
+                  {pathname.startsWith('/app/fortune-stick') && <FortuneStickPage />}
                 </>
               ) : (
               <AnimatePresence mode="wait">
@@ -1249,6 +1253,7 @@ export default function App() {
             onAIDeduction={() => navigate('/app/ai')}
             onLifeMap={() => navigate('/app/lifemap')}
             onDatePicker={() => navigate('/app/datepicker')}
+            onFortuneStick={() => navigate('/app/fortune-stick')}
             onContact={() => setShowContact(true)}
             onGenerateImage={handleGenerateImage}
             isGenerating={isGenerating}

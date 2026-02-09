@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell, FileText, BarChart3, Download, Calendar } from 'lucide-react';
+import { User, BookOpen, MessageSquare, Settings, Trophy, Target, TrendingUp, Mail, LogIn, LogOut, Cloud, Bell, FileText, BarChart3, Download, Calendar, Sparkles } from 'lucide-react';
 import LifeMap from './LifeMap';
 import ContactModal from './ContactModal';
 import { getCheckinStats } from '../utils/checkinStorage';
@@ -23,6 +23,7 @@ interface MyPageProps {
   onKnowledgeClick: () => void;
   onFeedbackClick: () => void;
   onDatePickerClick?: () => void;
+  onFortuneStickClick?: () => void;
   onReportClick?: () => void;
   onDiaryReviewClick?: () => void;
   onDeveloperDashboardClick?: () => void;
@@ -38,6 +39,7 @@ export default function MyPage({
   onKnowledgeClick,
   onFeedbackClick,
   onDatePickerClick,
+  onFortuneStickClick,
   onReportClick,
   onDiaryReviewClick,
   onDeveloperDashboardClick,
@@ -158,6 +160,13 @@ export default function MyPage({
       icon: Calendar,
       color: 'amber',
       onClick: onDatePickerClick,
+    } : null,
+    onFortuneStickClick ? {
+      id: 'fortune-stick',
+      label: isEnglish ? 'Fortune Card' : '抽签',
+      icon: Sparkles,
+      color: 'purple',
+      onClick: onFortuneStickClick,
     } : null,
     {
       id: 'settings',

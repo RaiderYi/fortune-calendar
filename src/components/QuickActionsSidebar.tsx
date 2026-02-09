@@ -27,6 +27,7 @@ interface QuickActionsSidebarProps {
   onAIDeduction: () => void;
   onLifeMap: () => void;
   onDatePicker: () => void;
+  onFortuneStick: () => void;
   onContact: () => void;
   onGenerateImage: () => void;
   isGenerating: boolean;
@@ -42,6 +43,7 @@ export default function QuickActionsSidebar({
   onAIDeduction,
   onLifeMap,
   onDatePicker,
+  onFortuneStick,
   onContact,
   onGenerateImage,
   isGenerating,
@@ -153,6 +155,15 @@ export default function QuickActionsSidebar({
           >
             <Calendar size={18} />
             {isEnglish ? 'Auspicious Date' : '择日'}
+          </motion.button>
+          <motion.button
+            onClick={onFortuneStick}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`w-full ${actionBtn} bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400`}
+          >
+            <Sparkles size={18} />
+            {isEnglish ? 'Fortune Card' : '抽签'}
           </motion.button>
         </div>
       </div>
