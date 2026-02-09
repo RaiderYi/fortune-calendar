@@ -2,7 +2,7 @@
 // 抽签历史与限流
 // ==========================================
 
-const DAILY_LIMIT = 3;
+const DAILY_LIMIT = 5;
 const STORAGE_KEY = 'fortune_stick_draws';
 const HISTORY_KEY = 'fortune_stick_history';
 
