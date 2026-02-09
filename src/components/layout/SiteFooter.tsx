@@ -5,6 +5,7 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import DonateQR from '../DonateQR';
 
 export default function SiteFooter() {
   const { t, i18n } = useTranslation('ui');
@@ -117,12 +118,7 @@ export default function SiteFooter() {
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
             {isEnglish ? 'Thank you for your support.' : '感谢您的支持。'}
           </p>
-          <img
-            src="/donate-qr.png"
-            alt={isEnglish ? 'Donation QR code' : '打赏收款码'}
-            className="w-[160px] h-[160px] mx-auto rounded-lg object-contain bg-white dark:bg-slate-800 p-2 border border-gray-200 dark:border-slate-600"
-            loading="lazy"
-          />
+          <DonateQR />
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700 text-center text-sm text-gray-500 dark:text-gray-400">

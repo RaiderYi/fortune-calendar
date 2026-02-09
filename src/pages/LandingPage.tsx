@@ -22,6 +22,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import SiteHeader from '../components/layout/SiteHeader';
 import SiteFooter from '../components/layout/SiteFooter';
+import DonateQR from '../components/DonateQR';
 import { PageSection, FeatureCard } from '../components/ui';
 
 interface LandingPageProps {
@@ -366,12 +367,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {isEnglish ? 'Thank you for your support.' : '感谢您的支持。'}
             </p>
-            <img
-              src="/donate-qr.png"
-              alt={isEnglish ? 'Donation QR code' : '打赏收款码'}
-              className="w-[160px] h-[160px] mx-auto rounded-lg object-contain bg-white dark:bg-slate-800 p-2 border border-gray-200 dark:border-slate-600"
-              loading="lazy"
-            />
+            <DonateQR />
           </div>
         </PageSection>
 
