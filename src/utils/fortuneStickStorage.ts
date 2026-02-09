@@ -10,7 +10,7 @@ export interface FortuneStickRecord {
   id: number;
   question: string;
   drawnAt: string; // ISO string
-  stick: { id: number; level: string; poem: string; meaning: string; fortune: string };
+  stick: { id: number; level: string; poem: string; meaning: string; fortune: string; advice?: string; category?: string; detail?: string };
 }
 
 function getTodayKey(): string {
