@@ -2,7 +2,7 @@
 // 抽牌交互组件 - 完整牌库随机25张 + 3D效果
 // ==========================================
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, type MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, RotateCcw, Share2, Lightbulb, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +54,9 @@ export default function FortuneCardDrawer({
   const [drawnStick, setDrawnStick] = useState<FortuneStick | null>(null);
   const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
   const [deckKey, setDeckKey] = useState(0);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [glow, setGlow] = useState({ x: 50, y: 50 });
 
   /** 每次进入抽牌时，从完整牌库随机抽取25张 */
   const currentDeck = useMemo(() => pickRandomCards(sticks, CARD_COUNT), [sticks, deckKey]);
@@ -93,8 +96,28 @@ export default function FortuneCardDrawer({
     setPhase('idle');
     setDrawnStick(null);
     setFlippedIndex(null);
+    setTilt({ x: 0, y: 0 });
+    setGlow({ x: 50, y: 50 });
     onReset?.();
   }, [onReset]);
+
+  const handleParallaxMove = (event: MouseEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const relX = event.clientX - rect.left;
+    const relY = event.clientY - rect.top;
+    const pctX = Math.min(100, Math.max(0, (relX / rect.width) * 100));
+    const pctY = Math.min(100, Math.max(0, (relY / rect.height) * 100));
+    const tiltX = ((pctY - 50) / 50) * -6;
+    const tiltY = ((pctX - 50) / 50) * 8;
+    setGlow({ x: pctX, y: pctY });
+    setTilt({ x: tiltX, y: tiltY });
+  };
+
+  const handleParallaxLeave = () => {
+    setTilt({ x: 0, y: 0 });
+    setGlow({ x: 50, y: 50 });
+  };
 
   /** 五级运势配色：上上/上中/中中/中下/下下 */
   const getFortuneColor = (level: string) => {
@@ -215,116 +238,138 @@ export default function FortuneCardDrawer({
             className="fixed inset-0 z-[80] flex items-center justify-center px-4"
           >
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <div className="fortune-flash" aria-hidden="true" />
+            <div className="fortune-burst" aria-hidden="true" />
+            <div className="fortune-portal" aria-hidden="true" />
+            <div className="fortune-portal-ring" aria-hidden="true" />
+            <div className="fortune-particles" aria-hidden="true" />
+            <div className="fortune-portal-beam" aria-hidden="true" />
             <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              initial={{ opacity: 0, y: 28, scale: 0.88, rotateZ: -0.6 }}
+              animate={{ opacity: 1, y: 0, x: [0, -2, 2, 0], scale: [0.94, 1.03, 1], rotateZ: [0.6, -0.3, 0] }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.05 }}
               className="relative z-10 w-full max-w-md"
             >
-              <div className="fortune-result-glow rounded-2xl bg-slate-900/80 border border-cyan-300/20 shadow-2xl shadow-cyan-500/30 overflow-hidden text-white backdrop-blur">
-                {/* 3D 鍗＄墖绐佸嚭鏁堟灉 - 椤堕儴鍏夋檿 */}
-                <div className="h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
-                <div className="p-6 space-y-4">
-                  {/* 绛惧彿涓庡悏鍑?*/}
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold border ${getFortuneColor(drawnStick.level)}`}
-                    >
-                      {drawnStick.level} 路 {drawnStick.fortune}
-                    </span>
-                    <span className="text-xs text-white/60 font-mono">
-                      #{drawnStick.id}
-                    </span>
-                  </div>
-
-                  {/* 绛捐瘲 */}
-                  <p className="text-lg font-medium text-white leading-relaxed">
-                    {drawnStick.poem}
-                  </p>
-
-                  {/* 绠€瑕佽В璇?*/}
-                  <p className="text-sm text-white/70">
-                    {drawnStick.meaning}
-                  </p>
-
-                  {/* 璇︾粏瑙ｈ锛堝鏈夛級 */}
-                  {drawnStick.detail && (
-                    <div className="pt-2 border-t border-white/10">
-                      <p className="text-sm text-white/70 leading-relaxed">
-                        {drawnStick.detail}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* 鍏蜂綋寤鸿锛堝鏈夛） */}
-                  {drawnStick.advice && (
-                    <div className="flex gap-2 p-3 rounded-xl bg-white/10 border border-white/15">
-                      <Lightbulb size={18} className="text-cyan-300 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-xs font-medium text-cyan-200 mb-0.5">
-                          {isEnglish ? 'Suggested actions' : '具体建议'}
-                        </p>
-                        <p className="text-sm text-white/80">
-                          {drawnStick.advice}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 閫傜敤鍦烘櫙锛堝鏈夛） */}
-                  {drawnStick.category && (
-                    <div className="flex items-center gap-2 text-xs text-white/60">
-                      <Tag size={14} />
-                      <span>
-                        {isEnglish ? 'Applies to' : '适用场景'}: {drawnStick.category}
+              <div
+                ref={cardRef}
+                className="fortune-result-glow fortune-result-card rounded-2xl bg-slate-900/80 border border-cyan-300/20 shadow-2xl shadow-cyan-500/30 overflow-hidden text-white backdrop-blur"
+                onMouseMove={handleParallaxMove}
+                onMouseLeave={handleParallaxLeave}
+                style={{ perspective: 1200 }}
+              >
+                <div
+                  className="fortune-result-card-inner"
+                  style={{
+                    transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+                    ['--glow-x' as any]: `${glow.x}%`,
+                    ['--glow-y' as any]: `${glow.y}%`,
+                  }}
+                >
+                  <div className="fortune-result-card-sheen" aria-hidden="true" />
+                  {/* 3D 鍗＄墖绐佸嚭鏁堟灈 - 椤堕儴鍏夋檿 */}
+                  <div className="h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+                  <div className="p-6 space-y-4">
+                    {/* 绛惧彿涓庡悏鍑?*/}
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold border ${getFortuneColor(drawnStick.level)}`}
+                      >
+                        {drawnStick.level} 路 {drawnStick.fortune}
+                      </span>
+                      <span className="text-xs text-white/60 font-mono">
+                        #{drawnStick.id}
                       </span>
                     </div>
-                  )}
-                </div>
 
-                {/* 鎿嶄綔鎸夐挳 */}
-                <div className="p-4 pt-0 flex gap-2">
-                  <motion.button
-                    onClick={handleReset}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border ${
-                      canDrawAgain
-                        ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30 cursor-pointer'
-                        : 'bg-white/5 text-white/40 border-white/10 cursor-pointer'
-                    }`}
-                  >
-                    <RotateCcw size={16} />
-                    {canDrawAgain
-                      ? (isEnglish ? 'Draw Again' : '再抽一次')
-                      : (isEnglish ? 'Back' : '返回')}
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      const text = [
-                        drawnStick.poem,
-                        drawnStick.meaning,
-                        drawnStick.advice && `\n${isEnglish ? 'Advice' : '建议'}: ${drawnStick.advice}`,
-                      ]
-                        .filter(Boolean)
-                        .join('\n');
-                      if (navigator.share) {
-                        navigator.share({
-                          title: isEnglish ? 'Fortune Card' : '抽签结果',
-                          text,
-                        });
-                      } else {
-                        navigator.clipboard?.writeText(text);
-                      }
-                    }}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 text-white/70 font-medium text-sm"
-                  >
-                    <Share2 size={16} />
-                    {isEnglish ? 'Share' : '分享'}
-                  </motion.button>
+                    {/* 绛捐瘲 */}
+                    <p className="text-lg font-medium text-white leading-relaxed">
+                      {drawnStick.poem}
+                    </p>
+
+                    {/* 绠€瑕佽В璇?*/}
+                    <p className="text-sm text-white/70">
+                      {drawnStick.meaning}
+                    </p>
+
+                    {/* 璇︾粏瑙ｈ锛堝鏈夛級 */}
+                    {drawnStick.detail && (
+                      <div className="pt-2 border-t border-white/10">
+                        <p className="text-sm text-white/70 leading-relaxed">
+                          {drawnStick.detail}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 鍏蜂綋寤鸿锛堝鏈 */}
+                    {drawnStick.advice && (
+                      <div className="flex gap-2 p-3 rounded-xl bg-white/10 border border-white/15">
+                        <Lightbulb size={18} className="text-cyan-300 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-medium text-cyan-200 mb-0.5">
+                            {isEnglish ? 'Suggested actions' : '具体建议'}
+                          </p>
+                          <p className="text-sm text-white/80">
+                            {drawnStick.advice}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 閫傜敤鍦烘櫙锛堝鏈 */}
+                    {drawnStick.category && (
+                      <div className="flex items-center gap-2 text-xs text-white/60">
+                        <Tag size={14} />
+                        <span>
+                          {isEnglish ? 'Applies to' : '适用场景'}: {drawnStick.category}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 鎿嶄綔鎸夐挳 */}
+                  <div className="p-4 pt-0 flex gap-2">
+                    <motion.button
+                      onClick={handleReset}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border ${
+                        canDrawAgain
+                          ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30 cursor-pointer'
+                          : 'bg-white/5 text-white/40 border-white/10 cursor-pointer'
+                      }`}
+                    >
+                      <RotateCcw size={16} />
+                      {canDrawAgain
+                        ? (isEnglish ? 'Draw Again' : '再抽一次')
+                        : (isEnglish ? 'Back' : '返回')}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const text = [
+                          drawnStick.poem,
+                          drawnStick.meaning,
+                          drawnStick.advice && `\n${isEnglish ? 'Advice' : '建议'}: ${drawnStick.advice}`,
+                        ]
+                          .filter(Boolean)
+                          .join('\n');
+                        if (navigator.share) {
+                          navigator.share({
+                            title: isEnglish ? 'Fortune Card' : '抽签结果',
+                            text,
+                          });
+                        } else {
+                          navigator.clipboard?.writeText(text);
+                        }
+                      }}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 text-white/70 font-medium text-sm"
+                    >
+                      <Share2 size={16} />
+                      {isEnglish ? 'Share' : '分享'}
+                    </motion.button>
+                  </div>
                 </div>
               </div>
             </motion.div>

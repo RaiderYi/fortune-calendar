@@ -488,11 +488,13 @@ export function searchCities(query: string): CityData[] {
   return ALL_CITIES.filter((city) => {
     const name = normalizeLocationText(city.name);
     const province = normalizeLocationText(city.province);
+    const combined = normalizeLocationText(city.province + city.name);
     return (
       city.name.includes(rawQuery) ||
       city.province.includes(rawQuery) ||
       name.includes(normalizedQuery) ||
-      province.includes(normalizedQuery)
+      province.includes(normalizedQuery) ||
+      combined.includes(normalizedQuery)
     );
   });
 }

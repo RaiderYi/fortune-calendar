@@ -225,3 +225,145 @@ body {
   filter: blur(12px);
   opacity: 0.6;
 }
+
+.fortune-result-card-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.12s ease;
+}
+
+.fortune-result-card-sheen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    220px 220px at var(--glow-x, 50%) var(--glow-y, 50%),
+    rgba(255, 255, 255, 0.22),
+    transparent 60%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.fortune-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.45), transparent 65%);
+  animation: fortune-flash 0.6s ease-out;
+  pointer-events: none;
+}
+
+.fortune-burst {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.45), transparent 60%);
+  animation: fortune-burst 0.8s ease-out;
+  pointer-events: none;
+}
+
+.fortune-portal {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(56, 189, 248, 0.35), transparent 55%),
+    radial-gradient(circle at 50% 55%, rgba(139, 92, 246, 0.25), transparent 60%);
+  filter: blur(8px);
+  opacity: 0.8;
+  animation: fortune-portal-pulse 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.fortune-portal-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 420px;
+  height: 420px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow:
+    0 0 35px rgba(56, 189, 248, 0.35),
+    inset 0 0 25px rgba(139, 92, 246, 0.35);
+  background: conic-gradient(
+    from 0deg,
+    rgba(56, 189, 248, 0.2),
+    rgba(139, 92, 246, 0.2),
+    rgba(56, 189, 248, 0.2)
+  );
+  mask: radial-gradient(circle, transparent 60%, black 61%);
+  animation: fortune-portal-rotate 8s linear infinite;
+  pointer-events: none;
+}
+
+.fortune-particles {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  background-image:
+    radial-gradient(rgba(56, 189, 248, 0.9) 1px, transparent 1.6px),
+    radial-gradient(rgba(139, 92, 246, 0.8) 1px, transparent 1.8px);
+  background-size: 120px 120px, 180px 180px;
+  animation: fortune-particles-float 6s linear infinite;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.fortune-portal-beam {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  width: 2px;
+  height: 90%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, rgba(56, 189, 248, 0.9), transparent);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.6);
+  opacity: 0.7;
+  animation: fortune-beam 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.fortune-result-card {
+  transform-style: preserve-3d;
+  animation: fortune-card-float 3.2s ease-in-out infinite;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35),
+    0 0 40px rgba(56, 189, 248, 0.25);
+}
+
+@keyframes fortune-portal-pulse {
+  0%, 100% { transform: scale(0.98); opacity: 0.65; }
+  50% { transform: scale(1.03); opacity: 0.95; }
+}
+
+@keyframes fortune-portal-rotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fortune-particles-float {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 120px 240px, -160px 320px; }
+}
+
+@keyframes fortune-beam {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes fortune-card-float {
+  0%, 100% { transform: translateY(0) translateZ(0); }
+  50% { transform: translateY(-6px) translateZ(12px); }
+}
+
+@keyframes fortune-flash {
+  0% { opacity: 0; }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes fortune-burst {
+  0% { opacity: 0; transform: scale(0.7); }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.2); }
+}
