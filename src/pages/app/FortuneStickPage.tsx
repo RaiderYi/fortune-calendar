@@ -54,35 +54,36 @@ export default function FortuneStickPage() {
   const showDrawer = canDraw || showingLastDrawResult;
 
   return (
-    <div className="fortune-stick-scene fortune-stick-font flex flex-col min-h-full text-white">
+    <div className="fortune-stick-scene fortune-stick-font min-h-full text-white">
       <div className="fortune-scanline" />
-      {/* 澶撮儴 */}
-      <div className="flex-shrink-0 px-4 pt-4 lg:px-8 lg:pt-6">
-        <div className="flex items-center gap-3 mb-5">
-          <Link
-            to="/app/today"
-            className="p-2 rounded-full transition bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur"
-            aria-label={isEnglish ? 'Back' : '杩斿洖'}
-          >
-            <ChevronLeft size={22} />
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl p-3 bg-white/10 border border-white/20 shadow-[0_0_20px_rgba(56,189,248,0.35)]">
-              <Sparkles size={22} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold tracking-wide">{isEnglish ? 'Fortune Card' : '鎶界'}</h2>
-              <p className="text-white/80 text-sm">
-                {isEnglish
-                  ? 'Ask a question, enter the deck, and draw'
-                  : '杈撳叆闂锛岃繘鍏ョ墝搴撴娊绛惧惂'}
-              </p>
+      <div className="fortune-stick-content flex flex-col min-h-full">
+        {/* 澶撮儴 */}
+        <div className="flex-shrink-0 px-4 pt-4 lg:px-8 lg:pt-6">
+          <div className="flex items-center gap-3 mb-5">
+            <Link
+              to="/app/today"
+              className="p-2 rounded-full transition bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur"
+              aria-label={isEnglish ? 'Back' : '杩斿洖'}
+            >
+              <ChevronLeft size={22} />
+            </Link>
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl p-3 bg-white/10 border border-white/20 shadow-[0_0_20px_rgba(56,189,248,0.35)]">
+                <Sparkles size={22} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold tracking-wide">{isEnglish ? 'Fortune Card' : '鎶界'}</h2>
+                <p className="text-white/80 text-sm">
+                  {isEnglish
+                    ? 'Ask a question, enter the deck, and draw'
+                    : '杈撳叆闂锛岃繘鍏ョ墝搴撴娊绛惧惂'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-10 lg:px-8">
+        <div className="flex-1 overflow-y-auto px-4 pb-10 lg:px-8">
         {/* 免责说明 */}
         <div className="mb-5 flex items-start gap-2 p-3 rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
           <Info size={18} className="text-cyan-200 flex-shrink-0 mt-0.5" />
@@ -140,9 +141,11 @@ export default function FortuneStickPage() {
             </p>
           </motion.div>
         )}
+        </div>
       </div>
     </div>
   );
 }
+
 
 
