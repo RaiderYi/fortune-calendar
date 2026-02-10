@@ -154,6 +154,7 @@ body {
 
 .fortune-card-3d {
   position: relative;
+  z-index: 1;
   transform-style: preserve-3d;
   transition: transform 0.3s ease;
 }

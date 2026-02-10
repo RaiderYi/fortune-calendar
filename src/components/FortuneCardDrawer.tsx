@@ -116,7 +116,7 @@ export default function FortuneCardDrawer({
         {Array.from({ length: CARD_COUNT }).map((_, i) => (
           <motion.div
             key={i}
-            className="relative w-12 h-16 sm:w-14 sm:h-20 cursor-pointer fortune-card-shell"
+            className="relative w-12 h-16 sm:w-14 sm:h-20 cursor-pointer fortune-card-shell rounded-md border border-white/15 bg-white/5"
             style={{ perspective: 1400 }}
             initial={{ opacity: 0, y: 12 }}
             animate={{

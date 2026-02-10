@@ -37,7 +37,7 @@ export default function FortuneStickPage() {
     if (newRemaining === 0) setShowingLastDrawResult(true);
     const record: FortuneStickRecord = {
       id: stick.id,
-      question: question || (isEnglish ? 'My question' : '我的问题'),
+      question: question || (isEnglish ? 'My question' : '\u6211\u7684\u95ee\u9898'),
       drawnAt: new Date().toISOString(),
       stick,
     };
@@ -63,7 +63,7 @@ export default function FortuneStickPage() {
             <Link
               to="/app/today"
               className="p-2 rounded-full transition bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur"
-              aria-label={isEnglish ? 'Back' : '杩斿洖'}
+            aria-label={isEnglish ? 'Back' : '\u8fd4\u56de'}
             >
               <ChevronLeft size={22} />
             </Link>
@@ -72,11 +72,11 @@ export default function FortuneStickPage() {
                 <Sparkles size={22} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold tracking-wide">{isEnglish ? 'Fortune Card' : '鎶界'}</h2>
+                <h2 className="text-2xl font-bold tracking-wide">{isEnglish ? 'Fortune Card' : '\u62bd\u7b7e'}</h2>
                 <p className="text-white/80 text-sm">
                   {isEnglish
                     ? 'Ask a question, enter the deck, and draw'
-                    : '杈撳叆闂锛岃繘鍏ョ墝搴撴娊绛惧惂'}
+                    : '\u8f93\u5165\u95ee\u9898\uff0c\u8fdb\u5165\u724c\u5e93\u62bd\u7b7e\u5427'}
                 </p>
               </div>
             </div>
@@ -90,14 +90,14 @@ export default function FortuneStickPage() {
           <p className="text-sm text-white/80">
             {isEnglish
               ? 'For entertainment only. Results are randomly generated and not intended as life advice.'
-              : '仅供娱乐参考。结果为随机生成，不构成任何人生建议。'}
+              : '\u4ec5\u4f9b\u5a31\u4e50\u53c2\u8003\u3002\u7ed3\u679c\u4e3a\u968f\u673a\u751f\u6210\uff0c\u4e0d\u6784\u6210\u4efb\u4f55\u4eba\u751f\u5efa\u8bae\u3002'}
           </p>
         </div>
 
         {/* 问题输入 */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-white/70 mb-2">
-            {isEnglish ? 'Your question (optional)' : '想问的事（选填）'}
+            {isEnglish ? 'Your question (optional)' : '\u60f3\u95ee\u7684\u4e8b\uff08\u9009\u586b\uff09'}
           </label>
           <input
             type="text"
@@ -106,7 +106,7 @@ export default function FortuneStickPage() {
             placeholder={
               isEnglish
                 ? 'e.g. Career change? Relationship?'
-                : '如：换工作是否合适？感情走向？'
+                : '\u5982\uff1a\u6362\u5de5\u4f5c\u662f\u5426\u5408\u9002\uff1f\u611f\u60c5\u8d70\u5411\uff1f'
             }
             className="w-full px-4 py-3 rounded-2xl border border-white/20 bg-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur"
           />
@@ -116,7 +116,7 @@ export default function FortuneStickPage() {
         <div className="mb-6 text-center text-sm text-white/70">
           {isEnglish
             ? `Remaining draws today: ${remaining}`
-            : `今日剩余抽取次数：${remaining}`}
+            : `\u4eca\u65e5\u5269\u4f59\u62bd\u53d6\u6b21\u6570\uff1a${remaining}`}
         </div>
 
         {showDrawer ? (
@@ -134,10 +134,10 @@ export default function FortuneStickPage() {
             className="text-center py-12 px-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur"
           >
             <p className="text-white/80 mb-2">
-              {isEnglish ? "You've used all draws for today." : '今日抽取次数已用完。'}
+              {isEnglish ? "You've used all draws for today." : '\u4eca\u65e5\u62bd\u53d6\u6b21\u6570\u5df2\u7528\u5b8c\u3002'}
             </p>
             <p className="text-sm text-white/60">
-              {isEnglish ? 'Come back tomorrow for more.' : '明天再来吧。'}
+              {isEnglish ? 'Come back tomorrow for more.' : '\u660e\u5929\u518d\u6765\u5427\u3002'}
             </p>
           </motion.div>
         )}
