@@ -474,12 +474,27 @@ export function getCityLongitude(cityName: string): number | null {
   return CITY_LONGITUDE_MAP[cityName] || null;
 }
 
+function normalizeLocationText(input: string): string {
+  return input
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/(特别行政区|壮族自治区|回族自治区|维吾尔自治区|自治区|地区|盟|省|市)$/g, '');
+}
+
 export function searchCities(query: string): CityData[] {
-  const lowerQuery = query.toLowerCase();
-  return ALL_CITIES.filter(city =>
-    city.name.toLowerCase().includes(lowerQuery) ||
-    city.province.toLowerCase().includes(lowerQuery)
-  );
+  const rawQuery = query.trim();
+  if (!rawQuery) return [];
+  const normalizedQuery = normalizeLocationText(rawQuery);
+  return ALL_CITIES.filter((city) => {
+    const name = normalizeLocationText(city.name);
+    const province = normalizeLocationText(city.province);
+    return (
+      city.name.includes(rawQuery) ||
+      city.province.includes(rawQuery) ||
+      name.includes(normalizedQuery) ||
+      province.includes(normalizedQuery)
+    );
+  });
 }
 
 // 统计信息

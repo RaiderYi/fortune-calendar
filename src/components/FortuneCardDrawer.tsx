@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // 抽牌交互组件 - 完整牌库随机25张 + 3D效果
 // ==========================================
 
@@ -208,120 +208,130 @@ export default function FortuneCardDrawer({
       <AnimatePresence>
         {phase === 'result' && drawnStick && (
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="w-full max-w-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[80] flex items-center justify-center px-4"
           >
-            <div className="fortune-result-glow rounded-2xl bg-slate-900/80 border border-cyan-300/20 shadow-2xl shadow-cyan-500/30 overflow-hidden text-white backdrop-blur">
-              {/* 3D 卡片突出效果 - 顶部光晕 */}
-              <div className="h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
-              <div className="p-6 space-y-4">
-                {/* 签号与吉凶 */}
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold border ${getFortuneColor(drawnStick.level)}`}
-                  >
-                    {drawnStick.level} · {drawnStick.fortune}
-                  </span>
-                  <span className="text-xs text-white/60 font-mono">
-                    #{drawnStick.id}
-                  </span>
-                </div>
-
-                {/* 签诗 */}
-                <p className="text-lg font-medium text-white leading-relaxed">
-                  {drawnStick.poem}
-                </p>
-
-                {/* 简要解读 */}
-                <p className="text-sm text-white/70">
-                  {drawnStick.meaning}
-                </p>
-
-                {/* 详细解读（如有） */}
-                {drawnStick.detail && (
-                  <div className="pt-2 border-t border-white/10">
-                    <p className="text-sm text-white/70 leading-relaxed">
-                      {drawnStick.detail}
-                    </p>
-                  </div>
-                )}
-
-                {/* 具体建议（如有） */}
-                {drawnStick.advice && (
-                  <div className="flex gap-2 p-3 rounded-xl bg-white/10 border border-white/15">
-                    <Lightbulb size={18} className="text-cyan-300 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-cyan-200 mb-0.5">
-                        {isEnglish ? 'Suggested actions' : '具体建议'}
-                      </p>
-                      <p className="text-sm text-white/80">
-                        {drawnStick.advice}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* 适用场景（如有） */}
-                {drawnStick.category && (
-                  <div className="flex items-center gap-2 text-xs text-white/60">
-                    <Tag size={14} />
-                    <span>
-                      {isEnglish ? 'Applies to' : '适用场景'}: {drawnStick.category}
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="relative z-10 w-full max-w-md"
+            >
+              <div className="fortune-result-glow rounded-2xl bg-slate-900/80 border border-cyan-300/20 shadow-2xl shadow-cyan-500/30 overflow-hidden text-white backdrop-blur">
+                {/* 3D 鍗＄墖绐佸嚭鏁堟灉 - 椤堕儴鍏夋檿 */}
+                <div className="h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+                <div className="p-6 space-y-4">
+                  {/* 绛惧彿涓庡悏鍑?*/}
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold border ${getFortuneColor(drawnStick.level)}`}
+                    >
+                      {drawnStick.level} 路 {drawnStick.fortune}
+                    </span>
+                    <span className="text-xs text-white/60 font-mono">
+                      #{drawnStick.id}
                     </span>
                   </div>
-                )}
-              </div>
 
-              {/* 操作按钮 */}
-              <div className="p-4 pt-0 flex gap-2">
-                <motion.button
-                  onClick={handleReset}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border ${
-                    canDrawAgain
-                      ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30 cursor-pointer'
-                      : 'bg-white/5 text-white/40 border-white/10 cursor-pointer'
-                  }`}
-                >
-                  <RotateCcw size={16} />
-                  {canDrawAgain
-                    ? (isEnglish ? 'Draw Again' : '再抽一次')
-                    : (isEnglish ? 'Back' : '返回')}
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    const text = [
-                      drawnStick.poem,
-                      drawnStick.meaning,
-                      drawnStick.advice && `\n${isEnglish ? 'Advice' : '建议'}: ${drawnStick.advice}`,
-                    ]
-                      .filter(Boolean)
-                      .join('\n');
-                    if (navigator.share) {
-                      navigator.share({
-                        title: isEnglish ? 'Fortune Card' : '抽签结果',
-                        text,
-                      });
-                    } else {
-                      navigator.clipboard?.writeText(text);
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 text-white/70 font-medium text-sm"
-                >
-                  <Share2 size={16} />
-                  {isEnglish ? 'Share' : '分享'}
-                </motion.button>
+                  {/* 绛捐瘲 */}
+                  <p className="text-lg font-medium text-white leading-relaxed">
+                    {drawnStick.poem}
+                  </p>
+
+                  {/* 绠€瑕佽В璇?*/}
+                  <p className="text-sm text-white/70">
+                    {drawnStick.meaning}
+                  </p>
+
+                  {/* 璇︾粏瑙ｈ锛堝鏈夛級 */}
+                  {drawnStick.detail && (
+                    <div className="pt-2 border-t border-white/10">
+                      <p className="text-sm text-white/70 leading-relaxed">
+                        {drawnStick.detail}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 鍏蜂綋寤鸿锛堝鏈夛） */}
+                  {drawnStick.advice && (
+                    <div className="flex gap-2 p-3 rounded-xl bg-white/10 border border-white/15">
+                      <Lightbulb size={18} className="text-cyan-300 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-medium text-cyan-200 mb-0.5">
+                          {isEnglish ? 'Suggested actions' : '具体建议'}
+                        </p>
+                        <p className="text-sm text-white/80">
+                          {drawnStick.advice}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 閫傜敤鍦烘櫙锛堝鏈夛） */}
+                  {drawnStick.category && (
+                    <div className="flex items-center gap-2 text-xs text-white/60">
+                      <Tag size={14} />
+                      <span>
+                        {isEnglish ? 'Applies to' : '适用场景'}: {drawnStick.category}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 鎿嶄綔鎸夐挳 */}
+                <div className="p-4 pt-0 flex gap-2">
+                  <motion.button
+                    onClick={handleReset}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-medium text-sm border ${
+                      canDrawAgain
+                        ? 'bg-cyan-500/15 text-cyan-200 border-cyan-400/30 cursor-pointer'
+                        : 'bg-white/5 text-white/40 border-white/10 cursor-pointer'
+                    }`}
+                  >
+                    <RotateCcw size={16} />
+                    {canDrawAgain
+                      ? (isEnglish ? 'Draw Again' : '再抽一次')
+                      : (isEnglish ? 'Back' : '返回')}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      const text = [
+                        drawnStick.poem,
+                        drawnStick.meaning,
+                        drawnStick.advice && `\n${isEnglish ? 'Advice' : '建议'}: ${drawnStick.advice}`,
+                      ]
+                        .filter(Boolean)
+                        .join('\n');
+                      if (navigator.share) {
+                        navigator.share({
+                          title: isEnglish ? 'Fortune Card' : '抽签结果',
+                          text,
+                        });
+                      } else {
+                        navigator.clipboard?.writeText(text);
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 text-white/70 font-medium text-sm"
+                  >
+                    <Share2 size={16} />
+                    {isEnglish ? 'Share' : '分享'}
+                  </motion.button>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 }
+
