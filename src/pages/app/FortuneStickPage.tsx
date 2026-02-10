@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // 抽签页 - 现代抽牌样式
 // ==========================================
 
@@ -54,38 +54,39 @@ export default function FortuneStickPage() {
   const showDrawer = canDraw || showingLastDrawResult;
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
-      {/* 头部 */}
-      <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
-        <div className="flex items-center gap-3 mb-4">
+    <div className="fortune-stick-scene fortune-stick-font flex flex-col min-h-full text-white">
+      <div className="fortune-scanline" />
+      {/* 澶撮儴 */}
+      <div className="flex-shrink-0 px-4 pt-4 lg:px-8 lg:pt-6">
+        <div className="flex items-center gap-3 mb-5">
           <Link
             to="/app/today"
-            className="p-2 hover:bg-white/20 rounded-full transition"
-            aria-label={isEnglish ? 'Back' : '返回'}
+            className="p-2 rounded-full transition bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur"
+            aria-label={isEnglish ? 'Back' : '杩斿洖'}
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={22} />
           </Link>
           <div className="flex items-center gap-3">
-            <div className="bg-white/20 backdrop-blur-md rounded-full p-3">
-              <Sparkles size={24} />
+            <div className="rounded-2xl p-3 bg-white/10 border border-white/20 shadow-[0_0_20px_rgba(56,189,248,0.35)]">
+              <Sparkles size={22} />
             </div>
             <div>
-              <h2 className="text-xl font-bold">{isEnglish ? 'Fortune Card' : '抽签'}</h2>
-              <p className="text-white/90 text-sm">
+              <h2 className="text-2xl font-bold tracking-wide">{isEnglish ? 'Fortune Card' : '鎶界'}</h2>
+              <p className="text-white/80 text-sm">
                 {isEnglish
-                  ? 'Ask a question and draw a card'
-                  : '输入问题，抽取一张牌'}
+                  ? 'Ask a question, enter the deck, and draw'
+                  : '杈撳叆闂锛岃繘鍏ョ墝搴撴娊绛惧惂'}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+      <div className="flex-1 overflow-y-auto px-4 pb-10 lg:px-8">
         {/* 免责说明 */}
-        <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
-          <Info size={18} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-800 dark:text-amber-200">
+        <div className="mb-5 flex items-start gap-2 p-3 rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
+          <Info size={18} className="text-cyan-200 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-white/80">
             {isEnglish
               ? 'For entertainment only. Results are randomly generated and not intended as life advice.'
               : '仅供娱乐参考。结果为随机生成，不构成任何人生建议。'}
@@ -94,7 +95,7 @@ export default function FortuneStickPage() {
 
         {/* 问题输入 */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-white/70 mb-2">
             {isEnglish ? 'Your question (optional)' : '想问的事（选填）'}
           </label>
           <input
@@ -106,12 +107,12 @@ export default function FortuneStickPage() {
                 ? 'e.g. Career change? Relationship?'
                 : '如：换工作是否合适？感情走向？'
             }
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-3 rounded-2xl border border-white/20 bg-white/10 text-white placeholder-white/40 focus:ring-2 focus:ring-cyan-400 focus:border-transparent backdrop-blur"
           />
         </div>
 
         {/* 剩余次数 */}
-        <div className="mb-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="mb-6 text-center text-sm text-white/70">
           {isEnglish
             ? `Remaining draws today: ${remaining}`
             : `今日剩余抽取次数：${remaining}`}
@@ -129,12 +130,12 @@ export default function FortuneStickPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12 px-4 rounded-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600"
+            className="text-center py-12 px-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur"
           >
-            <p className="text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-white/80 mb-2">
               {isEnglish ? "You've used all draws for today." : '今日抽取次数已用完。'}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
+            <p className="text-sm text-white/60">
               {isEnglish ? 'Come back tomorrow for more.' : '明天再来吧。'}
             </p>
           </motion.div>
@@ -143,3 +144,5 @@ export default function FortuneStickPage() {
     </div>
   );
 }
+
+
