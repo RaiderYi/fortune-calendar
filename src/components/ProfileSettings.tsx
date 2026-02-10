@@ -2,7 +2,7 @@
 // 个人档案设置组件
 // ==========================================
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin } from 'lucide-react';
 import { CITY_LONGITUDE_MAP } from '../utils/cityData';
@@ -38,6 +38,12 @@ export default function ProfileSettings({
   const [editProfile, setEditProfile] = useState<UserProfile>(profile);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setEditProfile(profile);
+    }
+  }, [isOpen, profile]);
 
   // 城市选择处理
   const handleCityChange = (city: string) => {
@@ -130,7 +136,7 @@ export default function ProfileSettings({
               animate={{ y: 0, scale: 1 }}
               exit={{ y: '100%', scale: 1 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:inset-0 lg:flex lg:items-center lg:justify-center lg:p-4 bg-white lg:bg-transparent rounded-t-3xl lg:rounded-3xl shadow-2xl z-50 max-h-[90vh] lg:max-w-2xl lg:w-full overflow-hidden flex flex-col pointer-events-auto"
+              className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:inset-0 lg:flex lg:items-center lg:justify-center lg:p-4 bg-white lg:bg-transparent rounded-t-3xl lg:rounded-3xl shadow-2xl z-50 max-h-[90vh] lg:max-w-2xl lg:w-full overflow-hidden flex flex-col pointer-events-auto select-text"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
