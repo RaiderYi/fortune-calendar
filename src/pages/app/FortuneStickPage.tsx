@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, Sparkles, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import FortuneCardDrawer, { type FortuneStick } from '../../components/FortuneCardDrawer';
+import EpicFortuneDrawer, { type FortuneStick } from '../../components/EpicFortuneDrawer';
 import {
   canDrawToday,
   getRemainingDrawsToday,
@@ -120,7 +120,7 @@ export default function FortuneStickPage() {
         </div>
 
         {showDrawer ? (
-          <FortuneCardDrawer
+          <EpicFortuneDrawer
             sticks={sticks}
             question={question}
             onDraw={handleDraw}
@@ -131,13 +131,20 @@ export default function FortuneStickPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12 px-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur"
+            className="text-center py-12 px-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur"
           >
-            <p className="text-white/80 mb-2">
-              {isEnglish ? "You've used all draws for today." : '\u4eca\u65e5\u62bd\u53d6\u6b21\u6570\u5df2\u7528\u5b8c\u3002'}
+            <motion.div
+              animate={{ 
+                rotate: 360,
+                transition: { duration: 20, repeat: Infinity, ease: "linear" }
+              }}
+              className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-dashed border-cyan-400/30"
+            />
+            <p className="text-cyan-200/80 mb-2">
+              {isEnglish ? "Quantum field recharging..." : '量子场充能中...'}
             </p>
-            <p className="text-sm text-white/60">
-              {isEnglish ? 'Come back tomorrow for more.' : '\u660e\u5929\u518d\u6765\u5427\u3002'}
+            <p className="text-sm text-white/50">
+              {isEnglish ? 'Return tomorrow to continue your journey.' : '明日继续你的命运之旅。'}
             </p>
           </motion.div>
         )}
