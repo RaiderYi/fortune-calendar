@@ -43,6 +43,7 @@ import TermsPage from './pages/TermsPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 import QuickActionsSidebar from './components/QuickActionsSidebar';
 import { AppContextProvider } from './contexts/AppContext';
+import { AuthProvider } from './contexts/AuthContext';
 import HistoryPage from './pages/app/HistoryPage';
 import TrendsPage from './pages/app/TrendsPage';
 import CheckinPage from './pages/app/CheckinPage';
@@ -52,6 +53,8 @@ import AIPage from './pages/app/AIPage';
 import LifeMapPage from './pages/app/LifeMapPage';
 import DatePickerPage from './pages/app/DatePickerPage';
 import FortuneStickPage from './pages/app/FortuneStickPage';
+import LoginPage from './pages/app/LoginPage';
+import InvitePage from './pages/app/InvitePage';
 import DisclaimerModal, { hasAcknowledgedDisclaimer } from './components/DisclaimerModal';
 
 // ==========================================
@@ -751,7 +754,7 @@ export default function App() {
   };
 
   return (
-    <>
+    <AuthProvider>
       <a href="#main" className="skip-link">
         {t('ui:skipToContent', { defaultValue: 'Skip to content' })}
       </a>
@@ -764,6 +767,8 @@ export default function App() {
         <Route path="/terms" element={<TermsPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/blog" element={<BlogPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/pricing" element={<PricingPage onLoginClick={() => setShowLogin(true)} />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/invite" element={<InvitePage />} />
         <Route path="/app" element={<Navigate to="/app/today" replace />} />
         <Route path="/app/:tab" element={
           <AppContextProvider
@@ -1418,6 +1423,6 @@ export default function App() {
         isOpen={showLogin}
         onClose={() => setShowLogin(false)}
       />
-    </>
+    </AuthProvider>
   );
 }

@@ -1,181 +1,255 @@
 // ==========================================
-// 认证上下文
+// 认证上下文 - 全局用户状态管理
 // ==========================================
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import {
-  User,
-  login as loginService,
-  register as registerService,
-  logout as logoutService,
-  getCurrentUser,
-  isAuthenticated,
-  refreshToken,
-  verifyToken,
-} from '../services/auth';
-import { useToast } from './ToastContext';
+import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import * as authApi from '../services/authApi';
+import * as syncApi from '../services/syncApi';
+import { SmartSyncManager } from '../services/SyncManager';
+
+// 用户类型定义
+export interface User {
+  id: string;
+  email: string;
+  createdAt: string;
+  inviteCode: string;
+  rewards: {
+    aiQuotaBonus?: number;
+    templatesUnlocked?: string[];
+    badges?: string[];
+    allTemplates?: boolean;
+    aiUnlimited?: boolean;
+    premiumForever?: boolean;
+  };
+  inviteStats: {
+    total: number;
+    successful: number;
+  };
+  syncEnabled: boolean;
+}
 
 interface AuthContextType {
+  // 状态
   user: User | null;
-  isAuthenticated: boolean;
+  isLoggedIn: boolean;
   isLoading: boolean;
-  login: (emailOrPhone: string, password: string, isPhone?: boolean) => Promise<{ success: boolean; error?: string }>;
-  register: (emailOrPhone: string, password: string, name: string, isPhone?: boolean) => Promise<{ success: boolean; error?: string }>;
+  isSyncing: boolean;
+  syncEnabled: boolean;
+  
+  // 操作
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  register: (params: RegisterParams) => Promise<{ success: boolean; error?: string; rewards?: any[] }>;
   logout: () => void;
-  refreshAuth: () => Promise<void>;
+  updateUser: (updates: Partial<User>) => void;
+  toggleSync: (enabled: boolean) => Promise<void>;
+  
+  // 邀请
+  inviteInfo: InviteInfo | null;
+  refreshInviteInfo: () => Promise<void>;
+}
+
+interface RegisterParams {
+  email: string;
+  password: string;
+  verificationCode: string;
+  inviteCode?: string;
+}
+
+interface InviteInfo {
+  inviteCode: string;
+  inviteLink: string;
+  totalInvites: number;
+  successfulInvites: number;
+  currentRewards: User['rewards'];
+  nextMilestone?: {
+    target: number;
+    current: number;
+    remaining: number;
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { i18n } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { showToast } = useToast();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
+  const [syncManager] = useState(() => new SmartSyncManager());
 
   // 初始化：检查登录状态
   useEffect(() => {
     const initAuth = async () => {
-      try {
-        const currentUser = getCurrentUser();
-        if (currentUser && isAuthenticated()) {
-          // 验证 Token 是否有效
-          const isValid = await verifyToken();
-          if (isValid) {
-            setUser(currentUser);
-          } else {
-            // Token 无效，尝试刷新
-            const refreshResult = await refreshToken();
-            if (refreshResult.success && refreshResult.user) {
-              setUser(refreshResult.user);
-            } else {
-              // 刷新失败，清除登录状态
-              logoutService();
-            }
+      if (authApi.isLoggedIn()) {
+        try {
+          // 尝试刷新token获取用户信息
+          const refreshResult = await authApi.refreshToken();
+          if (!refreshResult.success) {
+            authApi.logout();
           }
+          // 实际项目中这里应该调用获取用户信息的API
+          // 暂时从本地存储恢复
+          const savedUser = localStorage.getItem('fortune_user');
+          if (savedUser) {
+            setUser(JSON.parse(savedUser));
+          }
+        } catch {
+          authApi.logout();
         }
-      } catch (error) {
-        console.error('初始化认证失败:', error);
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
     initAuth();
-
-    // 定期刷新 Token（每 30 分钟）
-    const refreshInterval = setInterval(async () => {
-      if (isAuthenticated()) {
-        await refreshToken();
-      }
-    }, 30 * 60 * 1000);
-
-    return () => clearInterval(refreshInterval);
   }, []);
+
+  // 用户变化时保存到本地
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('fortune_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('fortune_user');
+    }
+  }, [user]);
 
   // 登录
   const login = useCallback(async (
-    emailOrPhone: string,
-    password: string,
-    isPhone = false
+    email: string, 
+    password: string, 
+    rememberMe = false
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
-      const result = await loginService({
-        [isPhone ? 'phone' : 'email']: emailOrPhone,
-        password,
-      });
-
-      if (result.success && result.user) {
+      const result = await authApi.login({ email, password, rememberMe });
+      
+      if (result.success) {
         setUser(result.user);
-        showToast('登录成功', 'success');
+        
+        // 登录成功后触发数据同步
+        if (result.requiresSync) {
+          setIsSyncing(true);
+          try {
+            await syncManager.onUserLogin(result.user.id);
+          } finally {
+            setIsSyncing(false);
+          }
+        }
+        
         return { success: true };
       } else {
-        const errorMsg = result.error || '登录失败';
-        showToast(errorMsg, 'error');
-        return { success: false, error: errorMsg };
+        return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('登录错误:', error);
-      const errorMsg = '登录失败，请稍后重试';
-      showToast(errorMsg, 'error');
-      return { success: false, error: errorMsg };
+      return { success: false, error: '网络错误，请稍后重试' };
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, [syncManager]);
 
   // 注册
   const register = useCallback(async (
-    emailOrPhone: string,
-    password: string,
-    name: string,
-    isPhone = false
-  ): Promise<{ success: boolean; error?: string }> => {
+    params: RegisterParams
+  ): Promise<{ success: boolean; error?: string; rewards?: any[] }> => {
     try {
       setIsLoading(true);
-      const result = await registerService({
-        [isPhone ? 'phone' : 'email']: emailOrPhone,
-        password,
-        name,
-      });
-
-      if (result.success && result.user) {
+      const result = await authApi.register(params);
+      
+      if (result.success) {
         setUser(result.user);
-        showToast('注册成功', 'success');
-        return { success: true };
+        
+        // 注册后上传本地数据到云端
+        setIsSyncing(true);
+        try {
+          await syncManager.onUserLogin(result.user.id);
+        } finally {
+          setIsSyncing(false);
+        }
+        
+        return { 
+          success: true, 
+          rewards: result.rewards 
+        };
       } else {
-        const errorMsg = result.error || '注册失败';
-        showToast(errorMsg, 'error');
-        return { success: false, error: errorMsg };
+        return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('注册错误:', error);
-      const errorMsg = '注册失败，请稍后重试';
-      showToast(errorMsg, 'error');
-      return { success: false, error: errorMsg };
+      return { success: false, error: '网络错误，请稍后重试' };
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, [syncManager]);
 
   // 登出
-  const handleLogout = useCallback(() => {
-    logoutService();
+  const logout = useCallback(() => {
+    authApi.logout();
     setUser(null);
-    showToast('已退出登录', 'success');
-  }, [showToast]);
+    setInviteInfo(null);
+    syncManager.clearLocalData();
+  }, [syncManager]);
 
-  // 刷新认证
-  const refreshAuth = useCallback(async () => {
+  // 更新用户信息
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null);
+  }, []);
+
+  // 切换同步设置
+  const toggleSync = useCallback(async (enabled: boolean) => {
     try {
-      const result = await refreshToken();
-      if (result.success && result.user) {
-        setUser(result.user);
-      } else if (result.error) {
-        // Token 刷新失败，可能需要重新登录
-        console.warn('Token 刷新失败:', result.error);
+      const result = await authApi.updateSyncSetting(enabled);
+      if (result.success) {
+        setUser(prev => prev ? { ...prev, syncEnabled: enabled } : null);
+        syncManager.setSyncEnabled(enabled);
       }
     } catch (error) {
-      console.error('刷新认证失败:', error);
+      console.error('Failed to update sync setting:', error);
     }
-  }, []);
+  }, [syncManager]);
+
+  // 刷新邀请信息
+  const refreshInviteInfo = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const result = await authApi.getInviteInfo();
+      if (result.success) {
+        setInviteInfo({
+          inviteCode: result.inviteCode,
+          inviteLink: result.inviteLink,
+          totalInvites: result.totalInvites,
+          successfulInvites: result.successfulInvites,
+          currentRewards: result.currentRewards,
+          nextMilestone: result.nextMilestone,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch invite info:', error);
+    }
+  }, [user]);
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isLoggedIn: !!user,
     isLoading,
+    isSyncing,
+    syncEnabled: user?.syncEnabled ?? false,
     login,
     register,
-    logout: handleLogout,
-    refreshAuth,
+    logout,
+    updateUser,
+    toggleSync,
+    inviteInfo,
+    refreshInviteInfo,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-/**
- * 使用认证上下文
- */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
