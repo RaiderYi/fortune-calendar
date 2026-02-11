@@ -835,17 +835,17 @@ export default function App() {
                 onNotificationSettingsClick={() => setShowNotificationSettings(true)}
                 onLoginClick={() => setShowLogin(true)}
                 isAuthenticated={isAuthenticated}
-              />
+        />
 
-              {/* --- 日期选择 --- */}
-              <DateSelector
-                currentDate={currentDate}
-                weekDay={fortune?.weekDay}
-                lunarStr={fortune?.lunarStr}
-                onPrevDay={() => changeDate(-1)}
-                onNextDay={() => changeDate(1)}
-                onDateChange={setCurrentDate}
-              />
+        {/* --- 日期选择 --- */}
+        <DateSelector
+          currentDate={currentDate}
+          weekDay={fortune?.weekDay}
+          lunarStr={fortune?.lunarStr}
+          onPrevDay={() => changeDate(-1)}
+          onNextDay={() => changeDate(1)}
+          onDateChange={setCurrentDate}
+        />
             </>
           )}
 
@@ -968,7 +968,7 @@ export default function App() {
 
           {/* 底部导航栏 */}
           <BottomNav currentTab={currentTab} />
-        </div>
+            </div>
         {/* ========== 移动端布局结束 ========== */}
 
         {/* ========== PC端：三栏布局 ========== */}
@@ -1239,7 +1239,7 @@ export default function App() {
                   </motion.div>
           )}
               </AnimatePresence>
-              )}
+          )}
             </div>
         </div>
 
