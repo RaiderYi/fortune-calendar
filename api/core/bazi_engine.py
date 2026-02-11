@@ -407,8 +407,12 @@ def generate_bazi_cache_key(birth_date_str, birth_time_str, longitude):
 def _analyze_bazi_internal(cache_key, birth_date_str, birth_time_str, longitude):
     """内部八字分析函数（带LRU缓存）"""
     # 延迟导入避免循环依赖
-    from ..utils.date_utils import parse_datetime
-    from ..core.lunar import calculate_bazi
+    try:
+        from ..utils.date_utils import parse_datetime
+        from ..core.lunar import calculate_bazi
+    except ImportError:
+        from utils.date_utils import parse_datetime
+        from core.lunar import calculate_bazi
     
     birth_dt = parse_datetime(birth_date_str, birth_time_str)
     bazi = calculate_bazi(birth_dt, longitude)
@@ -426,8 +430,12 @@ def analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude):
     except Exception as e:
         print(f"[ERROR] analyze_bazi_cached 失败: {e}")
         # 降级处理：不使用缓存
-        from ..utils.date_utils import parse_datetime
-        from ..core.lunar import calculate_bazi
+        try:
+            from ..utils.date_utils import parse_datetime
+            from ..core.lunar import calculate_bazi
+        except ImportError:
+            from utils.date_utils import parse_datetime
+            from core.lunar import calculate_bazi
         
         birth_dt = parse_datetime(birth_date_str, birth_time_str)
         bazi = calculate_bazi(birth_dt, longitude)

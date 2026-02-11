@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-认证服务 - Vercel KV 版本
+认证服务 - Vercel KV 版本（同步实现）
 兼容 Vercel Serverless 环境
 """
 
@@ -10,21 +10,34 @@ import re
 import hashlib
 import secrets
 import time
+import json
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, Tuple
 
 # 处理相对导入
 try:
-    from ..utils.json_utils import safe_json_dumps, create_response
+    from ..utils.json_utils import safe_json_dumps
     from ..utils.kv_client import kv
     from ..utils.email_sender import send_verification_email_sync
 except ImportError:
     import sys
     import os
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from utils.json_utils import safe_json_dumps, create_response
+    from utils.json_utils import safe_json_dumps
     from utils.kv_client import kv
     from utils.email_sender import send_verification_email_sync
+
+
+def create_response(success: bool, data: dict = None, error: str = None, code: int = 200) -> dict:
+    """创建统一响应格式"""
+    response = {'success': success}
+    if data is not None:
+        response['data'] = data
+    if error is not None:
+        response['error'] = error
+    if code != 200:
+        response['code'] = code
+    return response
 
 
 # JWT 实现（简化版，无依赖）
@@ -95,7 +108,7 @@ class JWTManager:
 
 
 class AuthService:
-    """Vercel KV 版本认证服务"""
+    """Vercel KV 版本认证服务（同步实现）"""
     
     # KV Key 前缀
     PREFIX_USER_EMAIL = "user:email:"
@@ -135,12 +148,29 @@ class AuthService:
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return bool(re.match(pattern, email))
     
+    @staticmethod
+    def _run_async(coro):
+        """运行异步协程并返回结果"""
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # 如果事件循环正在运行，使用 run_coroutine_threadsafe
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(asyncio.run, coro)
+                    return future.result()
+            return loop.run_until_complete(coro)
+        except RuntimeError:
+            # 没有事件循环，创建新的
+            return asyncio.run(coro)
+    
     @classmethod
-    async def send_verification_email(cls, email: str) -> Dict:
-        """发送验证码邮件"""
+    def send_verification_email(cls, email: str) -> Dict:
+        """发送验证码邮件（同步包装）"""
         try:
             # 检查冷却时间
-            existing = await kv.get(f"{cls.PREFIX_VERIFY}{email}")
+            existing = cls._run_async(kv.get(f"{cls.PREFIX_VERIFY}{email}"))
             if existing:
                 if time.time() - existing.get('sent_at', 0) < 60:
                     return {
@@ -152,18 +182,18 @@ class AuthService:
             # 生成6位验证码
             code = ''.join(secrets.choice('0123456789') for _ in range(6))
             
-            # 发送邮件（同步方式，因为 Vercel Python 环境对 async 支持有限）
+            # 发送邮件（同步方式）
             result = send_verification_email_sync(email, code)
             
             if not result['success']:
                 return result
             
             # 存储验证码（5分钟有效）
-            await kv.set(f"{cls.PREFIX_VERIFY}{email}", {
+            cls._run_async(kv.set(f"{cls.PREFIX_VERIFY}{email}", {
                 'code': code,
                 'sent_at': time.time(),
                 'attempts': 0
-            }, ttl=300)
+            }, ttl=300))
             
             return {
                 'success': True,
@@ -176,25 +206,25 @@ class AuthService:
             return {'success': False, 'error': str(e)}
     
     @classmethod
-    async def verify_code(cls, email: str, code: str) -> bool:
-        """验证邮箱验证码"""
-        stored = await kv.get(f"{cls.PREFIX_VERIFY}{email}")
+    def verify_code(cls, email: str, code: str) -> bool:
+        """验证邮箱验证码（同步）"""
+        stored = cls._run_async(kv.get(f"{cls.PREFIX_VERIFY}{email}"))
         if not stored:
             return False
         
         if stored['code'] != code:
             stored['attempts'] = stored.get('attempts', 0) + 1
-            await kv.set(f"{cls.PREFIX_VERIFY}{email}", stored, ttl=300)
+            cls._run_async(kv.set(f"{cls.PREFIX_VERIFY}{email}", stored, ttl=300))
             return False
         
         # 验证成功，删除验证码
-        await kv.delete(f"{cls.PREFIX_VERIFY}{email}")
+        cls._run_async(kv.delete(f"{cls.PREFIX_VERIFY}{email}"))
         return True
     
     @classmethod
-    async def register(cls, email: str, password: str, verification_code: str, 
-                       invite_code: Optional[str] = None) -> Dict:
-        """用户注册"""
+    def register(cls, email: str, password: str, verification_code: str, 
+                 invite_code: Optional[str] = None) -> Dict:
+        """用户注册（同步）"""
         try:
             # 验证邮箱格式
             if not cls.is_valid_email(email):
@@ -203,12 +233,12 @@ class AuthService:
             email = email.lower().strip()
             
             # 检查邮箱是否已注册
-            existing = await kv.get(f"{cls.PREFIX_USER_EMAIL}{email}")
+            existing = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{email}"))
             if existing:
                 return {'success': False, 'error': '该邮箱已注册'}
             
             # 验证验证码
-            if not await cls.verify_code(email, verification_code):
+            if not cls.verify_code(email, verification_code):
                 return {'success': False, 'error': '验证码错误或已过期'}
             
             # 验证密码强度
@@ -222,7 +252,7 @@ class AuthService:
             # 处理邀请码
             inviter_id = None
             if invite_code:
-                inviter_id = await kv.get(f"{cls.PREFIX_INVITE}{invite_code.upper()}")
+                inviter_id = cls._run_async(kv.get(f"{cls.PREFIX_INVITE}{invite_code.upper()}"))
             
             # 创建用户
             now = datetime.utcnow().isoformat()
@@ -238,11 +268,11 @@ class AuthService:
             }
             
             # 保存用户（双向索引）
-            await kv.set(f"{cls.PREFIX_USER_EMAIL}{email}", user_data)
-            await kv.set(f"{cls.PREFIX_USER_ID}{user_id}", {'email': email})
+            cls._run_async(kv.set(f"{cls.PREFIX_USER_EMAIL}{email}", user_data))
+            cls._run_async(kv.set(f"{cls.PREFIX_USER_ID}{user_id}", {'email': email}))
             
             # 保存邀请码映射
-            await kv.set(f"{cls.PREFIX_INVITE}{my_invite_code}", user_id)
+            cls._run_async(kv.set(f"{cls.PREFIX_INVITE}{my_invite_code}", user_id))
             
             # 初始化奖励
             rewards = {
@@ -251,17 +281,17 @@ class AuthService:
                 'badges': ['newcomer'],
                 'granted_at': now
             }
-            await kv.set(cls.KEY_REWARDS.format(user_id), rewards)
+            cls._run_async(kv.set(cls.KEY_REWARDS.format(user_id), rewards))
             
             # 初始化邀请统计
-            await kv.set(cls.KEY_INVITE_STATS.format(user_id), {
+            cls._run_async(kv.set(cls.KEY_INVITE_STATS.format(user_id), {
                 'total': 0,
                 'successful': 0
-            })
+            }))
             
             # 如果有邀请人，处理奖励
             if inviter_id:
-                await cls._process_invite_reward(inviter_id, user_id)
+                cls._process_invite_reward(inviter_id, user_id)
             
             # 生成Token
             access_token = JWTManager.generate_token(user_id, email, 'access')
@@ -293,11 +323,11 @@ class AuthService:
             return {'success': False, 'error': '注册失败，请稍后重试'}
     
     @classmethod
-    async def login(cls, email: str, password: str, remember_me: bool = False) -> Dict:
-        """用户登录"""
+    def login(cls, email: str, password: str, remember_me: bool = False) -> Dict:
+        """用户登录（同步）"""
         try:
             email = email.lower().strip()
-            user = await kv.get(f"{cls.PREFIX_USER_EMAIL}{email}")
+            user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{email}"))
             
             if not user:
                 return {'success': False, 'error': '邮箱或密码错误'}
@@ -311,11 +341,11 @@ class AuthService:
             
             # 更新最后登录时间
             user['last_login'] = datetime.utcnow().isoformat()
-            await kv.set(f"{cls.PREFIX_USER_EMAIL}{email}", user)
+            cls._run_async(kv.set(f"{cls.PREFIX_USER_EMAIL}{email}", user))
             
             # 获取奖励信息
-            rewards = await kv.get(cls.KEY_REWARDS.format(user['id']))
-            invite_stats = await kv.get(cls.KEY_INVITE_STATS.format(user['id']))
+            rewards = cls._run_async(kv.get(cls.KEY_REWARDS.format(user['id'])))
+            invite_stats = cls._run_async(kv.get(cls.KEY_INVITE_STATS.format(user['id'])))
             
             return {
                 'success': True,
@@ -337,7 +367,7 @@ class AuthService:
             return {'success': False, 'error': '登录失败'}
     
     @classmethod
-    async def refresh_token(cls, refresh_token: str) -> Dict:
+    def refresh_token(cls, refresh_token: str) -> Dict:
         """刷新Access Token"""
         payload = JWTManager.verify_token(refresh_token)
         if not payload or payload.get('type') != 'refresh':
@@ -354,7 +384,7 @@ class AuthService:
         }
     
     @classmethod
-    async def get_user_by_token(cls, token: str) -> Optional[Dict]:
+    def get_user_by_token(cls, token: str) -> Optional[Dict]:
         """通过Token获取用户"""
         payload = JWTManager.verify_token(token)
         if not payload:
@@ -364,31 +394,31 @@ class AuthService:
         if not email:
             return None
         
-        return await kv.get(f"{cls.PREFIX_USER_EMAIL}{email}")
+        return cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{email}"))
     
     @classmethod
-    async def _process_invite_reward(cls, inviter_id: str, invitee_id: str):
+    def _process_invite_reward(cls, inviter_id: str, invitee_id: str):
         """处理邀请奖励"""
         try:
             # 获取邀请人邮箱
-            inviter_index = await kv.get(f"{cls.PREFIX_USER_ID}{inviter_id}")
+            inviter_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{inviter_id}"))
             if not inviter_index:
                 return
             
-            inviter = await kv.get(f"{cls.PREFIX_USER_EMAIL}{inviter_index['email']}")
+            inviter = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{inviter_index['email']}"))
             if not inviter:
                 return
             
             # 更新邀请统计
-            stats = await kv.get(cls.KEY_INVITE_STATS.format(inviter_id)) or {
+            stats = cls._run_async(kv.get(cls.KEY_INVITE_STATS.format(inviter_id))) or {
                 'total': 0, 'successful': 0
             }
             stats['total'] += 1
             stats['successful'] += 1
-            await kv.set(cls.KEY_INVITE_STATS.format(inviter_id), stats)
+            cls._run_async(kv.set(cls.KEY_INVITE_STATS.format(inviter_id), stats))
             
             # 获取当前奖励
-            rewards = await kv.get(cls.KEY_REWARDS.format(inviter_id)) or {
+            rewards = cls._run_async(kv.get(cls.KEY_REWARDS.format(inviter_id))) or {
                 'ai_quota_bonus': 0,
                 'templates_unlocked': [],
                 'badges': []
@@ -413,20 +443,20 @@ class AuthService:
             elif successful == 10:
                 rewards['premium_forever'] = True
             
-            await kv.set(cls.KEY_REWARDS.format(inviter_id), rewards)
+            cls._run_async(kv.set(cls.KEY_REWARDS.format(inviter_id), rewards))
             
         except Exception as e:
             print(f"[Invite Reward Error] {e}")
     
     @classmethod
-    async def validate_invite_code(cls, code: str) -> Dict:
+    def validate_invite_code(cls, code: str) -> Dict:
         """验证邀请码"""
-        inviter_id = await kv.get(f"{cls.PREFIX_INVITE}{code.upper()}")
+        inviter_id = cls._run_async(kv.get(f"{cls.PREFIX_INVITE}{code.upper()}"))
         if not inviter_id:
             return {'valid': False}
         
         # 获取邀请人信息
-        inviter_index = await kv.get(f"{cls.PREFIX_USER_ID}{inviter_id}")
+        inviter_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{inviter_id}"))
         if inviter_index:
             return {
                 'valid': True,
@@ -436,18 +466,18 @@ class AuthService:
         return {'valid': False}
     
     @classmethod
-    async def get_invite_info(cls, user_id: str) -> Dict:
+    def get_invite_info(cls, user_id: str) -> Dict:
         """获取用户邀请信息"""
-        user_index = await kv.get(f"{cls.PREFIX_USER_ID}{user_id}")
+        user_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{user_id}"))
         if not user_index:
             return {'success': False, 'error': '用户不存在'}
         
-        user = await kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}")
+        user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}"))
         if not user:
             return {'success': False, 'error': '用户不存在'}
         
-        rewards = await kv.get(cls.KEY_REWARDS.format(user_id)) or {}
-        stats = await kv.get(cls.KEY_INVITE_STATS.format(user_id)) or {
+        rewards = cls._run_async(kv.get(cls.KEY_REWARDS.format(user_id))) or {}
+        stats = cls._run_async(kv.get(cls.KEY_INVITE_STATS.format(user_id))) or {
             'total': 0, 'successful': 0
         }
         
@@ -474,20 +504,20 @@ class AuthService:
         }
     
     @classmethod
-    async def update_sync_setting(cls, user_id: str, enabled: bool) -> Dict:
+    def update_sync_setting(cls, user_id: str, enabled: bool) -> Dict:
         """更新同步设置"""
-        user_index = await kv.get(f"{cls.PREFIX_USER_ID}{user_id}")
+        user_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{user_id}"))
         if not user_index:
             return {'success': False, 'error': '用户不存在'}
         
-        user = await kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}")
+        user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}"))
         if not user:
             return {'success': False, 'error': '用户不存在'}
         
         user['sync_enabled'] = enabled
         user['updated_at'] = datetime.utcnow().isoformat()
         
-        await kv.set(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}", user)
+        cls._run_async(kv.set(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}", user))
         
         return {'success': True, 'sync_enabled': enabled}
 

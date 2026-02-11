@@ -1,2 +1,5 @@
-Flask==3.0.0
-flask-cors==4.0.0
+# Vercel Python 运行时 - 纯标准库实现，无额外依赖
+# 所有功能使用 Python 内置模块实现
+
+# 如需调试工具，可取消注释下面这行
+# requests>=2.31.0

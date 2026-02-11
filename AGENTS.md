@@ -47,8 +47,10 @@
 |------|------|
 | Python 3 | 服务端语言 |
 | Vercel Serverless Functions | 无服务器部署 |
-| Flask (开发环境) | 本地开发服务器 |
+| http.server (本地开发) | 本地开发服务器 |
 | DeepSeek API | AI 聊天功能 |
+| Vercel KV | 数据存储 (Redis 兼容) |
+| Resend API | 邮件发送服务 |
 
 ---
 
@@ -247,9 +249,13 @@ server: {
 
 Vercel 部署需要配置以下环境变量：
 
-- `DEEPSEEK_API_KEY` - DeepSeek AI API 密钥
-- `JWT_SECRET` - JWT 签名密钥
-- `VERCEL_KV_*` - KV 存储配置（用户数据、统计）
+| 变量名 | 说明 | 必需 |
+|--------|------|------|
+| `DEEPSEEK_API_KEY` | DeepSeek AI API 密钥 | 是 (AI功能) |
+| `JWT_SECRET` | JWT 签名密钥 (32+字符) | 是 (认证) |
+| `KV_REST_API_URL` | Vercel KV REST API URL | 是 (数据存储) |
+| `KV_REST_API_TOKEN` | Vercel KV REST API Token | 是 (数据存储) |
+| `RESEND_API_KEY` | Resend 邮件服务 API 密钥 | 否 (邮件功能) |
 
 ---
 
@@ -264,6 +270,41 @@ Vercel 部署需要配置以下环境变量：
 - **八字计算**: `api/core/lunar.py` - 真太阳时校准，330+ 城市支持
 - **用神分析**: `api/core/bazi_engine.py` - 日主强弱分析，喜用神计算
 - **运势评分**: `api/core/fortune_engine.py` - V5.0 算法，综合多因素评分
+
+### 2. API 入口设计
+
+Vercel Python Serverless Functions 使用 `handler(event, context)` 格式：
+
+```python
+def handler(event, context):
+    # event: { 'httpMethod', 'path', 'headers', 'body', ... }
+    # context: Lambda context
+    return {
+        'statusCode': 200,
+        'headers': {...},
+        'body': json.dumps({...})
+    }
+```
+
+### 3. 同步 vs 异步
+
+由于 Vercel Python 运行时的限制，所有服务层使用**同步实现**：
+
+```python
+# 服务层: 同步方法
+class AuthService:
+    @classmethod
+    def login(cls, email, password):  # 同步
+        user = cls._run_async(kv.get(key))  # 内部处理异步 KV 操作
+        ...
+
+# 路由层: 同步调用
+def handle_auth_request(path, method, body, headers):
+    result = AuthService.login(email, password)  # 直接调用
+    return make_response(result)
+```
+
+KV 客户端保持异步（使用 `async/await`），但通过 `_run_async()` 辅助函数在同步上下文中执行。
 
 ### 2. 数据存储策略
 
@@ -327,9 +368,18 @@ Vercel 部署需要配置以下环境变量：
 ### 常见问题
 
 1. **API 404**: 检查 `vercel.json` 路由配置，确保 `/api/*` 指向正确
-2. **构建失败**: 检查 TypeScript 类型错误，运行 `npm run lint`
+2. **FUNCTION_INVOCATION_FAILED**: 
+   - 检查 `requirements.txt` 只包含必要依赖（PyJWT 等）
+   - 确保没有与 Python 标准库冲突的文件名（如 `email.py`）
+   - 检查导入路径使用绝对导入（`from utils.xxx import ...`）
 3. **导入错误**: Python 模块使用 try-except 处理 Vercel 相对导入
-4. **缓存问题**: PWA 更新后清除浏览器缓存或等待 Service Worker 更新
+   - 相对导入 (`..module`) 在 Vercel 会失败，使用绝对导入
+   - 每个模块顶部添加路径处理代码
+4. **事件循环错误**: Vercel Python 运行时已有事件循环
+   - 避免在 handler 中使用 `asyncio.run()`
+   - 服务层使用同步方法，通过 `_run_async()` 内部处理异步 KV 操作
+5. **构建失败**: 检查 TypeScript 类型错误，运行 `npm run lint`
+6. **缓存问题**: PWA 更新后清除浏览器缓存或等待 Service Worker 更新
 
 ### 调试技巧
 
