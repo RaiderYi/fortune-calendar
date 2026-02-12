@@ -1,47 +1,65 @@
-// ==========================================
-// 人生大图景 - 内容组件（供 LifeMap 弹窗与 LifeMapPage 复用）
-// ==========================================
-
-import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { X, TrendingUp, Calendar, Loader2, Star, Lightbulb, ChevronRight, AlertTriangle, Sparkles, BookOpen } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import {
+  AlertTriangle,
+  Calendar,
+  ChevronRight,
+  Compass,
+  Loader2,
+  Radar,
+  Shield,
+  Sparkles,
+  Target,
+  TrendingUp,
+  X,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from 'recharts';
+import { useTranslation } from 'react-i18next';
 import type { UserProfile } from './ProfileSettings';
 import { getCustomYongShen } from '../utils/yongShenStorage';
-import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../contexts/AppContext';
+import { getLifeMapTrends, type LifeMapData, type LifeMapTrendPoint } from '../services/lifeMapApi';
 
 interface LifeMapContentProps {
   userProfile: UserProfile;
-  /** 点击「去设置」时回调 */
   onOpenYongShenSettings?: () => void;
-  /** 点击「查看今日运势」时回调（关闭弹窗并跳转） */
   onViewToday?: () => void;
 }
 
-interface DayunData {
-  year: number;
-  ganZhi: string;
-  career: number;
-  wealth: number;
-  romance: number;
-  health: number;
-  overall: number;
-  isImportant?: boolean;
-  importantReason?: string;
-  advice?: string;
+type ActiveTab = 'cinema' | 'timeline' | 'strategy';
+type DimensionKey = 'overall' | 'career' | 'wealth' | 'romance' | 'health';
+
+const SCAN_PHASE_ZH = ['构建人生主线...', '识别趋势拐点...', '提取关键窗口...', '生成行动剧本...'];
+const SCAN_PHASE_EN = ['Building life arc...', 'Detecting turning points...', 'Extracting key windows...', 'Generating strategy script...'];
+
+const DIM_CONFIG: Record<DimensionKey, { color: string; zh: string; en: string }> = {
+  overall: { color: '#0f766e', zh: '综合', en: 'Overall' },
+  career: { color: '#2563eb', zh: '事业', en: 'Career' },
+  wealth: { color: '#ca8a04', zh: '财运', en: 'Wealth' },
+  romance: { color: '#db2777', zh: '感情', en: 'Romance' },
+  health: { color: '#16a34a', zh: '健康', en: 'Health' },
+};
+
+function trendLabel(trend: string, isEnglish: boolean) {
+  if (trend === 'rising') return isEnglish ? 'Rising' : '上升';
+  if (trend === 'falling') return isEnglish ? 'Falling' : '回落';
+  return isEnglish ? 'Stable' : '稳定';
 }
 
-interface YearDetail {
-  year: number;
-  ganZhi: string;
-  score: number;
-  analysis: string;
-  advice: string[];
-  luckyElements: string[];
-  unluckyElements: string[];
-  keyEvents: string[];
+function riskBadge(level: string) {
+  if (level === 'low') return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+  if (level === 'high') return 'bg-rose-100 text-rose-700 border-rose-300';
+  return 'bg-amber-100 text-amber-700 border-amber-300';
 }
 
 export default function LifeMapContent({
@@ -49,738 +67,358 @@ export default function LifeMapContent({
   onOpenYongShenSettings,
   onViewToday,
 }: LifeMapContentProps) {
-  const { t, i18n } = useTranslation(['ui', 'fortune']);
-  const navigate = useNavigate();
+  const { i18n } = useTranslation(['ui', 'fortune']);
   const isEnglish = i18n.language === 'en';
-  const { fetchFortuneForDate, setCurrentDate } = useAppContext();
-  const [dayunData, setDayunData] = useState<DayunData[]>([]);
+  const navigate = useNavigate();
+  const { setCurrentDate } = useAppContext();
+
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedDimension, setSelectedDimension] = useState<'career' | 'wealth' | 'romance' | 'health' | 'overall'>('overall');
-  const [yearDetail, setYearDetail] = useState<YearDetail | null>(null);
-  const [showYearDetail, setShowYearDetail] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chart' | 'timeline' | 'advice'>('chart');
-  const [todayFortune, setTodayFortune] = useState<{ score: number; keyword: string; emoji: string } | null>(null);
+  const [phase, setPhase] = useState(0);
+  const [activeTab, setActiveTab] = useState<ActiveTab>('cinema');
+  const [selectedDimension, setSelectedDimension] = useState<DimensionKey>('overall');
+  const [data, setData] = useState<LifeMapData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<LifeMapTrendPoint | null>(null);
 
-  const markImportantYears = (data: DayunData[]): DayunData[] => {
-    if (data.length < 3) return data;
-    const overallValues = data.map((d) => d.overall);
-    const maxOverall = Math.max(...overallValues);
-    const minOverall = Math.min(...overallValues);
+  const hasCustomYongShen = Boolean(getCustomYongShen(userProfile.birthDate, userProfile.birthTime));
 
-    return data.map((item, index) => {
-      const prev = data[index - 1]?.overall ?? item.overall;
-      const next = data[index + 1]?.overall ?? item.overall;
-      const current = item.overall;
+  useEffect(() => {
+    if (!isLoading) return undefined;
+    const timer = window.setInterval(() => {
+      setPhase((prev) => (prev + 1) % SCAN_PHASE_ZH.length);
+    }, 850);
+    return () => window.clearInterval(timer);
+  }, [isLoading]);
 
-      if (current >= maxOverall - 5 && current > 65) {
-        return {
-          ...item,
-          isImportant: true,
-          importantReason: isEnglish ? 'Peak Year - Best Fortune' : '高峰年 - 运势最佳',
-          advice: isEnglish ? 'Seize opportunities, take on challenges' : '把握机会，勇于挑战，是实现突破的最佳时机',
-        };
-      }
-      if (current <= minOverall + 5 && current < 45) {
-        return {
-          ...item,
-          isImportant: true,
-          importantReason: isEnglish ? 'Cautious Year - Lower Fortune' : '低谷年 - 运势较低',
-          advice: isEnglish ? 'Stay cautious, avoid major decisions' : '谨慎行事，避免重大决策，养精蓄锐等待时机',
-        };
-      }
-      if (Math.abs(current - prev) > 15 || Math.abs(next - current) > 15) {
-        return {
-          ...item,
-          isImportant: true,
-          importantReason: isEnglish ? 'Turning Point Year' : '转折年 - 运势变化',
-          advice: isEnglish ? 'Adapt to changes, be flexible' : '顺势而为，灵活应对变化',
-        };
-      }
-      return item;
-    });
-  };
-
-  const generatePersonalizedAdvice = (data: DayunData[]): string[] => {
-    const advice: string[] = [];
-    const currentYear = new Date().getFullYear();
-    const firstHalf = data.slice(0, 5);
-    const secondHalf = data.slice(5);
-    const firstHalfAvg = firstHalf.reduce((sum, d) => sum + d.overall, 0) / firstHalf.length;
-    const secondHalfAvg = secondHalf.reduce((sum, d) => sum + d.overall, 0) / secondHalf.length;
-
-    if (firstHalfAvg > secondHalfAvg + 5) {
-      advice.push(isEnglish
-        ? `📈 The next 5 years (${currentYear}-${currentYear + 4}) show an upward trend - plan long-term goals now`
-        : `📈 未来5年(${currentYear}-${currentYear + 4})呈上升趋势，宜制定长期规划`);
-    } else if (secondHalfAvg > firstHalfAvg + 5) {
-      advice.push(isEnglish
-        ? `🌟 Fortune improves in later years - be patient and prepare for future opportunities`
-        : `🌟 后期运势更佳，需耐心积累，为未来机会做好准备`);
-    }
-    const bestCareerYear = data.reduce((best, d) => (d.career > best.career ? d : best), data[0]);
-    advice.push(isEnglish
-      ? `💼 Best career year: ${bestCareerYear.year} - focus on career development then`
-      : `💼 事业最佳年份: ${bestCareerYear.year}年，可重点推进职业发展`);
-    const bestWealthYear = data.reduce((best, d) => (d.wealth > best.wealth ? d : best), data[0]);
-    advice.push(isEnglish
-      ? `💰 Best wealth year: ${bestWealthYear.year} - consider investments then`
-      : `💰 财运最佳年份: ${bestWealthYear.year}年，可考虑投资理财`);
-    const lowHealthYears = data.filter((d) => d.health < 50);
-    if (lowHealthYears.length > 0) {
-      const years = lowHealthYears.map((d) => d.year).join(', ');
-      advice.push(isEnglish
-        ? `🏥 Pay attention to health in: ${years}`
-        : `🏥 需注意健康的年份: ${years}，建议定期体检`);
-    }
-    return advice;
-  };
-
-  const calculateDayunTrends = async () => {
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+    setData(null);
+    setSelectedPoint(null);
+    setPhase(0);
     try {
-      const currentYear = new Date().getFullYear();
-      const data: DayunData[] = [];
-
-      for (let i = 0; i < 10; i++) {
-        const year = currentYear + i;
-        try {
-          const customYongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
-          const res = await fetch('/api/fortune-year', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              year,
-              birthDate: userProfile.birthDate,
-              birthTime: userProfile.birthTime,
-              longitude: userProfile.longitude || 116.4,
-              gender: userProfile.gender || 'male',
-              customYongShen: customYongShen || undefined,
-            }),
-          });
-
-          if (res.ok) {
-            const json = await res.json();
-            const fortune = json.data || json;
-            const liuNian = fortune.liuNian || {};
-            const ganZhi =
-              liuNian.gan_zhi || (liuNian.gan && liuNian.zhi ? `${liuNian.gan}${liuNian.zhi}` : `${year}年`);
-            data.push({
-              year,
-              ganZhi: ganZhi || `${year}年`,
-              career: fortune.dimensions?.career?.score || 50,
-              wealth: fortune.dimensions?.wealth?.score || 50,
-              romance: fortune.dimensions?.romance?.score || 50,
-              health: fortune.dimensions?.health?.score || 50,
-              overall: fortune.totalScore || 50,
-            });
-          } else {
-            data.push({
-              year,
-              ganZhi: `${year}年`,
-              career: 50 + Math.sin(i * 0.5) * 20,
-              wealth: 50 + Math.cos(i * 0.5) * 20,
-              romance: 50 + Math.sin(i * 0.7) * 15,
-              health: 50 + Math.cos(i * 0.6) * 15,
-              overall: 50 + Math.sin(i * 0.4) * 20,
-            });
-          }
-        } catch {
-          data.push({
-            year,
-            ganZhi: `${year}年`,
-            career: 50 + Math.sin(i * 0.5) * 20,
-            wealth: 50 + Math.cos(i * 0.5) * 20,
-            romance: 50 + Math.sin(i * 0.7) * 15,
-            health: 50 + Math.cos(i * 0.6) * 15,
-            overall: 50 + Math.sin(i * 0.4) * 20,
-          });
-        }
-      }
-
-      const markedData = markImportantYears(data);
-      setDayunData(markedData);
-    } catch (error) {
-      console.error('计算大运趋势失败:', error);
+      const customYongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+      const result = await getLifeMapTrends({
+        birthDate: userProfile.birthDate,
+        birthTime: userProfile.birthTime,
+        longitude: userProfile.longitude || 120.0,
+        gender: userProfile.gender || 'male',
+        customYongShen,
+        years: 10,
+      });
+      setData(result);
+    } catch (err) {
+      console.error('人生大图景加载失败:', err);
+      setError(isEnglish ? 'Failed to load life map.' : '人生大图景加载失败，请稍后重试。');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (userProfile) {
-      setIsLoading(true);
-      calculateDayunTrends();
-    }
-  }, [userProfile]);
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userProfile.birthDate, userProfile.birthTime, userProfile.longitude, userProfile.gender]);
 
-  const getYearDetail = (year: number): YearDetail | null => {
-    const yearData = dayunData.find((d) => d.year === year);
-    if (!yearData) return null;
+  const points = data?.points ?? [];
+  const milestones = data?.milestones ?? [];
+  const summary = data?.summary;
+  const strategy = data?.strategy ?? [];
 
-    const score = yearData.overall;
-    let analysis = '';
-    const advice: string[] = [];
-    const luckyElements: string[] = [];
-    const unluckyElements: string[] = [];
-    const keyEvents: string[] = [];
+  const chartData = useMemo(
+    () =>
+      points.map((p) => ({
+        year: p.year,
+        value: selectedDimension === 'overall' ? p.overall : p[selectedDimension],
+        overall: p.overall,
+      })),
+    [points, selectedDimension]
+  );
 
-    if (score >= 70) {
-      analysis = isEnglish
-        ? `${year} is a year of great fortune with abundant opportunities for success.`
-        : `${year}年运势极佳，是充满机遇的一年，各方面都将有所突破。`;
-      advice.push(isEnglish ? 'Take on big challenges' : '可以挑战大项目');
-      advice.push(isEnglish ? 'Good for investments' : '适合投资置业');
-      luckyElements.push(isEnglish ? 'Career advancement' : '事业晋升');
-      luckyElements.push(isEnglish ? 'Wealth accumulation' : '财富积累');
-      keyEvents.push(isEnglish ? 'Possible promotion' : '可能有晋升机会');
-    } else if (score >= 50) {
-      analysis = isEnglish
-        ? `${year} is a stable year with steady progress expected.`
-        : `${year}年运势平稳，宜稳扎稳打，循序渐进。`;
-      advice.push(isEnglish ? 'Maintain steady progress' : '保持稳定节奏');
-      advice.push(isEnglish ? 'Focus on skill improvement' : '注重能力提升');
-      luckyElements.push(isEnglish ? 'Personal growth' : '个人成长');
-      keyEvents.push(isEnglish ? 'Steady development' : '平稳发展');
-    } else {
-      analysis = isEnglish
-        ? `${year} requires caution. Focus on defense rather than offense.`
-        : `${year}年需谨慎行事，宜守不宜攻，积蓄力量等待时机。`;
-      advice.push(isEnglish ? 'Avoid major changes' : '避免重大变动');
-      advice.push(isEnglish ? 'Focus on health' : '注意身体健康');
-      unluckyElements.push(isEnglish ? 'Risk decisions' : '冒险决策');
-      unluckyElements.push(isEnglish ? 'Major investments' : '大额投资');
-      keyEvents.push(isEnglish ? 'Time for reflection' : '韬光养晦期');
-    }
-
-    if (yearData.career >= 70) {
-      advice.push(isEnglish ? '💼 Great year for career moves' : '💼 事业发展大好时机');
-      keyEvents.push(isEnglish ? 'Career opportunities' : '事业机遇');
-    }
-    if (yearData.wealth >= 70) advice.push(isEnglish ? '💰 Favorable for financial growth' : '💰 财运亨通');
-    if (yearData.romance >= 70) advice.push(isEnglish ? '💕 Good for relationships' : '💕 感情和谐');
-    if (yearData.health < 50) {
-      advice.push(isEnglish ? '🏥 Pay attention to health' : '🏥 注意身体保养');
-      unluckyElements.push(isEnglish ? 'Health issues' : '健康问题');
-    }
-
-    return {
-      year,
-      ganZhi: yearData.ganZhi,
-      score,
-      analysis,
-      advice,
-      luckyElements,
-      unluckyElements,
-      keyEvents,
-    };
-  };
-
-  const handleYearClick = (year: number) => {
-    const detail = getYearDetail(year);
-    setYearDetail(detail);
-    setShowYearDetail(true);
-    setTodayFortune(null);
-    if (year === new Date().getFullYear() && fetchFortuneForDate) {
-      fetchFortuneForDate(new Date()).then((data) => {
-        if (data) {
-          setTodayFortune({
-            score: data.totalScore,
-            keyword: data.mainTheme?.keyword || '',
-            emoji: data.mainTheme?.emoji || '✨',
-          });
-        }
-      });
-    }
-  };
-
-  const personalizedAdvice = useMemo(() => {
-    if (dayunData.length === 0) return [];
-    return generatePersonalizedAdvice(dayunData);
-  }, [dayunData]);
-
-  const dimensionConfig = {
-    career: { label: t('fortune:dimensions.career'), color: '#f97316', icon: '💼' },
-    wealth: { label: t('fortune:dimensions.wealth'), color: '#eab308', icon: '💰' },
-    romance: { label: t('fortune:dimensions.romance'), color: '#ec4899', icon: '💕' },
-    health: { label: t('fortune:dimensions.health'), color: '#10b981', icon: '🏥' },
-    overall: { label: isEnglish ? 'Overall' : '综合', color: '#6366f1', icon: '📊' },
-  };
-
-  const chartData = dayunData.map((item) => ({
-    year: item.year,
-    value: Math.round(item[selectedDimension]),
-    ganZhi: item.ganZhi,
-  }));
-
-  const peakYear = chartData.reduce((max, item) => (item.value > max.value ? item : max), chartData[0] || { year: 0, value: 0 });
-  const lowYear = chartData.reduce((min, item) => (item.value < min.value ? item : min), chartData[0] || { year: 0, value: 100 });
+  const peakPoint = useMemo(() => points.reduce((acc, p) => (p.overall > acc.overall ? p : acc), points[0] || ({} as LifeMapTrendPoint)), [points]);
+  const lowPoint = useMemo(() => points.reduce((acc, p) => (p.overall < acc.overall ? p : acc), points[0] || ({} as LifeMapTrendPoint)), [points]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-      {!isLoading && !getCustomYongShen(userProfile.birthDate, userProfile.birthTime) && (
+    <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-[radial-gradient(circle_at_15%_10%,rgba(16,185,129,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.12),transparent_35%),linear-gradient(170deg,#f8fafc_0%,#ecfeff_50%,#f8fafc_100%)]">
+      {!hasCustomYongShen && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center justify-between gap-3"
+          className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-2">
-            <Lightbulb size={20} className="text-amber-600 shrink-0" />
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              {isEnglish ? 'Set Yong Shen for more accurate year fortune' : '设置用神后可获得更准确的年运势'}
-            </p>
+            <AlertTriangle size={16} />
+            {isEnglish ? 'Set Yong Shen for higher annual accuracy.' : '建议先设置用神，年度趋势会更准确。'}
           </div>
           {onOpenYongShenSettings && (
             <button
               onClick={onOpenYongShenSettings}
-              className="shrink-0 px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-800/50 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-800 transition"
+              className="rounded-lg bg-amber-200 px-3 py-1 text-xs text-amber-900"
             >
-              {isEnglish ? 'Set' : '去设置'}
+              {isEnglish ? 'Set Now' : '去设置'}
             </button>
           )}
         </motion.div>
       )}
 
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 size={32} className="animate-spin text-indigo-500" />
+      <motion.section
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 text-slate-100 p-6"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(20,184,166,0.26),transparent_35%),radial-gradient(circle_at_80%_15%,rgba(56,189,248,0.24),transparent_35%)]" />
+        <div className="relative grid lg:grid-cols-[1.35fr_1fr] gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs tracking-[0.12em] uppercase text-cyan-200">
+              <Sparkles size={14} />
+              {isEnglish ? 'Life Map Director' : '人生大图景导演台'}
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-black">
+              {isEnglish ? 'Your 10-Year Life Arc' : '未来十年人生主线'}
+            </h2>
+            <p className="text-slate-200/85 text-sm">
+              {isEnglish
+                ? 'One scan for yearly trend, momentum turning points, and tactical actions.'
+                : '一次扫描，生成年度趋势、拐点与可执行策略。'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur p-4 space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span>{isEnglish ? 'Trend' : '趋势'}</span>
+              <span className="font-bold">{summary ? trendLabel(summary.trend, isEnglish) : '-'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>{isEnglish ? 'Average' : '平均分'}</span>
+              <span className="font-bold">{summary?.average ?? '-'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>{isEnglish ? 'Confidence' : '可信度'}</span>
+              <span className="font-bold">{summary?.confidence ?? '-'}</span>
+            </div>
+          </div>
         </div>
-      ) : dayunData.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-          <p>{isEnglish ? 'No data available' : '暂无数据'}</p>
-        </div>
-      ) : (
-        <>
-          <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-            {[
-              { id: 'chart', label: isEnglish ? 'Chart' : '图表', icon: TrendingUp },
-              { id: 'timeline', label: isEnglish ? 'Timeline' : '时间线', icon: Calendar },
-              { id: 'advice', label: isEnglish ? 'Advice' : '建议', icon: Lightbulb },
-            ].map((tab) => (
+      </motion.section>
+
+      <div className="mt-5 grid xl:grid-cols-[1.25fr_1fr] gap-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-slate-700">
+              <Radar size={18} className="text-cyan-700" />
+              <h3 className="font-bold">{isEnglish ? 'Dimension Lens' : '维度镜头'}</h3>
+            </div>
+            <button
+              onClick={fetchData}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              {isEnglish ? 'Refresh' : '刷新'}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(DIM_CONFIG) as DimensionKey[]).map((key) => (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'chart' | 'timeline' | 'advice')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-medium transition ${
-                  activeTab === tab.id
-                    ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                key={key}
+                onClick={() => setSelectedDimension(key)}
+                className={`px-3 py-1.5 rounded-lg text-sm ${
+                  selectedDimension === key ? 'bg-slate-900 text-cyan-200' : 'bg-slate-100 text-slate-700'
                 }`}
               >
-                <tab.icon size={16} />
-                {tab.label}
+                {isEnglish ? DIM_CONFIG[key].en : DIM_CONFIG[key].zh}
               </button>
             ))}
           </div>
 
-          {activeTab === 'chart' && (
-            <>
-              <div className="grid grid-cols-5 gap-2 mb-6">
-                {(Object.keys(dimensionConfig) as Array<keyof typeof dimensionConfig>).map((key) => {
-                  const config = dimensionConfig[key];
-                  const isSelected = selectedDimension === key;
-                  return (
-                    <motion.button
-                      key={key}
-                      onClick={() => setSelectedDimension(key)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`p-3 rounded-xl text-sm font-medium transition ${
-                        isSelected
-                          ? 'bg-indigo-500 text-white shadow-lg'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <div className="text-lg mb-1">{config.icon}</div>
-                      <div>{config.label}</div>
-                    </motion.button>
-                  );
-                })}
-              </div>
+          <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="year" stroke="#64748b" />
+                <YAxis domain={[0, 100]} stroke="#64748b" />
+                <Tooltip
+                  formatter={(value: number) => [`${value}`, isEnglish ? DIM_CONFIG[selectedDimension].en : DIM_CONFIG[selectedDimension].zh]}
+                  labelFormatter={(label) => `${label}`}
+                />
+                <ReferenceLine y={50} stroke="#94a3b8" strokeDasharray="3 3" />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke={DIM_CONFIG[selectedDimension].color}
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="year" stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                    <YAxis domain={[0, 100]} stroke="#6b7280" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                      }}
-                      formatter={(value: number) => [`${value}${isEnglish ? ' pts' : '分'}`, dimensionConfig[selectedDimension].label]}
-                      labelFormatter={(label) => (isEnglish ? `Year ${label}` : `${label}年`)}
-                    />
-                    <ReferenceLine y={50} stroke="#9ca3af" strokeDasharray="3 3" />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke={dimensionConfig[selectedDimension].color}
-                      strokeWidth={3}
-                      dot={{ fill: dimensionConfig[selectedDimension].color, r: 5 }}
-                      activeDot={{ r: 7 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 space-y-3">
+          <div className="flex items-center gap-2 text-slate-700">
+            <Target size={18} className="text-emerald-700" />
+            <h3 className="font-bold">{isEnglish ? 'Milestone Windows' : '里程碑窗口'}</h3>
+          </div>
+          {milestones.slice(0, 5).map((item) => (
+            <div key={`${item.type}-${item.year}`} className="rounded-xl border border-slate-200 p-3">
+              <div className="flex items-center justify-between">
+                <div className="font-semibold text-slate-800">{item.title}</div>
+                <span className="text-xs text-slate-500">{item.year}</span>
               </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-xl border border-green-200 dark:border-green-800">
-                  <div className="text-xs text-green-600 dark:text-green-400 mb-1">{isEnglish ? 'Best Year' : '最佳年份'}</div>
-                  <div className="text-2xl font-black text-green-700 dark:text-green-300">{peakYear.year}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400 mt-1">
-                    {peakYear.ganZhi} · {peakYear.value}
-                    {isEnglish ? ' pts' : '分'}
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 rounded-xl border border-amber-200 dark:border-amber-800">
-                  <div className="text-xs text-amber-600 dark:text-amber-400 mb-1">{isEnglish ? 'Cautious Year' : '需谨慎年份'}</div>
-                  <div className="text-2xl font-black text-amber-700 dark:text-amber-300">{lowYear.year}</div>
-                  <div className="text-sm text-amber-600 dark:text-amber-400 mt-1">
-                    {lowYear.ganZhi} · {lowYear.value}
-                    {isEnglish ? ' pts' : '分'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
-                  {isEnglish ? 'Trend Analysis' : '趋势分析'}
-                </h3>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  {selectedDimension === 'career' &&
-                    (isEnglish ? (
-                      <>
-                        <p>• Career fortune peaks in {peakYear.year}, a golden time to advance important projects</p>
-                        <p>• Be cautious in {lowYear.year}, avoid major changes</p>
-                      </>
-                    ) : (
-                      <>
-                        <p>• 事业运势在 {peakYear.year} 年达到峰值，是推进重要项目的黄金期</p>
-                        <p>• {lowYear.year} 年需要谨慎决策，避免重大变动</p>
-                      </>
-                    ))}
-                  {selectedDimension === 'wealth' &&
-                    (isEnglish ? (
-                      <>
-                        <p>• Wealth fortune is strongest in {peakYear.year}, suitable for investment</p>
-                        <p>• Control expenses in {lowYear.year}, avoid impulsive spending</p>
-                      </>
-                    ) : (
-                      <>
-                        <p>• 财运在 {peakYear.year} 年最为旺盛，适合投资理财</p>
-                        <p>• {lowYear.year} 年需控制支出，避免冲动消费</p>
-                      </>
-                    ))}
-                  {selectedDimension === 'romance' &&
-                    (isEnglish ? (
-                      <>
-                        <p>• Romance fortune peaks in {peakYear.year}, harmonious relationships</p>
-                        <p>• More communication needed in {lowYear.year} to maintain relationships</p>
-                      </>
-                    ) : (
-                      <>
-                        <p>• 感情运势在 {peakYear.year} 年达到高峰，人际关系和谐</p>
-                        <p>• {lowYear.year} 年需多沟通，维护感情关系</p>
-                      </>
-                    ))}
-                  {selectedDimension === 'health' &&
-                    (isEnglish ? (
-                      <>
-                        <p>• Health fortune is best in {peakYear.year}, full of energy</p>
-                        <p>• Pay attention to health maintenance in {lowYear.year}</p>
-                      </>
-                    ) : (
-                      <>
-                        <p>• 健康运势在 {peakYear.year} 年最佳，精力充沛</p>
-                        <p>• {lowYear.year} 年需注意保养，定期体检</p>
-                      </>
-                    ))}
-                  {selectedDimension === 'overall' &&
-                    (isEnglish ? (
-                      <>
-                        <p>• Overall fortune peaks in {peakYear.year}, seize the opportunities</p>
-                        <p>• Be cautious in {lowYear.year}, steady progress is key</p>
-                      </>
-                    ) : (
-                      <>
-                        <p>• 综合运势在 {peakYear.year} 年达到最佳，把握机会</p>
-                        <p>• {lowYear.year} 年需谨慎行事，稳中求进</p>
-                      </>
-                    ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'timeline' && (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {isEnglish ? 'Click on any year to view detailed analysis' : '点击年份查看详细分析'}
-              </p>
-              {dayunData.map((item, index) => {
-                const isCurrentYear = item.year === new Date().getFullYear();
-                return (
-                  <motion.div
-                    key={item.year}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => handleYearClick(item.year)}
-                    className={`relative flex items-start gap-4 p-4 rounded-xl cursor-pointer transition hover:shadow-lg ${
-                      isCurrentYear
-                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-300 dark:border-indigo-600'
-                        : item.isImportant
-                          ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700'
-                          : 'bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-4 h-4 rounded-full ${
-                          isCurrentYear ? 'bg-indigo-500' : item.isImportant ? 'bg-amber-500' : 'bg-gray-400'
-                        }`}
-                      />
-                      {index < dayunData.length - 1 && (
-                        <div className="w-0.5 h-full bg-gray-300 dark:bg-gray-600 mt-1" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-gray-800 dark:text-gray-200">{item.year}</span>
-                        <span className="text-sm text-gray-500">{item.ganZhi}</span>
-                        {isCurrentYear && (
-                          <span className="px-2 py-0.5 bg-indigo-500 text-white text-xs rounded-full">
-                            {isEnglish ? 'Current' : '当前'}
-                          </span>
-                        )}
-                        {item.isImportant && <Star size={16} className="text-amber-500" />}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${item.overall}%` }}
-                            transition={{ delay: index * 0.05, duration: 0.5 }}
-                            className={`h-full rounded-full ${
-                              item.overall >= 70 ? 'bg-green-500' : item.overall >= 50 ? 'bg-blue-500' : item.overall >= 30 ? 'bg-amber-500' : 'bg-red-500'
-                            }`}
-                          />
-                        </div>
-                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300 w-12">
-                          {Math.round(item.overall)}
-                          {isEnglish ? 'pts' : '分'}
-                        </span>
-                      </div>
-                      {item.isImportant && item.importantReason && (
-                        <div className="mt-2 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-                          <AlertTriangle size={14} />
-                          {item.importantReason}
-                        </div>
-                      )}
-                    </div>
-                    <ChevronRight size={20} className="text-gray-400" />
-                  </motion.div>
-                );
-              })}
+              <div className="text-sm text-slate-600 mt-1">{item.detail}</div>
             </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5">
+        <div className="flex gap-2 mb-4">
+          {[
+            { id: 'cinema', icon: TrendingUp, zh: '主线', en: 'Arc' },
+            { id: 'timeline', icon: Calendar, zh: '时间线', en: 'Timeline' },
+            { id: 'strategy', icon: Compass, zh: '策略', en: 'Strategy' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as ActiveTab)}
+              className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                activeTab === tab.id ? 'bg-slate-900 text-cyan-200' : 'bg-slate-100 text-slate-700'
+              }`}
+            >
+              <tab.icon size={14} />
+              {isEnglish ? tab.en : tab.zh}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {isLoading && (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="py-10 text-center">
+              <Loader2 className="mx-auto animate-spin text-cyan-700" />
+              <div className="mt-3 text-sm text-slate-600">{isEnglish ? SCAN_PHASE_EN[phase] : SCAN_PHASE_ZH[phase]}</div>
+            </motion.div>
           )}
 
-          {activeTab === 'advice' && (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-indigo-200 dark:border-indigo-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="text-indigo-500" size={20} />
-                  <h3 className="font-bold text-indigo-700 dark:text-indigo-300">
-                    {isEnglish ? 'Personalized Insights' : '个性化洞察'}
-                  </h3>
-                </div>
-                <div className="space-y-3">
-                  {personalizedAdvice.map((advice, index) => (
-                    <motion.p
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed"
-                    >
-                      {advice}
-                    </motion.p>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-                  <BookOpen size={18} />
-                  {isEnglish ? 'Year-by-Year Recommendations' : '年度建议'}
-                </h3>
-                <div className="grid gap-4">
-                  {dayunData
-                    .filter((d) => d.isImportant)
-                    .map((item, index) => (
-                      <motion.div
-                        key={item.year}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border border-gray-200 dark:border-gray-700"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl font-bold text-gray-800 dark:text-gray-200">{item.year}</span>
-                            <span className="text-sm text-gray-500">{item.ganZhi}</span>
-                          </div>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-bold ${
-                              item.overall >= 70
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : item.overall >= 50
-                                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            }`}
-                          >
-                            {Math.round(item.overall)}
-                            {isEnglish ? ' pts' : '分'}
-                          </span>
-                        </div>
-                        <p className="text-sm text-amber-600 dark:text-amber-400 mb-2">
-                          ⚠️ {item.importantReason}
-                        </p>
-                        {item.advice && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">💡 {item.advice}</p>
-                        )}
-                      </motion.div>
-                    ))}
-                </div>
-              </div>
-            </div>
+          {!isLoading && error && (
+            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </motion.div>
           )}
-        </>
-      )}
+
+          {!isLoading && !error && activeTab === 'cinema' && (
+            <motion.div key="cinema" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid md:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-slate-200 p-4">
+                <div className="text-xs text-slate-500">{isEnglish ? 'Peak Year' : '峰值年份'}</div>
+                <div className="text-2xl font-black text-emerald-700">{peakPoint?.year ?? '-'}</div>
+                <div className="text-sm text-slate-600">{isEnglish ? 'Overall score' : '综合分'} {peakPoint?.overall ?? '-'}</div>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <div className="text-xs text-slate-500">{isEnglish ? 'Caution Year' : '谨慎年份'}</div>
+                <div className="text-2xl font-black text-amber-700">{lowPoint?.year ?? '-'}</div>
+                <div className="text-sm text-slate-600">{isEnglish ? 'Overall score' : '综合分'} {lowPoint?.overall ?? '-'}</div>
+              </div>
+            </motion.div>
+          )}
+
+          {!isLoading && !error && activeTab === 'timeline' && (
+            <motion.div key="timeline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+              {points.map((point) => (
+                <button
+                  key={point.year}
+                  onClick={() => setSelectedPoint(point)}
+                  className="w-full text-left rounded-xl border border-slate-200 p-4 hover:border-cyan-400 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-slate-800">{point.year} · {point.ganZhi}</div>
+                      <div className="text-xs text-slate-500">
+                        {isEnglish ? 'Momentum' : '动量'}: {point.momentum.delta >= 0 ? '+' : ''}{point.momentum.delta}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-full border text-xs ${riskBadge(point.riskLevel)}`}>
+                        {point.riskLevel}
+                      </span>
+                      <div className="font-black text-cyan-700">{point.overall}</div>
+                      <ChevronRight size={16} className="text-slate-400" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </motion.div>
+          )}
+
+          {!isLoading && !error && activeTab === 'strategy' && (
+            <motion.div key="strategy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+              {strategy.map((item) => (
+                <div key={item.id} className="rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold text-slate-800">{item.title}</div>
+                    <span className={`px-2 py-0.5 rounded text-xs ${
+                      item.priority === 'high' ? 'bg-rose-100 text-rose-700' : item.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {item.priority}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-600 mt-1">{item.detail}</div>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <AnimatePresence>
-        {showYearDetail && yearDetail && (
+        {selectedPoint && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-            onClick={() => setShowYearDetail(false)}
+            className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm p-4 flex items-center justify-center"
+            onClick={() => setSelectedPoint(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
+              initial={{ scale: 0.92, y: 12 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 8 }}
               onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg rounded-3xl border border-white/20 bg-white p-5"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                    {yearDetail.year} {isEnglish ? 'Year Analysis' : '年详解'}
-                  </h3>
-                  <p className="text-sm text-gray-500">{yearDetail.ganZhi}</p>
+                  <h3 className="text-xl font-black text-slate-800">{selectedPoint.year} · {selectedPoint.ganZhi}</h3>
+                  <div className="text-sm text-slate-500">
+                    {isEnglish ? 'Overall' : '综合'} {selectedPoint.overall} · {isEnglish ? 'Confidence' : '可信度'} {selectedPoint.confidence}
+                  </div>
                 </div>
-                <button
-                  onClick={() => setShowYearDetail(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
-                >
-                  <X size={20} />
+                <button onClick={() => setSelectedPoint(null)} className="p-2 rounded-lg hover:bg-slate-100">
+                  <X size={18} />
                 </button>
               </div>
-              <div className="text-center mb-6 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl">
-                <div className="text-5xl font-black text-indigo-600 dark:text-indigo-400">{yearDetail.score}</div>
-                <div className="text-sm text-gray-500">{isEnglish ? 'Overall Score' : '综合评分'}</div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                {(['career', 'wealth', 'romance', 'health', 'academic', 'travel'] as const).map((k) => (
+                  <div key={k} className="rounded-lg bg-slate-50 px-3 py-2 flex items-center justify-between">
+                    <span className="text-slate-600">{k}</span>
+                    <span className="font-bold text-slate-800">{selectedPoint[k]}</span>
+                  </div>
+                ))}
               </div>
-              <div className="mb-4">
-                <h4 className="font-bold text-gray-700 dark:text-gray-300 mb-2">
-                  {isEnglish ? 'Analysis' : '年度分析'}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{yearDetail.analysis}</p>
-              </div>
-              {yearDetail.advice.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-bold text-gray-700 dark:text-gray-300 mb-2">
-                    {isEnglish ? 'Recommendations' : '行动建议'}
-                  </h4>
-                  <ul className="space-y-2">
-                    {yearDetail.advice.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <span className="text-green-500">✓</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {(yearDetail.year === new Date().getFullYear() && (todayFortune || fetchFortuneForDate)) && (
-                <div className="mb-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <h4 className="font-bold text-gray-700 dark:text-gray-300">
-                    {isEnglish ? 'Monthly & Daily Fortune' : '流月 · 流日'}
-                  </h4>
-                  {todayFortune && (
-                    <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-                      <div>
-                        <div className="text-xs text-indigo-600 dark:text-indigo-400">{isEnglish ? 'Today' : '今日运势'}</div>
-                        <div className="font-bold text-gray-800 dark:text-gray-200">{todayFortune.emoji} {todayFortune.keyword || '-'}</div>
-                      </div>
-                      <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{todayFortune.score}</div>
-                    </div>
-                  )}
-                  <div className="text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                    {isEnglish ? 'Monthly fortune follows the annual trend. View daily fortune for details.' : '本月运势与年度趋势一致，可查看每日运势获取更详细分析。'}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowYearDetail(false);
-                      if (onViewToday) {
-                        onViewToday();
-                      } else if (setCurrentDate) {
-                        setCurrentDate(new Date());
-                        navigate('/app/today');
-                      }
-                    }}
-                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition"
-                  >
-                    {isEnglish ? 'View Today\'s Fortune' : '查看今日运势'}
-                  </button>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                {yearDetail.luckyElements.length > 0 && (
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl">
-                    <h5 className="text-xs font-bold text-green-700 dark:text-green-400 mb-2">
-                      {isEnglish ? 'Lucky Elements' : '幸运要素'}
-                    </h5>
-                    <div className="flex flex-wrap gap-1">
-                      {yearDetail.luckyElements.map((item, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-0.5 bg-green-100 dark:bg-green-800/30 text-green-700 dark:text-green-300 text-xs rounded"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {yearDetail.unluckyElements.length > 0 && (
-                  <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl">
-                    <h5 className="text-xs font-bold text-red-700 dark:text-red-400 mb-2">
-                      {isEnglish ? 'Avoid' : '注意事项'}
-                    </h5>
-                    <div className="flex flex-wrap gap-1">
-                      {yearDetail.unluckyElements.map((item, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-0.5 bg-red-100 dark:bg-red-800/30 text-red-700 dark:text-red-300 text-xs rounded"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedPoint(null);
+                    if (onViewToday) onViewToday();
+                    else {
+                      setCurrentDate(new Date());
+                      navigate('/app/today');
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-slate-900 text-cyan-200 text-sm"
+                >
+                  {isEnglish ? 'Open Today Fortune' : '查看今日运势'}
+                </button>
+                <button onClick={() => setSelectedPoint(null)} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm">
+                  {isEnglish ? 'Close' : '关闭'}
+                </button>
               </div>
             </motion.div>
           </motion.div>

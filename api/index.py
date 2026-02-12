@@ -121,6 +121,14 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json(status, result)
                 return
 
+            if path.endswith("/lifemap/trends"):
+                from services.lifemap_service import LifeMapService
+
+                result = LifeMapService.handle_trends_request(body)
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
             if path.endswith("/fortune"):
                 from services.fortune_service import FortuneService
 
