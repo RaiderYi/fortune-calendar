@@ -113,6 +113,14 @@ class handler(BaseHTTPRequestHandler):
                 self._send_route_result(result)
                 return
 
+            if path.endswith("/date-picker/recommend"):
+                from services.date_picker_service import DatePickerService
+
+                result = DatePickerService.handle_recommend_request(body)
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
             if path.endswith("/fortune"):
                 from services.fortune_service import FortuneService
 
