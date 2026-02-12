@@ -1,150 +1,162 @@
 # -*- coding: utf-8 -*-
 """
-Fortune Calendar API - Vercel Serverless 入口 v2.1
+Fortune Calendar API - Vercel Python entrypoint
 """
 
-import json
 import datetime
+import json
 import os
 import sys
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse
 
-# 添加 api 目录到路径
+
 api_dir = os.path.dirname(os.path.abspath(__file__))
 if api_dir not in sys.path:
     sys.path.insert(0, api_dir)
 
 
-def handler(event, context):
-    """
-    Vercel Python Serverless Function 入口
-    event: { 'path', 'httpMethod', 'headers', 'body', 'queryStringParameters' }
-    context: Lambda context
-    """
-    method = event.get('httpMethod', 'GET')
-    path = event.get('path', '/')
-    headers = event.get('headers', {}) or {}
-    
-    # 解析请求体
-    body = {}
-    if event.get('body'):
+class handler(BaseHTTPRequestHandler):
+    """Vercel Python handler."""
+
+    def do_OPTIONS(self):
+        self._send_json(204, {})
+
+    def do_GET(self):
+        self._handle_request("GET")
+
+    def do_POST(self):
+        self._handle_request("POST")
+
+    def do_PUT(self):
+        self._handle_request("PUT")
+
+    def do_DELETE(self):
+        self._handle_request("DELETE")
+
+    def log_message(self, format, *args):  # noqa: A003
+        # Silence default access logs in serverless runtime.
+        return
+
+    def _read_body_json(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length <= 0:
+            return {}
+
+        raw = self.rfile.read(content_length)
+        if not raw:
+            return {}
+
         try:
-            if isinstance(event['body'], str):
-                body = json.loads(event['body'])
-            else:
-                body = event['body']
-        except:
-            body = {}
-    
-    # 构建 Response helper
-    def response(status_code, data):
-        return {
-            'statusCode': status_code,
-            'headers': {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            },
-            'body': json.dumps(data, ensure_ascii=False)
-        }
-    
-    # 处理 OPTIONS 预检请求
-    if method == 'OPTIONS':
-        return response(204, {})
-    
-    # 健康检查
-    if path == '/' or path == '/api':
-        return response(200, {
-            'success': True,
-            'message': 'Fortune Calendar API v2.1',
-            'timestamp': datetime.datetime.now().isoformat()
-        })
-    
-    try:
-        # 认证/邀请/用户路由
-        if path.startswith('/api/auth') or path.startswith('/api/invite') or path.startswith('/api/user'):
-            try:
+            body_text = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            body_text = raw.decode("utf-8", errors="ignore")
+
+        try:
+            parsed = json.loads(body_text) if body_text else {}
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:
+            return {}
+
+    def _send_json(self, status_code, data):
+        payload = json.dumps(data, ensure_ascii=False).encode("utf-8")
+        content_length = 0 if status_code == 204 else len(payload)
+        self.send_response(status_code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Content-Length", str(content_length))
+        self.end_headers()
+        if status_code != 204:
+            self.wfile.write(payload)
+
+    def _send_route_result(self, result_json):
+        try:
+            result_data = json.loads(result_json)
+        except Exception as e:
+            self._send_json(500, {"success": False, "error": f"Invalid route response: {e}"})
+            return
+
+        status = result_data.pop("code", 200 if result_data.get("success") else 400)
+        self._send_json(status, result_data)
+
+    def _handle_request(self, method):
+        parsed = urlparse(self.path)
+        path = parsed.path
+        headers = {k: v for k, v in self.headers.items()}
+        body = self._read_body_json() if method in ("POST", "PUT", "DELETE") else {}
+
+        if path == "/" or path == "/api":
+            self._send_json(
+                200,
+                {
+                    "success": True,
+                    "message": "Fortune Calendar API v2.1",
+                    "timestamp": datetime.datetime.now().isoformat(),
+                },
+            )
+            return
+
+        try:
+            if path.startswith("/api/auth") or path.startswith("/api/invite") or path.startswith("/api/user"):
                 from routes.auth_routes import handle_auth_request
+
                 result = handle_auth_request(path, method, body, headers)
-                result_data = json.loads(result)
-                status = result_data.pop('code', 200 if result_data.get('success') else 400)
-                return response(status, result_data)
-            except Exception as e:
-                import traceback
-                print(f"[Auth Error] {e}")
-                traceback.print_exc()
-                return response(500, {'success': False, 'error': str(e)})
-        
-        # 同步路由
-        if path.startswith('/api/sync'):
-            try:
+                self._send_route_result(result)
+                return
+
+            if path.startswith("/api/sync"):
                 from routes.sync_routes import handle_sync_request
+
                 result = handle_sync_request(path, method, body, headers)
-                result_data = json.loads(result)
-                status = result_data.pop('code', 200 if result_data.get('success') else 400)
-                return response(status, result_data)
-            except Exception as e:
-                import traceback
-                print(f"[Sync Error] {e}")
-                traceback.print_exc()
-                return response(500, {'success': False, 'error': str(e)})
-        
-        # 运势分析 - 支持 /api/fortune 和 /fortune
-        if path.endswith('/fortune'):
-            try:
+                self._send_route_result(result)
+                return
+
+            if path.endswith("/fortune"):
                 from services.fortune_service import FortuneService
+
                 result = FortuneService.handle_fortune_request(body)
-                status = result.pop('code', 200)
-                return response(status, result)
-            except Exception as e:
-                import traceback
-                print(f"[Fortune Error] {e}")
-                traceback.print_exc()
-                return response(500, {'success': False, 'error': str(e), 'traceback': traceback.format_exc()})
-        
-        # 年运势分析
-        if path.endswith('/fortune-year'):
-            try:
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
+            if path.endswith("/fortune-year"):
                 from services.fortune_service import FortuneService
+
                 result = FortuneService.handle_fortune_year_request(body)
-                status = result.pop('code', 200)
-                return response(status, result)
-            except Exception as e:
-                import traceback
-                print(f"[FortuneYear Error] {e}")
-                traceback.print_exc()
-                return response(500, {'success': False, 'error': str(e)})
-        
-        # AI 聊天
-        if path.endswith('/ai-chat'):
-            try:
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
+            if path.endswith("/ai-chat"):
                 from services.ai_service import AIService
-                messages = body.get('messages', [])
-                bazi_context = body.get('baziContext', {})
-                
-                api_key = os.environ.get('DEEPSEEK_API_KEY')
+
+                messages = body.get("messages", [])
+                bazi_context = body.get("baziContext", {})
+
+                api_key = os.environ.get("DEEPSEEK_API_KEY")
                 if not api_key:
-                    return response(500, {'success': False, 'error': 'AI not configured'})
-                
+                    self._send_json(500, {"success": False, "error": "AI not configured"})
+                    return
+
                 system_prompt = AIService.build_bazi_system_prompt(bazi_context)
-                full_messages = [{'role': 'system', 'content': system_prompt}] + messages
+                full_messages = [{"role": "system", "content": system_prompt}] + messages
                 ai_message = AIService.call_deepseek_api(api_key, full_messages)
-                return response(200, {'success': True, 'message': ai_message})
-            except Exception as e:
-                import traceback
-                print(f"[AI Error] {e}")
-                traceback.print_exc()
-                return response(500, {'success': False, 'error': str(e)})
-        
-        # 未知路径
-        return response(404, {'success': False, 'error': 'Not found'})
-        
-    except Exception as e:
-        import traceback
-        print(f"[CRITICAL] {e}")
-        traceback.print_exc()
-        return response(500, {
-            'success': False,
-            'error': 'Internal Server Error',
-            'details': str(e)
-        })
+                self._send_json(200, {"success": True, "message": ai_message})
+                return
+
+            self._send_json(404, {"success": False, "error": "Not found"})
+        except Exception as e:
+            import traceback
+
+            print(f"[CRITICAL] {e}")
+            traceback.print_exc()
+            self._send_json(
+                500,
+                {
+                    "success": False,
+                    "error": "Internal Server Error",
+                    "details": str(e),
+                },
+            )
