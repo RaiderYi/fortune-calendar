@@ -1049,6 +1049,41 @@ const mainCategory = getMainCategory(pathname);
           </AppContextProvider>
         } />
         
+        {/* 抽签功能路由 */}
+        <Route path="/app/fortune-stick" element={
+          <AppContextProvider
+            value={{
+              currentDate,
+              setCurrentDate,
+              fortune,
+              userProfile,
+              changeDate,
+              onCompareClick: () => setShowCompare(true),
+              fetchFortuneForDate: async (date: Date) => {
+                const yongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+                const data = await fetchFortuneData(date, userProfile, yongShen);
+                return data ? { dateStr: data.dateStr, totalScore: data.totalScore, mainTheme: data.mainTheme, dimensions: data.dimensions } : null;
+              },
+              onCheckinSuccess: (record) => {
+                haptics.success();
+                updateAchievements({
+                  checkin_3: record.consecutiveDays,
+                  checkin_7: record.consecutiveDays,
+                  checkin_30: record.consecutiveDays,
+                  checkin_100: record.consecutiveDays,
+                });
+                updateTaskProgress('daily_checkin');
+              },
+            }}
+          >
+            <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900">
+              <FortuneStickPage />
+            </div>
+            <BottomNav />
+          </AppContextProvider>
+        } />
+        
         {/* 其他路径统一重定向 */}
         <Route path="/app/*" element={<Navigate to="/app/fortune/today" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
