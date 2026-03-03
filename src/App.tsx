@@ -828,7 +828,7 @@ const mainCategory = getMainCategory(pathname);
             <TopSubNav category="fortune" />
             <Routes>
               <Route path="today" element={
-                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans text-slate-800 select-none overflow-hidden">
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans text-slate-800 select-none overflow-hidden lg:ml-56">
                   {/* 移动端布局 */}
                   <div className="flex flex-col lg:hidden min-h-screen" {...swipeHandlers}>
                     <Header
@@ -890,6 +890,58 @@ const mainCategory = getMainCategory(pathname);
                       } : undefined}
                     />
                     <BottomNav />
+                  </div>
+                  
+                  {/* 桌面端布局 */}
+                  <div className="hidden lg:block min-h-screen p-6">
+                    <div className="max-w-4xl mx-auto">
+                      <div className="flex items-center justify-between mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800">今日运势</h1>
+                        <DateSelector
+                          currentDate={currentDate}
+                          weekDay={fortune?.weekDay}
+                          lunarStr={fortune?.lunarStr}
+                          onPrevDay={() => changeDate(-1)}
+                          onNextDay={() => changeDate(1)}
+                          onDateChange={setCurrentDate}
+                        />
+                      </div>
+                      {fortune && (
+                        <TimeEnergyBall
+                          currentTime={new Date()}
+                          dayMaster={fortune.baziDetail?.dayMaster}
+                        />
+                      )}
+                      <TodayPage
+                        fortune={fortune}
+                        isLoading={isLoading}
+                        currentDate={currentDate}
+                        slideDirection={slideDirection}
+                        showBazi={showBazi}
+                        onToggleBazi={() => setShowBazi(!showBazi)}
+                        currentThemeStyle={currentThemeStyle}
+                        onFeedbackClick={() => setShowFeedback(true)}
+                        onAIClick={() => navigate('/app/fortune/ai')}
+                        onGenerateImage={handleGenerateImage}
+                        isGenerating={isGenerating}
+                        contentRef={contentRef}
+                        customYongShen={customYongShen}
+                        onCustomYongShenChange={setCustomYongShen}
+                        dailySignTheme={dailySignTheme}
+                        onThemeChange={setDailySignTheme}
+                        showThemeSelector={showThemeSelector}
+                        onToggleThemeSelector={() => setShowThemeSelector(!showThemeSelector)}
+                        onDiaryClick={() => setShowDiary(true)}
+                        baziContext={fortune ? {
+                          baziDetail: fortune.baziDetail,
+                          yongShen: fortune.yongShen,
+                          dimensions: fortune.dimensions,
+                          mainTheme: fortune.mainTheme,
+                          totalScore: fortune.totalScore,
+                          liuNian: fortune.liuNian,
+                        } : undefined}
+                      />
+                    </div>
                   </div>
                 </div>
               } />
@@ -1007,4 +1059,4 @@ const mainCategory = getMainCategory(pathname);
       />
     </AuthProvider>
   );
-}
+}
