@@ -1,4 +1,22 @@
 {
+  "radar": {
+    "title": "六维运势分析",
+    "subtitle": "点击维度查看详情",
+    "career": "事业",
+    "wealth": "财运",
+    "romance": "桃花",
+    "health": "健康",
+    "academic": "学业",
+    "travel": "出行"
+  },
+  "aiWisdom": {
+    "title": "AI 锦囊",
+    "loading": "AI正在思考今日运势...",
+    "refresh": "刷新",
+    "copy": "复制",
+    "copied": "已复制",
+    "poweredBy": "由 DeepSeek AI 生成"
+  },
   "dimensions": {
     "career": "事业",
     "wealth": "财运",

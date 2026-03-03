@@ -1,32 +1,46 @@
 // ==========================================
-// 底部 Tab 导航组件
+// 底部 Tab 导航组件 - 重构版
+// 三层结构: 运势 / 规划 / 我的
 // ==========================================
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, User } from 'lucide-react';
+import { Sparkles, CalendarDays, UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
-export type TabType = 'today' | 'calendar' | 'my';
+export type MainTabType = 'fortune' | 'plan' | 'profile';
 
-interface BottomNavProps {
-  currentTab: TabType;
-}
-
-const tabToPath: Record<TabType, string> = {
-  today: '/app/today',
-  calendar: '/app/calendar',
-  my: '/app/me',
+const tabToPath: Record<MainTabType, string> = {
+  fortune: '/app/fortune/today',
+  plan: '/app/plan/calendar',
+  profile: '/app/profile',
 };
 
-export default function BottomNav({ currentTab }: BottomNavProps) {
+const getTabFromPath = (pathname: string): MainTabType => {
+  if (pathname.startsWith('/app/fortune') || pathname === '/app/today') {
+    return 'fortune';
+  }
+  if (pathname.startsWith('/app/plan') || pathname === '/app/calendar') {
+    return 'plan';
+  }
+  if (pathname.startsWith('/app/profile') || pathname === '/app/me') {
+    return 'profile';
+  }
+  // 默认回到 fortune
+  return 'fortune';
+};
+
+export default function BottomNav() {
   const { t } = useTranslation('common');
   const location = useLocation();
   
-  const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
-    { id: 'today', label: t('nav.today'), icon: Home },
-    { id: 'calendar', label: t('nav.calendar'), icon: Calendar },
-    { id: 'my', label: t('nav.my'), icon: User },
+  // 根据当前路径确定活跃tab（优先使用传入的props，但可根据路径校正）
+  const activeTab = getTabFromPath(location.pathname);
+  
+  const tabs: { id: MainTabType; label: string; icon: typeof Sparkles }[] = [
+    { id: 'fortune', label: t('nav.fortune'), icon: Sparkles },
+    { id: 'plan', label: t('nav.plan'), icon: CalendarDays },
+    { id: 'profile', label: t('nav.profile'), icon: UserCircle },
   ];
 
   return (
@@ -35,7 +49,7 @@ export default function BottomNav({ currentTab }: BottomNavProps) {
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const to = tabToPath[tab.id];
-          const isActive = location.pathname === to || currentTab === tab.id;
+          const isActive = activeTab === tab.id;
           
           return (
             <Link
@@ -45,19 +59,28 @@ export default function BottomNav({ currentTab }: BottomNavProps) {
             >
               {isActive && (
                 <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-indigo-50 dark:bg-indigo-900/20 rounded-t-2xl"
+                  layoutId="activeMainTab"
+                  className="absolute inset-0 bg-gradient-to-t from-indigo-50 to-transparent dark:from-indigo-900/20 dark:to-transparent"
+                  initial={false}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
-              <Icon
-                size={22}
-                className={`relative z-10 transition-colors ${
-                  isActive
-                    ? 'text-indigo-600 dark:text-indigo-400'
-                    : 'text-gray-400 dark:text-gray-500'
-                }`}
-              />
+              <div className={`
+                relative z-10 p-1.5 rounded-full transition-all duration-200
+                ${isActive 
+                  ? 'bg-indigo-100 dark:bg-indigo-900/40' 
+                  : ''
+                }
+              `}>
+                <Icon
+                  size={22}
+                  className={`transition-colors ${
+                    isActive
+                      ? 'text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                />
+              </div>
               <span
                 className={`text-xs font-medium relative z-10 transition-colors ${
                   isActive
@@ -74,3 +97,29 @@ export default function BottomNav({ currentTab }: BottomNavProps) {
     </div>
   );
 }
+
+// 辅助函数：判断路径是否属于某个主分类
+export const isFortunePath = (pathname: string): boolean => {
+  return pathname.startsWith('/app/fortune') || 
+         pathname === '/app/today' ||
+         pathname === '/app/trends' ||
+         pathname === '/app/ai' ||
+         pathname === '/app/knowledge' ||
+         pathname.startsWith('/app/history') ||
+         pathname.startsWith('/app/lifemap');
+};
+
+export const isPlanPath = (pathname: string): boolean => {
+  return pathname.startsWith('/app/plan') || 
+         pathname === '/app/calendar' ||
+         pathname === '/app/datepicker' ||
+         pathname === '/app/checkin' ||
+         pathname === '/app/diary';
+};
+
+export const isProfilePath = (pathname: string): boolean => {
+  return pathname.startsWith('/app/profile') || 
+         pathname === '/app/me' ||
+         pathname === '/app/achievements' ||
+         pathname === '/app/fortune-stick';
+};

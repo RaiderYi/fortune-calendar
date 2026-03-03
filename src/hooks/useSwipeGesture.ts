@@ -9,8 +9,9 @@ interface SwipeConfig {
   onSwipeRight?: () => void;
   onSwipeUp?: () => void;
   onSwipeDown?: () => void;
-  minDistance?: number; // 最小滑动距离
-  maxTime?: number; // 最大滑动时间（毫秒）
+  minDistance?: number; // 最小滑动距离（默认50px）
+  maxTime?: number; // 最大滑动时间（毫秒，默认300ms）
+  velocityThreshold?: number; // 速度阈值（px/ms，默认0.3）
 }
 
 interface TouchData {
@@ -31,6 +32,7 @@ export function useSwipeGesture(config: SwipeConfig) {
     onSwipeDown,
     minDistance = 50,
     maxTime = 300,
+    velocityThreshold = 0.3,
   } = config;
 
   const touchData = useRef<TouchData | null>(null);
@@ -60,21 +62,34 @@ export function useSwipeGesture(config: SwipeConfig) {
 
     const absX = Math.abs(deltaX);
     const absY = Math.abs(deltaY);
+    
+    // 计算速度（px/ms）
+    const velocityX = absX / deltaTime;
+    const velocityY = absY / deltaTime;
 
-    // 判断滑动方向
-    if (absX > absY && absX >= minDistance) {
-      // 水平滑动
-      if (deltaX > 0) {
-        onSwipeRight?.();
-      } else {
-        onSwipeLeft?.();
+    // 判断滑动方向 - 优化逻辑：
+    // 1. 距离超过阈值，或
+    // 2. 速度超过阈值（快速轻扫）
+    const isHorizontal = absX > absY;
+    const isVertical = absY > absX;
+    
+    if (isHorizontal) {
+      const shouldTrigger = absX >= minDistance || velocityX >= velocityThreshold;
+      if (shouldTrigger) {
+        if (deltaX > 0) {
+          onSwipeRight?.();
+        } else {
+          onSwipeLeft?.();
+        }
       }
-    } else if (absY > absX && absY >= minDistance) {
-      // 垂直滑动
-      if (deltaY > 0) {
-        onSwipeDown?.();
-      } else {
-        onSwipeUp?.();
+    } else if (isVertical) {
+      const shouldTrigger = absY >= minDistance || velocityY >= velocityThreshold;
+      if (shouldTrigger) {
+        if (deltaY > 0) {
+          onSwipeDown?.();
+        } else {
+          onSwipeUp?.();
+        }
       }
     }
 

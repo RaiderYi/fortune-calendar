@@ -1,8 +1,22 @@
 {
   "nav": {
+    "fortune": "运势",
+    "plan": "规划",
+    "profile": "我的",
     "today": "今日",
     "calendar": "日历",
-    "my": "我的"
+    "my": "我的",
+    "switchCategory": "使用底部导航切换分类",
+    "sub": {
+      "today": "今日",
+      "trends": "趋势",
+      "ai": "AI咨询",
+      "knowledge": "知识库",
+      "calendar": "日历",
+      "datepicker": "择日",
+      "diary": "日记",
+      "checkin": "打卡"
+    }
   },
   "buttons": {
     "save": "保存",

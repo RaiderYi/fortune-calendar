@@ -14,7 +14,8 @@ import CalendarWidget from './components/CalendarWidget';
 import Onboarding from './components/Onboarding';
 import ProfileSettings from './components/ProfileSettings';
 import type { UserProfile } from './components/ProfileSettings';
-import BottomNav, { type TabType } from './components/BottomNav';
+import BottomNav, { isFortunePath, isPlanPath } from './components/BottomNav';
+import TopSubNav, { type MainCategory } from './components/TopSubNav';
 import TodayPage from './components/TodayPage';
 import CalendarPage from './components/CalendarPage';
 import MyPage from './components/MyPage';
@@ -72,8 +73,8 @@ const DiaryReview = lazy(() => import('./components/DiaryReview'));
 const DeveloperDashboard = lazy(() => import('./components/DeveloperDashboard'));
 import {
   Share2, Eye, EyeOff, Sparkles,  // ← Sparkles 必须保留
-  Briefcase, Coins, Heart, Zap, BookOpen, Map, TrendingUp,
-  Crown, Loader2, X, Download, MapPin, Mail
+  BookOpen, TrendingUp,
+  Crown, Loader2
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { CITY_LONGITUDE_MAP } from './utils/cityData';
@@ -209,9 +210,21 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
-  const FEATURE_PATHS = ['/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap', '/app/datepicker', '/app/fortune-stick'];
+  const FEATURE_PATHS = [
+    '/app/fortune/trends', '/app/fortune/ai', '/app/fortune/knowledge',
+    '/app/plan/datepicker', '/app/plan/checkin', '/app/plan/diary',
+    '/app/profile', '/app/achievements', '/app/fortune-stick',
+    // 旧路径兼容
+    '/app/history', '/app/trends', '/app/checkin', '/app/achievements', '/app/knowledge', '/app/ai', '/app/lifemap', '/app/datepicker'
+  ];
   const isFeaturePage = FEATURE_PATHS.some((p) => pathname.startsWith(p));
-  const currentTab: TabType = pathname.includes('/app/calendar') ? 'calendar' : pathname.includes('/app/me') ? 'my' : 'today';
+  // 新的主分类判断
+const getMainCategory = (pathname: string): MainCategory => {
+  if (isFortunePath(pathname)) return 'fortune';
+  if (isPlanPath(pathname)) return 'plan';
+  return 'profile';
+};
+const mainCategory = getMainCategory(pathname);
   const [showContact, setShowContact] = useState(false); // 联系我们
   const [showNotificationSettings, setShowNotificationSettings] = useState(false); // 通知设置
   const [showTaskPanel, setShowTaskPanel] = useState(false); // 任务面板
@@ -228,30 +241,31 @@ export default function App() {
     if (
       !showOnboarding &&
       fortune &&
-      currentTab === 'today' &&
+      mainCategory === 'fortune' &&
       !isFeaturePage &&
       !hasAcknowledgedDisclaimer()
     ) {
       setShowDisclaimer(true);
     }
-  }, [showOnboarding, fortune, currentTab, isFeaturePage]);
+  }, [showOnboarding, fortune, isFeaturePage]);
 
-  // 手势支持：左右滑动切换日期
+  // 手势支持：左右滑动切换日期 - 优化参数
   const swipeHandlers = useSwipeGesture({
     onSwipeLeft: () => {
-      if (currentTab === 'today' && !isAnimating) {
+      if (mainCategory === 'fortune' && !isAnimating) {
         haptics.light();
         changeDate(1); // 下一天
       }
     },
     onSwipeRight: () => {
-      if (currentTab === 'today' && !isAnimating) {
+      if (mainCategory === 'fortune' && !isAnimating) {
         haptics.light();
         changeDate(-1); // 前一天
       }
     },
-    minDistance: 80,
-    maxTime: 400,
+    minDistance: 50,        // 降低距离阈值
+    maxTime: 300,           // 缩短时间窗口
+    velocityThreshold: 0.3, // 新增：速度判断，快速轻扫也能触发
   });
 
   // 用户数据状态
@@ -769,8 +783,22 @@ export default function App() {
         <Route path="/pricing" element={<PricingPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/invite" element={<InvitePage />} />
-        <Route path="/app" element={<Navigate to="/app/today" replace />} />
-        <Route path="/app/:tab" element={
+        {/* 旧路径重定向 - 保持兼容性 */}
+        <Route path="/app" element={<Navigate to="/app/fortune/today" replace />} />
+        <Route path="/app/today" element={<Navigate to="/app/fortune/today" replace />} />
+        <Route path="/app/calendar" element={<Navigate to="/app/plan/calendar" replace />} />
+        <Route path="/app/me" element={<Navigate to="/app/profile" replace />} />
+        
+        {/* 功能页重定向 */}
+        <Route path="/app/history" element={<Navigate to="/app/fortune/today" replace />} />
+        <Route path="/app/trends" element={<Navigate to="/app/fortune/trends" replace />} />
+        <Route path="/app/ai" element={<Navigate to="/app/fortune/ai" replace />} />
+        <Route path="/app/knowledge" element={<Navigate to="/app/fortune/knowledge" replace />} />
+        <Route path="/app/checkin" element={<Navigate to="/app/plan/checkin" replace />} />
+        <Route path="/app/datepicker" element={<Navigate to="/app/plan/datepicker" replace />} />
+        
+        {/* 新的主路由 */}
+        <Route path="/app/fortune/*" element={
           <AppContextProvider
             value={{
               currentDate,
@@ -797,6 +825,207 @@ export default function App() {
             }}
           >
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <TopSubNav category="fortune" />
+            <Routes>
+              <Route path="today" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 font-sans text-slate-800 select-none overflow-hidden">
+                  {/* 移动端布局 */}
+                  <div className="flex flex-col lg:hidden min-h-screen" {...swipeHandlers}>
+                    <Header
+                      userName={userProfile.name}
+                      onSettingsClick={() => { setIsSettingsOpen(true); navigate('/app/profile'); }}
+                      onHistoryClick={() => navigate('/app/fortune/today')}
+                      onTrendsClick={() => navigate('/app/fortune/trends')}
+                      onCalendarClick={() => navigate('/app/plan/calendar')}
+                      onCheckinClick={() => navigate('/app/plan/checkin')}
+                      onAchievementClick={() => navigate('/app/profile')}
+                      onKnowledgeClick={() => navigate('/app/fortune/knowledge')}
+                      onAIClick={() => navigate('/app/fortune/ai')}
+                      onTaskClick={() => setShowTaskPanel(true)}
+                      onNotificationSettingsClick={() => setShowNotificationSettings(true)}
+                      onLoginClick={() => setShowLogin(true)}
+                      isAuthenticated={isAuthenticated}
+                    />
+                    <DateSelector
+                      currentDate={currentDate}
+                      weekDay={fortune?.weekDay}
+                      lunarStr={fortune?.lunarStr}
+                      onPrevDay={() => changeDate(-1)}
+                      onNextDay={() => changeDate(1)}
+                      onDateChange={setCurrentDate}
+                    />
+                    {fortune && (
+                      <TimeEnergyBall
+                        currentTime={new Date()}
+                        dayMaster={fortune.baziDetail?.dayMaster}
+                      />
+                    )}
+                    <TodayPage
+                      fortune={fortune}
+                      isLoading={isLoading}
+                      currentDate={currentDate}
+                      slideDirection={slideDirection}
+                      showBazi={showBazi}
+                      onToggleBazi={() => setShowBazi(!showBazi)}
+                      currentThemeStyle={currentThemeStyle}
+                      onFeedbackClick={() => setShowFeedback(true)}
+                      onAIClick={() => navigate('/app/fortune/ai')}
+                      onGenerateImage={handleGenerateImage}
+                      isGenerating={isGenerating}
+                      contentRef={contentRef}
+                      customYongShen={customYongShen}
+                      onCustomYongShenChange={setCustomYongShen}
+                      dailySignTheme={dailySignTheme}
+                      onThemeChange={setDailySignTheme}
+                      showThemeSelector={showThemeSelector}
+                      onToggleThemeSelector={() => setShowThemeSelector(!showThemeSelector)}
+                      onDiaryClick={() => setShowDiary(true)}
+                      baziContext={fortune ? {
+                        baziDetail: fortune.baziDetail,
+                        yongShen: fortune.yongShen,
+                        dimensions: fortune.dimensions,
+                        mainTheme: fortune.mainTheme,
+                        totalScore: fortune.totalScore,
+                        liuNian: fortune.liuNian,
+                      } : undefined}
+                    />
+                    <BottomNav />
+                  </div>
+                </div>
+              } />
+              <Route path="trends" element={<TrendsPage />} />
+              <Route path="ai" element={<AIPage />} />
+              <Route path="knowledge" element={<KnowledgePage />} />
+              <Route path="*" element={<Navigate to="/app/fortune/today" replace />} />
+            </Routes>
+            <BottomNav />
+          </AppContextProvider>
+        } />
+        
+        <Route path="/app/plan/*" element={
+          <AppContextProvider
+            value={{
+              currentDate,
+              setCurrentDate,
+              fortune,
+              userProfile,
+              changeDate,
+              onCompareClick: () => setShowCompare(true),
+              fetchFortuneForDate: async (date: Date) => {
+                const yongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+                const data = await fetchFortuneData(date, userProfile, yongShen);
+                return data ? { dateStr: data.dateStr, totalScore: data.totalScore, mainTheme: data.mainTheme, dimensions: data.dimensions } : null;
+              },
+              onCheckinSuccess: (record) => {
+                haptics.success();
+                updateAchievements({
+                  checkin_3: record.consecutiveDays,
+                  checkin_7: record.consecutiveDays,
+                  checkin_30: record.consecutiveDays,
+                  checkin_100: record.consecutiveDays,
+                });
+                updateTaskProgress('daily_checkin');
+              },
+            }}
+          >
+            <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <TopSubNav category="plan" />
+            <Routes>
+              <Route path="calendar" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900">
+                  <CalendarPage
+                    currentDate={currentDate}
+                    onDateChange={(date) => {
+                      setCurrentDate(date);
+                      navigate('/app/fortune/today');
+                    }}
+                  />
+                </div>
+              } />
+              <Route path="datepicker" element={<DatePickerPage />} />
+              <Route path="checkin" element={<CheckinPage />} />
+              <Route path="*" element={<Navigate to="/app/plan/calendar" replace />} />
+            </Routes>
+            <BottomNav />
+          </AppContextProvider>
+        } />
+        
+        <Route path="/app/profile" element={
+          <AppContextProvider
+            value={{
+              currentDate,
+              setCurrentDate,
+              fortune,
+              userProfile,
+              changeDate,
+              onCompareClick: () => setShowCompare(true),
+              fetchFortuneForDate: async (date: Date) => {
+                const yongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+                const data = await fetchFortuneData(date, userProfile, yongShen);
+                return data ? { dateStr: data.dateStr, totalScore: data.totalScore, mainTheme: data.mainTheme, dimensions: data.dimensions } : null;
+              },
+              onCheckinSuccess: (record) => {
+                haptics.success();
+                updateAchievements({
+                  checkin_3: record.consecutiveDays,
+                  checkin_7: record.consecutiveDays,
+                  checkin_30: record.consecutiveDays,
+                  checkin_100: record.consecutiveDays,
+                });
+                updateTaskProgress('daily_checkin');
+              },
+            }}
+          >
+            <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900">
+              <MyPage
+                userProfile={userProfile}
+                onSettingsClick={() => setIsSettingsOpen(true)}
+                onCheckinClick={() => navigate('/app/plan/checkin')}
+                onAchievementClick={() => navigate('/app/profile')}
+                onKnowledgeClick={() => navigate('/app/fortune/knowledge')}
+                onFeedbackClick={() => setShowFeedback(true)}
+                onDatePickerClick={() => navigate('/app/plan/datepicker')}
+                onFortuneStickClick={() => navigate('/app/fortune-stick')}
+                onReportClick={() => setShowReport(true)}
+                onDiaryReviewClick={() => setShowDiaryReview(true)}
+                onDeveloperDashboardClick={() => setShowDeveloperDashboard(true)}
+                onOpenLogin={() => setShowLogin(true)}
+              />
+            </div>
+            <BottomNav />
+          </AppContextProvider>
+        } />
+        
+        {/* 其他路径统一重定向 */}
+        <Route path="/app/*" element={<Navigate to="/app/fortune/today" replace />} />
+          <AppContextProvider
+            value={{
+              currentDate,
+              setCurrentDate,
+              fortune,
+              userProfile,
+              changeDate,
+              onCompareClick: () => setShowCompare(true),
+              fetchFortuneForDate: async (date: Date) => {
+                const yongShen = getCustomYongShen(userProfile.birthDate, userProfile.birthTime);
+                const data = await fetchFortuneData(date, userProfile, yongShen);
+                return data ? { dateStr: data.dateStr, totalScore: data.totalScore, mainTheme: data.mainTheme, dimensions: data.dimensions } : null;
+              },
+              onCheckinSuccess: (record) => {
+                haptics.success();
+                updateAchievements({
+                  checkin_3: record.consecutiveDays,
+                  checkin_7: record.consecutiveDays,
+                  checkin_30: record.consecutiveDays,
+                  checkin_100: record.consecutiveDays,
+                });
+                updateTaskProgress('daily_checkin');
+              },
+            }}
+          >
+            <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <TopSubNav category={mainCategory} />
             <div id="main" className="min-h-screen bg-gray-50 font-sans text-slate-800 select-none overflow-hidden">
               {/* 首次使用引导 */}
               {showOnboarding && (
@@ -821,7 +1050,7 @@ export default function App() {
           {...swipeHandlers}
         >
           {/* --- 顶部导航（仅在今日Tab显示，非功能页） --- */}
-          {!isFeaturePage && currentTab === 'today' && (
+          {!isFeaturePage && mainCategory === 'fortune' && (
             <>
         <Header
           userName={userProfile.name}
@@ -855,7 +1084,7 @@ export default function App() {
           )}
 
           {/* 时辰能量球 */}
-          {!isFeaturePage && currentTab === 'today' && fortune && (
+          {!isFeaturePage && mainCategory === 'fortune' && fortune && (
             <TimeEnergyBall
               currentTime={new Date()}
               dayMaster={fortune.baziDetail?.dayMaster}
@@ -884,7 +1113,7 @@ export default function App() {
                 {pathname.startsWith('/app/fortune-stick') && <FortuneStickPage />}
               </motion.div>
             )}
-            {!isFeaturePage && currentTab === 'today' && (
+            {!isFeaturePage && mainCategory === 'fortune' && (
               <motion.div
                 key="today"
                 initial={{ opacity: 0, x: -20 }}
@@ -925,7 +1154,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {currentTab === 'calendar' && (
+            {mainCategory === 'plan' && (
               <motion.div
                 key="calendar"
                 initial={{ opacity: 0, x: -20 }}
@@ -944,7 +1173,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {currentTab === 'my' && (
+            {mainCategory === 'profile' && (
               <motion.div
                 key="my"
                 initial={{ opacity: 0, x: -20 }}
@@ -972,7 +1201,7 @@ export default function App() {
           </AnimatePresence>
 
           {/* 底部导航栏 */}
-          <BottomNav currentTab={currentTab} />
+          <BottomNav />
             </div>
         {/* ========== 移动端布局结束 ========== */}
 

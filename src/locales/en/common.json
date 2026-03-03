@@ -1,8 +1,22 @@
 {
   "nav": {
+    "fortune": "Fortune",
+    "plan": "Plan",
+    "profile": "Profile",
     "today": "Today",
     "calendar": "Calendar",
-    "my": "My"
+    "my": "My",
+    "switchCategory": "Use bottom nav to switch categories",
+    "sub": {
+      "today": "Today",
+      "trends": "Trends",
+      "ai": "AI Chat",
+      "knowledge": "Knowledge",
+      "calendar": "Calendar",
+      "datepicker": "Date Picker",
+      "diary": "Diary",
+      "checkin": "Check-in"
+    }
   },
   "buttons": {
     "save": "Save",

@@ -1,4 +1,22 @@
 {
+  "radar": {
+    "title": "Six Dimensions Analysis",
+    "subtitle": "Tap to view details",
+    "career": "Career",
+    "wealth": "Wealth",
+    "romance": "Love",
+    "health": "Health",
+    "academic": "Study",
+    "travel": "Travel"
+  },
+  "aiWisdom": {
+    "title": "AI Wisdom",
+    "loading": "AI is thinking...",
+    "refresh": "Refresh",
+    "copy": "Copy",
+    "copied": "Copied",
+    "poweredBy": "Powered by DeepSeek AI"
+  },
   "dimensions": {
     "career": "Career",
     "wealth": "Wealth",
