@@ -6,17 +6,17 @@
     "today": "Today",
     "calendar": "Calendar",
     "my": "My",
-    "switchCategory": "Use bottom nav to switch categories",
-    "sub": {
-      "today": "Today",
-      "trends": "Trends",
-      "ai": "AI Chat",
-      "knowledge": "Knowledge",
-      "calendar": "Calendar",
-      "datepicker": "Date Picker",
-      "diary": "Diary",
-      "checkin": "Check-in"
-    }
+    "switchCategory": "Use bottom nav to switch categories"
+  },
+  "sub": {
+    "today": "Today",
+    "trends": "Trends",
+    "ai": "AI Chat",
+    "knowledge": "Knowledge",
+    "calendar": "Calendar",
+    "datepicker": "Date Picker",
+    "diary": "Diary",
+    "checkin": "Check-in"
   },
   "buttons": {
     "save": "Save",
