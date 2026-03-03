@@ -16,7 +16,10 @@
     "calendar": "日历",
     "datepicker": "择日",
     "diary": "日记",
-    "checkin": "打卡"
+    "checkin": "打卡",
+    "profile": "个人中心",
+    "achievements": "成就",
+    "fortuneStick": "抽签"
   },
   "buttons": {
     "save": "保存",

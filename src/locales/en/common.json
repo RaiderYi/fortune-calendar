@@ -16,7 +16,10 @@
     "calendar": "Calendar",
     "datepicker": "Date Picker",
     "diary": "Diary",
-    "checkin": "Check-in"
+    "checkin": "Check-in",
+    "profile": "Profile",
+    "achievements": "Achievements",
+    "fortuneStick": "Fortune Stick"
   },
   "buttons": {
     "save": "Save",

@@ -7,7 +7,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, TrendingUp, MessageCircle, BookOpen, CalendarDays, Target, BookHeart, CheckCircle } from 'lucide-react';
+import { Sparkles, TrendingUp, MessageCircle, BookOpen, CalendarDays, Target, BookHeart, CheckCircle, UserCircle, Settings, Trophy } from 'lucide-react';
 
 export type MainCategory = 'fortune' | 'plan' | 'profile';
 export type SubTab = 'today' | 'trends' | 'ai' | 'knowledge' | 'calendar' | 'datepicker' | 'diary' | 'checkin';
@@ -36,7 +36,11 @@ const subNavConfig: Record<MainCategory, SubNavItem[]> = {
     { id: 'diary', label: 'sub.diary', icon: BookHeart, path: '/app/plan/diary' },
     { id: 'checkin', label: 'sub.checkin', icon: CheckCircle, path: '/app/plan/checkin' },
   ],
-  profile: [], // 个人中心不需要子导航
+  profile: [
+    { id: 'profile', label: 'sub.profile', icon: UserCircle, path: '/app/profile' },
+    { id: 'achievements', label: 'sub.achievements', icon: Trophy, path: '/app/profile' },
+    { id: 'fortune-stick', label: 'sub.fortuneStick', icon: Sparkles, path: '/app/fortune-stick' },
+  ],
 };
 
 export default function TopSubNav({ category }: TopSubNavProps) {
@@ -46,8 +50,8 @@ export default function TopSubNav({ category }: TopSubNavProps) {
 
   const items = subNavConfig[category];
   
-  // 个人中心不显示子导航
-  if (category === 'profile' || items.length === 0) {
+  // 如果没有导航项，不显示
+  if (items.length === 0) {
     return null;
   }
 
@@ -95,7 +99,7 @@ export default function TopSubNav({ category }: TopSubNavProps) {
       <div className="hidden lg:block fixed left-0 top-16 bottom-0 w-56 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-gray-700 z-30 overflow-y-auto">
         <div className="p-4 space-y-1">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">
-            {category === 'fortune' ? t('nav.fortune') : t('nav.plan')}
+            {category === 'fortune' ? t('nav.fortune') : category === 'plan' ? t('nav.plan') : t('nav.profile')}
           </h3>
           {items.map((item) => {
             const Icon = item.icon;
