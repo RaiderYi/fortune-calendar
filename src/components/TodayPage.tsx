@@ -7,8 +7,65 @@ import FortuneCard from './FortuneCard';
 import FortuneCardV2 from './FortuneCardV2';
 import DimensionCard from './DimensionCard';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './SkeletonLoader';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TrendingUp, Sparkles, Crown, Loader2, Share2, PenLine, LayoutGrid, Layers } from 'lucide-react';
+
+// 新版卡片数据转换包装器
+const FortuneCardV2Wrapper: React.FC<{ fortune: any; animate?: boolean }> = ({ fortune, animate }) => {
+  // 数据转换和验证
+  const normalizedFortune = useMemo(() => {
+    if (!fortune) return null;
+    
+    // 处理 mainTheme (可能是字符串或对象)
+    const mainThemeStr = typeof fortune.mainTheme === 'string' 
+      ? fortune.mainTheme 
+      : fortune.mainTheme?.keyword || fortune.mainTheme?.description || '运势平稳';
+    
+    // 处理 dimensions (可能是数组或对象)
+    let dims = fortune.dimensions || {};
+    if (Array.isArray(dims)) {
+      // 如果是数组，转换为对象
+      const dimMap: Record<string, string> = { career: '事业', wealth: '财运', love: '桃花', health: '健康', study: '学业', travel: '出行' };
+      dims = {};
+      (fortune.dimensions || []).forEach((d: any) => {
+        const key = Object.keys(dimMap).find(k => dimMap[k] === d.name) || d.key;
+        dims[key] = d.score || 50;
+      });
+    }
+    
+    // 提取宜忌
+    const yi: string[] = [];
+    const ji: string[] = [];
+    if (Array.isArray(fortune.todo)) {
+      fortune.todo.forEach((item: any) => {
+        if (item.type === 'up' && item.content) yi.push(item.content);
+        if (item.type === 'down' && item.content) ji.push(item.content);
+      });
+    }
+    
+    return {
+      dateStr: fortune.dateStr || '',
+      weekDay: fortune.weekDay || '',
+      lunarStr: fortune.lunarStr || '',
+      totalScore: fortune.totalScore || 0,
+      mainTheme: mainThemeStr,
+      yi,
+      ji,
+      dimensions: {
+        career: dims.career ?? dims.事业 ?? 50,
+        wealth: dims.wealth ?? dims.财运 ?? 50,
+        love: dims.love ?? dims.桃花 ?? 50,
+        health: dims.health ?? dims.健康 ?? 50,
+        study: dims.study ?? dims.学业 ?? 50,
+        travel: dims.travel ?? dims.出行 ?? 50,
+      },
+    };
+  }, [fortune]);
+  
+  if (!normalizedFortune) return null;
+  
+  return <FortuneCardV2 fortune={normalizedFortune} animate={animate} />;
+};
 import CollapsibleSection from './CollapsibleSection';
 import BaziTermTooltip from './BaziTermTooltip';
 import YongShenEditor from './YongShenEditor';
@@ -142,19 +199,8 @@ export default function TodayPage({
 
             {/* 主运势卡片 - 条件渲染 */}
             {useNewCard ? (
-              <FortuneCardV2
-                fortune={{
-                  dateStr: fortune.dateStr,
-                  weekDay: fortune.weekDay,
-                  lunarStr: fortune.lunarStr,
-                  totalScore: fortune.totalScore,
-                  mainTheme: typeof fortune.mainTheme === 'string' ? fortune.mainTheme : fortune.mainTheme?.keyword || '',
-                  dimensions: fortune.dimensions,
-                  todo: fortune.todo,
-                  baziDetail: fortune.baziDetail,
-                  yongShen: fortune.yongShen,
-                  liuNian: fortune.liuNian,
-                }}
+              <FortuneCardV2Wrapper
+                fortune={fortune}
                 animate={true}
               />
             ) : (
