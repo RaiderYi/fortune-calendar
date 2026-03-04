@@ -38,7 +38,7 @@ const subNavConfig: Record<MainCategory, SubNavItem[]> = {
   ],
   profile: [
     { id: 'profile', label: 'sub.profile', icon: UserCircle, path: '/app/profile' },
-    { id: 'achievements', label: 'sub.achievements', icon: Trophy, path: '/app/profile' },
+    { id: 'achievements', label: 'sub.achievements', icon: Trophy, path: '/app/achievements' },
     { id: 'fortune-stick', label: 'sub.fortuneStick', icon: Sparkles, path: '/app/fortune-stick' },
   ],
 };

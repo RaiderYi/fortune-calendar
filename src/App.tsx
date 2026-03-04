@@ -788,6 +788,7 @@ const mainCategory = getMainCategory(pathname);
         <Route path="/app/today" element={<Navigate to="/app/fortune/today" replace />} />
         <Route path="/app/calendar" element={<Navigate to="/app/plan/calendar" replace />} />
         <Route path="/app/me" element={<Navigate to="/app/profile" replace />} />
+        <Route path="/app/achievements" element={<Navigate to="/app/profile" replace />} />
         
         {/* 功能页重定向 */}
         <Route path="/app/history" element={<Navigate to="/app/fortune/today" replace />} />
@@ -945,9 +946,21 @@ const mainCategory = getMainCategory(pathname);
                   </div>
                 </div>
               } />
-              <Route path="trends" element={<TrendsPage />} />
-              <Route path="ai" element={<AIPage />} />
-              <Route path="knowledge" element={<KnowledgePage />} />
+              <Route path="trends" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <TrendsPage />
+                </div>
+              } />
+              <Route path="ai" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <AIPage />
+                </div>
+              } />
+              <Route path="knowledge" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <KnowledgePage />
+                </div>
+              } />
               <Route path="*" element={<Navigate to="/app/fortune/today" replace />} />
             </Routes>
             <BottomNav />
@@ -984,7 +997,7 @@ const mainCategory = getMainCategory(pathname);
             <TopSubNav category="plan" />
             <Routes>
               <Route path="calendar" element={
-                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900">
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
                   <CalendarPage
                     currentDate={currentDate}
                     onDateChange={(date) => {
@@ -994,8 +1007,16 @@ const mainCategory = getMainCategory(pathname);
                   />
                 </div>
               } />
-              <Route path="datepicker" element={<DatePickerPage />} />
-              <Route path="checkin" element={<CheckinPage />} />
+              <Route path="datepicker" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <DatePickerPage />
+                </div>
+              } />
+              <Route path="checkin" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <CheckinPage />
+                </div>
+              } />
               <Route path="*" element={<Navigate to="/app/plan/calendar" replace />} />
             </Routes>
             <BottomNav />
@@ -1029,6 +1050,7 @@ const mainCategory = getMainCategory(pathname);
             }}
           >
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <TopSubNav category="profile" />
             <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
               <MyPage
                 userProfile={userProfile}
@@ -1077,6 +1099,7 @@ const mainCategory = getMainCategory(pathname);
             }}
           >
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
+            <TopSubNav category="profile" />
             <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
               <FortuneStickPage />
             </div>
@@ -1088,6 +1111,14 @@ const mainCategory = getMainCategory(pathname);
         <Route path="/app/*" element={<Navigate to="/app/fortune/today" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      {/* 个人档案设置 Modal */}
+      <ProfileSettings
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        profile={userProfile}
+        onSave={handleSaveSettings}
+      />
+      
       <LoginModal
         isOpen={showLogin}
         onClose={() => setShowLogin(false)}

@@ -4,10 +4,11 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import FortuneCard from './FortuneCard';
+import FortuneCardV2 from './FortuneCardV2';
 import DimensionCard from './DimensionCard';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './SkeletonLoader';
 import { useState } from 'react';
-import { TrendingUp, Sparkles, Crown, Loader2, Share2, PenLine } from 'lucide-react';
+import { TrendingUp, Sparkles, Crown, Loader2, Share2, PenLine, LayoutGrid, Layers } from 'lucide-react';
 import CollapsibleSection from './CollapsibleSection';
 import BaziTermTooltip from './BaziTermTooltip';
 import YongShenEditor from './YongShenEditor';
@@ -84,6 +85,7 @@ export default function TodayPage({
 }: TodayPageProps) {
   const { t } = useTranslation(['ui', 'bazi']);
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
+  const [useNewCard, setUseNewCard] = useState(false); // 切换新旧卡片
 
   // 使术语可点击
   const TermButton = ({ term, className = '' }: { term: string; className?: string }) => (
@@ -125,26 +127,57 @@ export default function TodayPage({
             ref={contentRef}
             style={{ paddingBottom: '24px', background: '#F5F5F7', paddingLeft: '4px', paddingRight: '4px' }}
           >
-            {/* 主运势卡片 */}
-            <FortuneCard
-              mainTheme={fortune.mainTheme}
-              totalScore={fortune.totalScore}
-              pillars={fortune.pillars}
-              themeStyle={currentThemeStyle}
-              showBazi={showBazi}
-              onToggleBazi={onToggleBazi}
-              yongShen={fortune.yongShen}
-              liuNian={fortune.liuNian}
-              todayTenGod={fortune.todayTenGod}
-              baziContext={{
-                baziDetail: fortune.baziDetail,
-                yongShen: fortune.yongShen,
-                dimensions: fortune.dimensions,
-                mainTheme: fortune.mainTheme,
-                totalScore: fortune.totalScore,
-                liuNian: fortune.liuNian,
-              }}
-            />
+            {/* 卡片版本切换 */}
+            <div className="flex justify-end mb-2">
+              <motion.button
+                onClick={() => setUseNewCard(!useNewCard)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full text-xs font-medium text-gray-600 dark:text-gray-400 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
+                {useNewCard ? <Layers size={14} /> : <LayoutGrid size={14} />}
+                {useNewCard ? '经典版' : '新版'}
+              </motion.button>
+            </div>
+
+            {/* 主运势卡片 - 条件渲染 */}
+            {useNewCard ? (
+              <FortuneCardV2
+                fortune={{
+                  dateStr: fortune.dateStr,
+                  weekDay: fortune.weekDay,
+                  lunarStr: fortune.lunarStr,
+                  totalScore: fortune.totalScore,
+                  mainTheme: typeof fortune.mainTheme === 'string' ? fortune.mainTheme : fortune.mainTheme?.keyword || '',
+                  dimensions: fortune.dimensions,
+                  todo: fortune.todo,
+                  baziDetail: fortune.baziDetail,
+                  yongShen: fortune.yongShen,
+                  liuNian: fortune.liuNian,
+                }}
+                animate={true}
+              />
+            ) : (
+              <FortuneCard
+                mainTheme={fortune.mainTheme}
+                totalScore={fortune.totalScore}
+                pillars={fortune.pillars}
+                themeStyle={currentThemeStyle}
+                showBazi={showBazi}
+                onToggleBazi={onToggleBazi}
+                yongShen={fortune.yongShen}
+                liuNian={fortune.liuNian}
+                todayTenGod={fortune.todayTenGod}
+                baziContext={{
+                  baziDetail: fortune.baziDetail,
+                  yongShen: fortune.yongShen,
+                  dimensions: fortune.dimensions,
+                  mainTheme: fortune.mainTheme,
+                  totalScore: fortune.totalScore,
+                  liuNian: fortune.liuNian,
+                }}
+              />
+            )}
 
             {/* AI 咨询和反馈按钮 */}
             {fortune && (
