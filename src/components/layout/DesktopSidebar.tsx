@@ -1,5 +1,5 @@
 // ==========================================
-// 桌面端左侧边栏导航
+// 桌面端左侧边栏导航 - v2
 // ==========================================
 
 import { Link, useLocation } from 'react-router-dom';
@@ -21,14 +21,14 @@ export default function DesktopSidebar() {
   const location = useLocation();
 
   const navItems = [
-    { to: '/app/fortune/today', icon: Home, label: '今日运势' },
-    { to: '/app/plan/calendar', icon: Calendar, label: '万年历' },
-    { to: '/app/fortune/trends', icon: TrendingUp, label: '十年大运' },
-    { to: '/app/fortune/ai', icon: Sparkles, label: 'AI命理咨询' },
-    { to: '/app/fortune/knowledge', icon: BookOpen, label: '八字学堂' },
-    { to: '/app/plan/checkin', icon: CheckCircle, label: '每日签到' },
-    { to: '/app/fortune-stick', icon: Gift, label: '每日抽签' },
-    { to: '/app/profile', icon: User, label: '个人中心' },
+    { to: '/app/fortune/today', icon: Home, label: '今日运势', badge: null },
+    { to: '/app/plan/calendar', icon: Calendar, label: '万年历', badge: null },
+    { to: '/app/fortune/trends', icon: TrendingUp, label: '十年大运', badge: null },
+    { to: '/app/fortune/ai', icon: Sparkles, label: 'AI命理咨询', badge: null },
+    { to: '/app/fortune/knowledge', icon: BookOpen, label: '八字学堂', badge: null },
+    { to: '/app/plan/checkin', icon: CheckCircle, label: '每日签到', badge: null },
+    { to: '/app/fortune-stick', icon: Gift, label: '每日抽签', badge: null },
+    { to: '/app/profile', icon: User, label: '个人中心', badge: null },
   ];
 
   const isActive = (path: string) => {
