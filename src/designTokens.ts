@@ -110,6 +110,38 @@ export function getFortuneColor(score: number): string {
   return '#ef4444';
 }
 
+// 字体系统
+export const fontSize = {
+  xs: '12px',
+  sm: '14px',
+  base: '16px',
+  lg: '18px',
+  xl: '20px',
+  '2xl': '24px',
+  '3xl': '30px',
+  '4xl': '36px',
+};
+
+export const fontWeight = {
+  normal: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+};
+
+// 动画系统
+export const duration = {
+  fast: '150ms',
+  normal: '300ms',
+  slow: '500ms',
+};
+
+export const easing = {
+  default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  in: 'cubic-bezier(0.4, 0, 1, 1)',
+  out: 'cubic-bezier(0, 0, 0.2, 1)',
+};
+
 // 辅助函数：根据分数获取运势标签
 export function getFortuneLabel(score: number): string {
   if (score >= 90) return '大吉';
