@@ -17,10 +17,9 @@ async def send_verification_email(to_email: str, code: str) -> dict:
     """
     
     api_key = os.environ.get('RESEND_API_KEY')
-    is_dev = os.environ.get('VERCEL_ENV') != 'production'
     
-    # 开发环境：打印验证码到日志，不实际发送
-    if is_dev or not api_key:
+    # 没有配置 API Key：打印验证码到日志
+    if not api_key:
         print(f"\n{'='*50}")
         print(f"[DEV] 验证码邮件")
         print(f"收件人: {to_email}")
