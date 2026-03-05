@@ -21,7 +21,7 @@ const FortuneCardV2Wrapper: React.FC<{ fortune: any; animate?: boolean }> = ({ f
       ? fortune.mainTheme 
       : fortune.mainTheme?.keyword || fortune.mainTheme?.description || '运势平稳';
     
-    // 处理 dimensions (可能是数组或对象)
+    // 处理 dimensions (可能是数组或对象，对象的值可能是数字或对象)
     let dims = fortune.dimensions || {};
     if (Array.isArray(dims)) {
       // 如果是数组，转换为对象
@@ -32,6 +32,14 @@ const FortuneCardV2Wrapper: React.FC<{ fortune: any; animate?: boolean }> = ({ f
         dims[key] = d.score || 50;
       });
     }
+    
+    // 提取 dimension 分数（可能是数字或对象）
+    const getDimScore = (key: string): number => {
+      const val = dims[key];
+      if (typeof val === 'number') return val;
+      if (typeof val === 'object' && val !== null) return val.score || 50;
+      return 50;
+    };
     
     // 提取宜忌
     const yi: string[] = [];
@@ -52,12 +60,12 @@ const FortuneCardV2Wrapper: React.FC<{ fortune: any; animate?: boolean }> = ({ f
       yi,
       ji,
       dimensions: {
-        career: dims.career ?? dims.事业 ?? 50,
-        wealth: dims.wealth ?? dims.财运 ?? 50,
-        love: dims.love ?? dims.桃花 ?? 50,
-        health: dims.health ?? dims.健康 ?? 50,
-        study: dims.study ?? dims.学业 ?? 50,
-        travel: dims.travel ?? dims.出行 ?? 50,
+        career: getDimScore('career'),
+        wealth: getDimScore('wealth'),
+        love: getDimScore('love'),
+        health: getDimScore('health'),
+        study: getDimScore('study'),
+        travel: getDimScore('travel'),
       },
     };
   }, [fortune]);

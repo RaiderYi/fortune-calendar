@@ -36,26 +36,32 @@ export const colors = {
     career: {
       DEFAULT: '#3B82F6',
       light: '#93C5FD',
+      gradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
     },
     wealth: {
       DEFAULT: '#EAB308',
       light: '#FDE047',
+      gradient: 'linear-gradient(135deg, #EAB308 0%, #A16207 100%)',
     },
     love: {
       DEFAULT: '#EC4899',
       light: '#F9A8D4',
+      gradient: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
     },
     health: {
       DEFAULT: '#22C55E',
       light: '#86EFAC',
+      gradient: 'linear-gradient(135deg, #22C55E 0%, #15803D 100%)',
     },
     study: {
       DEFAULT: '#8B5CF6',
       light: '#C4B5FD',
+      gradient: 'linear-gradient(135deg, #8B5CF6 0%, #5B21B6 100%)',
     },
     travel: {
       DEFAULT: '#06B6D4',
       light: '#67E8F9',
+      gradient: 'linear-gradient(135deg, #06B6D4 0%, #0E7490 100%)',
     },
   },
   // 运势等级颜色
