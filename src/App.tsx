@@ -56,6 +56,8 @@ import DatePickerPage from './pages/app/DatePickerPage';
 import FortuneStickPage from './pages/app/FortuneStickPage';
 import LoginPage from './pages/app/LoginPage';
 import InvitePage from './pages/app/InvitePage';
+import ProfilePage from './pages/app/ProfilePage';
+import ResetPasswordPage from './pages/app/ResetPasswordPage';
 import DisclaimerModal, { hasAcknowledgedDisclaimer } from './components/DisclaimerModal';
 
 // ==========================================
@@ -782,6 +784,7 @@ const mainCategory = getMainCategory(pathname);
         <Route path="/blog" element={<BlogPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/pricing" element={<PricingPage onLoginClick={() => setShowLogin(true)} />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/invite" element={<InvitePage />} />
         {/* 旧路径重定向 - 保持兼容性 */}
         <Route path="/app" element={<Navigate to="/app/fortune/today" replace />} />
@@ -1051,21 +1054,8 @@ const mainCategory = getMainCategory(pathname);
           >
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <TopSubNav category="profile" />
-            <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
-              <MyPage
-                userProfile={userProfile}
-                onSettingsClick={() => setIsSettingsOpen(true)}
-                onCheckinClick={() => navigate('/app/plan/checkin')}
-                onAchievementClick={() => navigate('/app/profile')}
-                onKnowledgeClick={() => navigate('/app/fortune/knowledge')}
-                onFeedbackClick={() => setShowFeedback(true)}
-                onDatePickerClick={() => navigate('/app/plan/datepicker')}
-                onFortuneStickClick={() => navigate('/app/fortune-stick')}
-                onReportClick={() => setShowReport(true)}
-                onDiaryReviewClick={() => setShowDiaryReview(true)}
-                onDeveloperDashboardClick={() => setShowDeveloperDashboard(true)}
-                onOpenLogin={() => setShowLogin(true)}
-              />
+            <div id="main" className="min-h-screen bg-slate-950 lg:ml-56">
+              <ProfilePage />
             </div>
             <BottomNav />
           </AppContextProvider>

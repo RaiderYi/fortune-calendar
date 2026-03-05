@@ -520,6 +520,188 @@ class AuthService:
         cls._run_async(kv.set(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}", user))
         
         return {'success': True, 'sync_enabled': enabled}
+    
+    @classmethod
+    def request_password_reset(cls, email: str) -> Dict:
+        """请求密码重置"""
+        try:
+            email = email.lower().strip()
+            user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{email}"))
+            
+            if not user:
+                # 为安全起见，不透露邮箱是否存在
+                return {'success': True, 'message': '如果该邮箱已注册，重置链接将发送至您的邮箱'}
+            
+            # 生成重置令牌（15分钟有效）
+            reset_token = secrets.token_urlsafe(32)
+            reset_key = f"reset:{reset_token}"
+            
+            cls._run_async(kv.set(reset_key, {
+                'user_id': user['id'],
+                'email': email,
+                'created_at': time.time()
+            }, ttl=900))  # 15分钟
+            
+            # TODO: 发送重置邮件
+            # 开发环境直接返回token
+            is_dev = os.environ.get('VERCEL_ENV') != 'production'
+            
+            return {
+                'success': True,
+                'message': '如果该邮箱已注册，重置链接将发送至您的邮箱',
+                **({'debug_token': reset_token} if is_dev else {})
+            }
+            
+        except Exception as e:
+            print(f"[Reset Request Error] {e}")
+            return {'success': False, 'error': '请求失败，请稍后重试'}
+    
+    @classmethod
+    def verify_reset_token(cls, token: str) -> Optional[Dict]:
+        """验证重置令牌"""
+        try:
+            reset_data = cls._run_async(kv.get(f"reset:{token}"))
+            if not reset_data:
+                return None
+            return reset_data
+        except Exception:
+            return None
+    
+    @classmethod
+    def reset_password(cls, token: str, new_password: str) -> Dict:
+        """重置密码"""
+        try:
+            # 验证令牌
+            reset_data = cls.verify_reset_token(token)
+            if not reset_data:
+                return {'success': False, 'error': '重置链接已过期或无效'}
+            
+            # 验证密码强度
+            if len(new_password) < 6:
+                return {'success': False, 'error': '密码长度至少6位'}
+            
+            email = reset_data['email']
+            user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{email}"))
+            
+            if not user:
+                return {'success': False, 'error': '用户不存在'}
+            
+            # 更新密码
+            user['password_hash'] = cls.hash_password(new_password)
+            user['updated_at'] = datetime.utcnow().isoformat()
+            user['password_reset_at'] = datetime.utcnow().isoformat()
+            
+            cls._run_async(kv.set(f"{cls.PREFIX_USER_EMAIL}{email}", user))
+            
+            # 删除重置令牌
+            cls._run_async(kv.delete(f"reset:{token}"))
+            
+            return {'success': True, 'message': '密码重置成功，请使用新密码登录'}
+            
+        except Exception as e:
+            print(f"[Reset Password Error] {e}")
+            return {'success': False, 'error': '重置失败，请稍后重试'}
+    
+    @classmethod
+    def get_user_profile(cls, user_id: str) -> Dict:
+        """获取用户资料"""
+        try:
+            user_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{user_id}"))
+            if not user_index:
+                return {'success': False, 'error': '用户不存在'}
+            
+            user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}"))
+            if not user:
+                return {'success': False, 'error': '用户不存在'}
+            
+            rewards = cls._run_async(kv.get(cls.KEY_REWARDS.format(user_id))) or {}
+            stats = cls._run_async(kv.get(cls.KEY_INVITE_STATS.format(user_id))) or {
+                'total': 0, 'successful': 0
+            }
+            
+            return {
+                'success': True,
+                'user': {
+                    'id': user['id'],
+                    'email': user['email'],
+                    'created_at': user['created_at'],
+                    'last_login': user.get('last_login'),
+                    'invite_code': user['invite_code'],
+                    'sync_enabled': user.get('sync_enabled', True),
+                    'rewards': rewards,
+                    'invite_stats': stats
+                }
+            }
+            
+        except Exception as e:
+            print(f"[Get Profile Error] {e}")
+            return {'success': False, 'error': '获取用户信息失败'}
+    
+    @classmethod
+    def change_password(cls, user_id: str, old_password: str, new_password: str) -> Dict:
+        """修改密码（需验证旧密码）"""
+        try:
+            user_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{user_id}"))
+            if not user_index:
+                return {'success': False, 'error': '用户不存在'}
+            
+            user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}"))
+            if not user:
+                return {'success': False, 'error': '用户不存在'}
+            
+            # 验证旧密码
+            if not cls.verify_password(old_password, user['password_hash']):
+                return {'success': False, 'error': '当前密码错误'}
+            
+            # 验证新密码强度
+            if len(new_password) < 6:
+                return {'success': False, 'error': '新密码长度至少6位'}
+            
+            # 更新密码
+            user['password_hash'] = cls.hash_password(new_password)
+            user['updated_at'] = datetime.utcnow().isoformat()
+            
+            cls._run_async(kv.set(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}", user))
+            
+            return {'success': True, 'message': '密码修改成功'}
+            
+        except Exception as e:
+            print(f"[Change Password Error] {e}")
+            return {'success': False, 'error': '修改失败，请稍后重试'}
+    
+    @classmethod
+    def delete_account(cls, user_id: str, password: str) -> Dict:
+        """注销账户"""
+        try:
+            user_index = cls._run_async(kv.get(f"{cls.PREFIX_USER_ID}{user_id}"))
+            if not user_index:
+                return {'success': False, 'error': '用户不存在'}
+            
+            user = cls._run_async(kv.get(f"{cls.PREFIX_USER_EMAIL}{user_index['email']}"))
+            if not user:
+                return {'success': False, 'error': '用户不存在'}
+            
+            # 验证密码
+            if not cls.verify_password(password, user['password_hash']):
+                return {'success': False, 'error': '密码错误'}
+            
+            email = user['email']
+            invite_code = user['invite_code']
+            
+            # 删除所有相关数据
+            cls._run_async(kv.delete(f"{cls.PREFIX_USER_EMAIL}{email}"))
+            cls._run_async(kv.delete(f"{cls.PREFIX_USER_ID}{user_id}"))
+            cls._run_async(kv.delete(f"{cls.PREFIX_INVITE}{invite_code}"))
+            cls._run_async(kv.delete(cls.KEY_REWARDS.format(user_id)))
+            cls._run_async(kv.delete(cls.KEY_INVITE_STATS.format(user_id)))
+            
+            # TODO: 清理同步数据
+            
+            return {'success': True, 'message': '账户已注销'}
+            
+        except Exception as e:
+            print(f"[Delete Account Error] {e}")
+            return {'success': False, 'error': '注销失败，请稍后重试'}
 
 
 # 全局认证服务实例

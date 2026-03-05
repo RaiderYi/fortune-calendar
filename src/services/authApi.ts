@@ -149,6 +149,65 @@ export async function updateSyncSetting(enabled: boolean) {
   return response.json();
 }
 
+// 获取用户信息
+export async function getUserProfile() {
+  const response = await authenticatedFetch(`${API_BASE}/user/profile`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return response.json();
+}
+
+// 请求密码重置
+export async function requestPasswordReset(email: string) {
+  const response = await fetch(`${API_BASE}/auth/reset-password-request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  return response.json();
+}
+
+// 验证重置令牌
+export async function verifyResetToken(token: string) {
+  const response = await fetch(`${API_BASE}/auth/reset-password-verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  return response.json();
+}
+
+// 重置密码
+export async function resetPassword(token: string, newPassword: string) {
+  const response = await fetch(`${API_BASE}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword }),
+  });
+  return response.json();
+}
+
+// 修改密码（需登录）
+export async function changePassword(oldPassword: string, newPassword: string) {
+  const response = await authenticatedFetch(`${API_BASE}/user/change-password`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+  return response.json();
+}
+
+// 注销账户
+export async function deleteAccount(password: string) {
+  const response = await authenticatedFetch(`${API_BASE}/user/delete`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  return response.json();
+}
+
 // 检查是否已登录
 export function isLoggedIn(): boolean {
   return !!TokenManager.getAccessToken();

@@ -37,7 +37,7 @@ export default function LoginPage() {
   
   // 表单状态
   const [email, setEmail] = useState('');
-  [password, setPassword] = useState('');
+  const [password, setPassword] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [inviteCode, setInviteCode] = useState(urlInviteCode || '');
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +53,14 @@ export default function LoginPage() {
   // 如果已登录，跳转
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/app/today');
+      // 检查是否有登录前的页面需要返回
+      const redirect = sessionStorage.getItem('login_redirect');
+      if (redirect) {
+        sessionStorage.removeItem('login_redirect');
+        navigate(redirect);
+      } else {
+        navigate('/app/today');
+      }
     }
   }, [isLoggedIn, navigate]);
 
@@ -340,17 +347,25 @@ export default function LoginPage() {
               </motion.div>
             )}
 
-            {/* 记住我（仅登录） */}
+            {/* 记住我和忘记密码（仅登录） */}
             {mode === 'login' && (
-              <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-white/20 bg-white/5 text-indigo-600"
-                />
-                记住我
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded border-white/20 bg-white/5 text-indigo-600"
+                  />
+                  记住我
+                </label>
+                <Link 
+                  to="/reset-password"
+                  className="text-sm text-indigo-400 hover:text-indigo-300 transition"
+                >
+                  忘记密码？
+                </Link>
+              </div>
             )}
 
             {/* 操作按钮 */}

@@ -109,6 +109,75 @@ def _handle_request(path: str, method: str, body: dict, headers: dict) -> str:
         result = AuthService.update_sync_setting(user['id'], enabled)
         return make_response(result, 200 if result.get('success') else 400)
     
+    # 获取用户信息
+    if path == '/api/user/profile' and method == 'GET':
+        user = _get_current_user(headers)
+        if not user:
+            return make_response({'success': False, 'error': '未登录'}, 401)
+        
+        result = AuthService.get_user_profile(user['id'])
+        return make_response(result, 200 if result.get('success') else 400)
+    
+    # 请求密码重置
+    if path == '/api/auth/reset-password-request' and method == 'POST':
+        email = body.get('email', '').lower().strip()
+        if not email:
+            return make_response({'success': False, 'error': '邮箱不能为空'}, 400)
+        
+        result = AuthService.request_password_reset(email)
+        return make_response(result, 200 if result.get('success') else 400)
+    
+    # 验证重置令牌
+    if path == '/api/auth/reset-password-verify' and method == 'POST':
+        token = body.get('token', '')
+        if not token:
+            return make_response({'success': False, 'error': '令牌不能为空'}, 400)
+        
+        result = AuthService.verify_reset_token(token)
+        if result:
+            return make_response({'success': True, 'valid': True})
+        else:
+            return make_response({'success': False, 'error': '令牌无效或已过期'}, 400)
+    
+    # 重置密码
+    if path == '/api/auth/reset-password' and method == 'POST':
+        token = body.get('token', '')
+        new_password = body.get('newPassword', '')
+        
+        if not all([token, new_password]):
+            return make_response({'success': False, 'error': '请填写所有必填项'}, 400)
+        
+        result = AuthService.reset_password(token, new_password)
+        return make_response(result, 200 if result.get('success') else 400)
+    
+    # 修改密码（需登录）
+    if path == '/api/user/change-password' and method == 'PUT':
+        user = _get_current_user(headers)
+        if not user:
+            return make_response({'success': False, 'error': '未登录'}, 401)
+        
+        old_password = body.get('oldPassword', '')
+        new_password = body.get('newPassword', '')
+        
+        if not all([old_password, new_password]):
+            return make_response({'success': False, 'error': '请填写所有必填项'}, 400)
+        
+        result = AuthService.change_password(user['id'], old_password, new_password)
+        return make_response(result, 200 if result.get('success') else 400)
+    
+    # 注销账户
+    if path == '/api/user/delete' and method == 'DELETE':
+        user = _get_current_user(headers)
+        if not user:
+            return make_response({'success': False, 'error': '未登录'}, 401)
+        
+        password = body.get('password', '')
+        if not password:
+            return make_response({'success': False, 'error': '请提供密码'}, 400)
+        
+        result = AuthService.delete_account(user['id'], password)
+        return make_response(result, 200 if result.get('success') else 400)
+    
     return make_response({'success': False, 'error': 'Not found'}, 404)
 
 
