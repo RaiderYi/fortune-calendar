@@ -43,6 +43,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './components/SkeletonLoader';
 import QuickActionsSidebar from './components/QuickActionsSidebar';
+import DesktopSidebar from './components/layout/DesktopSidebar';
 import { AppContextProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
 import HistoryPage from './pages/app/HistoryPage';
@@ -828,6 +829,7 @@ const mainCategory = getMainCategory(pathname);
               },
             }}
           >
+            <DesktopSidebar />
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <TopSubNav category="fortune" />
             <Routes>
@@ -996,6 +998,7 @@ const mainCategory = getMainCategory(pathname);
               },
             }}
           >
+            <DesktopSidebar />
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <TopSubNav category="plan" />
             <Routes>
@@ -1052,6 +1055,7 @@ const mainCategory = getMainCategory(pathname);
               },
             }}
           >
+            <DesktopSidebar />
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <TopSubNav category="profile" />
             <div id="main" className="min-h-screen bg-slate-950 lg:ml-56">
@@ -1088,6 +1092,7 @@ const mainCategory = getMainCategory(pathname);
               },
             }}
           >
+            <DesktopSidebar />
             <SiteHeader onLoginClick={() => setShowLogin(true)} />
             <TopSubNav category="profile" />
             <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
