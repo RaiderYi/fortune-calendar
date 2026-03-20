@@ -409,7 +409,7 @@ export default function LifeMapContent({
                     if (onViewToday) onViewToday();
                     else {
                       setCurrentDate(new Date());
-                      navigate('/app/today');
+                      navigate('/app/fortune/today');
                     }
                   }}
                   className="px-4 py-2 rounded-xl bg-slate-900 text-cyan-200 text-sm"

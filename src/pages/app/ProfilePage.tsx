@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { getCreditsBalance } from '../../utils/creditsStorage';
 import { syncManager } from '../../services/SyncManager';
 import * as authApi from '../../services/authApi';
 import * as syncApi from '../../services/syncApi';
@@ -42,6 +43,7 @@ export default function ProfilePage() {
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [credits, setCredits] = useState(() => getCreditsBalance());
 
   // 加载同步状态
   useEffect(() => {
@@ -49,7 +51,14 @@ export default function ProfilePage() {
       loadSyncStatus();
       refreshInviteInfo();
     }
+    setCredits(getCreditsBalance());
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    const onCredits = () => setCredits(getCreditsBalance());
+    window.addEventListener('fc-credits-updated', onCredits);
+    return () => window.removeEventListener('fc-credits-updated', onCredits);
+  }, []);
 
   const loadSyncStatus = async () => {
     try {
@@ -87,7 +96,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     if (confirm('确定要退出登录吗？')) {
       logout();
-      navigate('/app/today');
+      navigate('/app/fortune/today');
     }
   };
 
@@ -101,7 +110,7 @@ export default function ProfilePage() {
       {/* 头部 */}
       <header className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/app/today" className="p-2 hover:bg-white/10 rounded-lg transition">
+          <Link to="/app/fortune/today" className="p-2 hover:bg-white/10 rounded-lg transition">
             <ArrowLeft className="w-5 h-5 text-white/60" />
           </Link>
           <h1 className="text-lg font-bold text-white">我的</h1>
@@ -132,7 +141,11 @@ export default function ProfilePage() {
           </div>
 
           {/* 权益展示 */}
-          <div className="mt-6 grid grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="text-center p-3 bg-white/5 rounded-xl">
+              <div className="text-2xl font-bold text-emerald-400">{credits}</div>
+              <div className="text-xs text-white/60">积分</div>
+            </div>
             <div className="text-center p-3 bg-white/5 rounded-xl">
               <div className="text-2xl font-bold text-white">15</div>
               <div className="text-xs text-white/60">AI咨询/日</div>
@@ -333,7 +346,7 @@ export default function ProfilePage() {
         onClose={() => setShowDeleteAccount(false)}
         onSuccess={() => {
           logout();
-          navigate('/app/today');
+          navigate('/app/fortune/today');
         }}
       />
     </div>
@@ -375,7 +388,7 @@ function GuestProfile() {
       {/* 头部 */}
       <header className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/app/today" className="p-2 hover:bg-white/10 rounded-lg transition">
+          <Link to="/app/fortune/today" className="p-2 hover:bg-white/10 rounded-lg transition">
             <ArrowLeft className="w-5 h-5 text-white/60" />
           </Link>
           <h1 className="text-lg font-bold text-white">我的</h1>

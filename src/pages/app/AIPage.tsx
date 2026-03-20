@@ -12,6 +12,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useAppContext } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
 import TypewriterText from '../../components/TypewriterText';
+import { trySpendCredits, addCredits } from '../../utils/creditsStorage';
 
 export default function AIPage() {
   const { t } = useTranslation('ui');
@@ -62,10 +63,20 @@ export default function AIPage() {
     setInputText('');
     setIsLoading(true);
 
+    let needRefundCredits = false;
     try {
-      const response = await chatWithAI(newMessages, baziContext);
+      if (!trySpendCredits(1, 'ai_chat')) {
+        showToast('积分不足，完成邀请或签到可获积分', 'warning');
+        setMessages(messages);
+        setInputText(content.trim());
+        setIsLoading(false);
+        return;
+      }
+      needRefundCredits = true;
+      const response = await chatWithAI(newMessages, { baziContext });
 
       if (response.success && response.message) {
+        needRefundCredits = false;
         const assistantMessage: ChatMessage = {
           role: 'assistant',
           content: response.message,
@@ -87,6 +98,9 @@ export default function AIPage() {
       };
       setMessages([...newMessages, errorMessage]);
     } finally {
+      if (needRefundCredits) {
+        addCredits(1, 'ai_chat_refund');
+      }
       setIsLoading(false);
     }
   };
@@ -115,7 +129,7 @@ export default function AIPage() {
         <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
           <div className="flex items-center gap-3">
             <Link
-              to="/app/today"
+              to="/app/fortune/today"
               className="p-2 hover:bg-white/20 rounded-full transition"
               aria-label={t('common:buttons.back', { defaultValue: 'Back' })}
             >
@@ -141,7 +155,7 @@ export default function AIPage() {
             })}
           </p>
           <Link
-            to="/app/today"
+            to="/app/fortune/today"
             className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold transition"
           >
             {t('aiDeduction.goToToday', { defaultValue: '查看今日运势' })}
@@ -157,7 +171,7 @@ export default function AIPage() {
       <div className="flex-shrink-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 lg:p-6">
         <div className="flex items-center gap-3">
           <Link
-            to="/app/today"
+            to="/app/fortune/today"
             className="p-2 hover:bg-white/20 rounded-full transition"
             aria-label={t('common:buttons.back', { defaultValue: 'Back' })}
           >

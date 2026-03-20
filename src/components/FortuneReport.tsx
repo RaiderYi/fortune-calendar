@@ -3,14 +3,15 @@
 // 展示周报和月报
 // ==========================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Calendar, Download, Share2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar, Download, Share2, Loader2 } from 'lucide-react';
+import { toPng } from 'html-to-image';
+import { useToast } from '../contexts/ToastContext';
 import {
   generateWeeklyReport,
   generateMonthlyReport,
   getWeekStart,
-  getMonthStart,
   type FortuneReport,
 } from '../utils/reportGenerator';
 
@@ -25,9 +26,12 @@ export default function FortuneReport({
   onClose,
   period: initialPeriod = 'week',
 }: FortuneReportProps) {
+  const { showToast } = useToast();
+  const reportRef = useRef<HTMLDivElement>(null);
   const [period, setPeriod] = useState<'week' | 'month'>(initialPeriod);
   const [report, setReport] = useState<FortuneReport | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,14 +60,62 @@ export default function FortuneReport({
     }
   };
 
-  const handleExport = () => {
-    // TODO: 实现PDF导出
-    console.log('导出报告');
+  const buildShareText = useCallback(() => {
+    if (!report) return '命运日历 · 运势报告';
+    const label = period === 'week' ? '周报' : '月报';
+    return `命运日历 ${label} · 平均 ${report.avgScore} 分 · 共 ${report.totalDays} 天有记录`;
+  }, [report, period]);
+
+  const handleExport = async () => {
+    if (!reportRef.current || !report) {
+      showToast('暂无可导出的报告内容', 'warning');
+      return;
+    }
+    setExporting(true);
+    try {
+      await new Promise((r) => setTimeout(r, 100));
+      const dataUrl = await toPng(reportRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+      });
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `fortune-report-${period}-${Date.now()}.png`;
+      a.click();
+      showToast('报告图片已保存', 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('导出失败，请稍后重试', 'error');
+    } finally {
+      setExporting(false);
+    }
   };
 
-  const handleShare = () => {
-    // TODO: 实现分享功能
-    console.log('分享报告');
+  const handleShare = async () => {
+    const text = buildShareText();
+    const url = typeof window !== 'undefined' ? window.location.origin + '/app/fortune/today' : '';
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: '命运日历 · 运势报告',
+          text,
+          url,
+        });
+        showToast('已唤起分享', 'success');
+        return;
+      }
+    } catch (e: unknown) {
+      if ((e as Error).name === 'AbortError') return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      showToast('链接已复制到剪贴板', 'success');
+    } catch {
+      showToast('复制失败，请手动分享', 'error');
+    }
   };
 
   if (!isOpen) return null;
@@ -86,6 +138,7 @@ export default function FortuneReport({
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         className="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
       >
+        <div ref={reportRef} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-800">
         {/* 头部 */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
           <div className="flex items-center justify-between mb-4">
@@ -245,15 +298,18 @@ export default function FortuneReport({
             </div>
           )}
         </div>
+        </div>
 
         {/* 底部操作栏 */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex gap-3">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex gap-3 shrink-0">
           <button
+            type="button"
+            disabled={exporting || !report}
             onClick={handleExport}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <Download size={18} />
-            导出PDF
+            {exporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+            导出图片
           </button>
           <button
             onClick={handleShare}

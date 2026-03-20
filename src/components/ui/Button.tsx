@@ -6,7 +6,7 @@
 
 import React, { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { colors, space, radius, shadows, fontSize, fontWeight, duration, easing } from '../../designTokens';
+import { colors, space, radius, shadows, size, fontSize, fontWeight, duration, easing } from '../../designTokens';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** 按钮变体 */
@@ -95,23 +95,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // 尺寸样式
     const sizeStyles: Record<string, React.CSSProperties> = {
       sm: {
-        height: '32px',
+        height: size.button.sm,
         padding: `0 ${space[3]}`,
         fontSize: fontSize.xs[0],
         borderRadius: radius.md,
       },
       md: {
-        height: '40px',
+        height: size.button.DEFAULT,
         padding: `0 ${space[4]}`,
         fontSize: fontSize.sm[0],
       },
       lg: {
-        height: '48px',
+        height: size.button.lg,
         padding: `0 ${space[6]}`,
         fontSize: fontSize.base[0],
       },
       xl: {
-        height: '56px',
+        height: size.button.xl,
         padding: `0 ${space[8]}`,
         fontSize: fontSize.lg[0],
         borderRadius: radius.xl,

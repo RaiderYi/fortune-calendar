@@ -18,7 +18,6 @@ import BottomNav, { isFortunePath, isPlanPath } from './components/BottomNav';
 import TopSubNav, { type MainCategory } from './components/TopSubNav';
 import TodayPage from './components/TodayPage';
 import CalendarPage from './components/CalendarPage';
-import MyPage from './components/MyPage';
 import DailySignThemeSelector, { type DailySignTheme } from './components/DailySignThemeSelector';
 import TimeEnergyBall from './components/TimeEnergyBall';
 import CollapsibleSection from './components/CollapsibleSection';
@@ -48,6 +47,12 @@ import { AppContextProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
 import HistoryPage from './pages/app/HistoryPage';
 import TrendsPage from './pages/app/TrendsPage';
+import MonthlyFortunePage from './pages/app/MonthlyFortunePage';
+import YijingPage from './pages/app/YijingPage';
+import HepanPage from './pages/app/HepanPage';
+import DreamPage from './pages/app/DreamPage';
+import TarotPage from './pages/app/TarotPage';
+import Year2026Page from './pages/app/Year2026Page';
 import CheckinPage from './pages/app/CheckinPage';
 import AchievementPage from './pages/app/AchievementPage';
 import KnowledgePage from './pages/app/KnowledgePage';
@@ -214,7 +219,8 @@ export default function App() {
   const navigate = useNavigate();
   const pathname = location.pathname;
   const FEATURE_PATHS = [
-    '/app/fortune/trends', '/app/fortune/ai', '/app/fortune/knowledge',
+    '/app/fortune/trends', '/app/fortune/monthly', '/app/fortune/ai', '/app/fortune/knowledge',
+    '/app/fortune/yijing', '/app/fortune/hepan', '/app/fortune/dream', '/app/fortune/tarot', '/app/fortune/year-2026',
     '/app/plan/datepicker', '/app/plan/checkin', '/app/plan/diary',
     '/app/profile', '/app/achievements', '/app/fortune-stick',
     // 旧路径兼容
@@ -951,9 +957,19 @@ const mainCategory = getMainCategory(pathname);
                   </div>
                 </div>
               } />
+              <Route path="monthly" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <MonthlyFortunePage />
+                </div>
+              } />
               <Route path="trends" element={
                 <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
                   <TrendsPage />
+                </div>
+              } />
+              <Route path="yijing" element={
+                <div id="main" className="min-h-screen bg-slate-950 lg:ml-56">
+                  <YijingPage />
                 </div>
               } />
               <Route path="ai" element={
@@ -964,6 +980,26 @@ const mainCategory = getMainCategory(pathname);
               <Route path="knowledge" element={
                 <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
                   <KnowledgePage />
+                </div>
+              } />
+              <Route path="hepan" element={
+                <div id="main" className="min-h-screen bg-gray-50 dark:bg-slate-900 lg:ml-56">
+                  <HepanPage />
+                </div>
+              } />
+              <Route path="dream" element={
+                <div id="main" className="min-h-screen bg-slate-950 lg:ml-56">
+                  <DreamPage />
+                </div>
+              } />
+              <Route path="tarot" element={
+                <div id="main" className="min-h-screen bg-slate-950 lg:ml-56">
+                  <TarotPage />
+                </div>
+              } />
+              <Route path="year-2026" element={
+                <div id="main" className="min-h-screen bg-slate-950 lg:ml-56">
+                  <Year2026Page />
                 </div>
               } />
               <Route path="*" element={<Navigate to="/app/fortune/today" replace />} />

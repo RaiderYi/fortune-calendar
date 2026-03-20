@@ -17,6 +17,7 @@ try:
     from ..core.bazi_engine import analyze_bazi_cached, calculate_ten_god
     from ..core.fortune_engine import (
         calculate_fortune_score_v5, calculate_fortune_score_year,
+        calculate_fortune_score_month,
         calculate_dimensions_v5, generate_main_theme, generate_todo
     )
     from ..utils.json_utils import clean_for_json
@@ -32,6 +33,7 @@ except ImportError:
     from core.bazi_engine import analyze_bazi_cached, calculate_ten_god
     from core.fortune_engine import (
         calculate_fortune_score_v5, calculate_fortune_score_year,
+        calculate_fortune_score_month,
         calculate_dimensions_v5, generate_main_theme, generate_todo
     )
     from utils.json_utils import clean_for_json
@@ -254,6 +256,143 @@ class FortuneService:
                 },
                 'code': 200
             }
+
+        except Exception as e:
+            import traceback
+            return {
+                'success': False,
+                'error': str(e),
+                'traceback': traceback.format_exc(),
+                'code': 500
+            }
+
+    @staticmethod
+    def handle_fortune_month_request(data):
+        """月度运势：返回月中代表日详批 + 当月每日分数（热力）"""
+        import calendar
+
+        try:
+            birth_date_str = data.get('birthDate')
+            birth_time_str = data.get('birthTime', '12:00')
+            longitude = float(data.get('longitude', 120.0))
+            gender = data.get('gender', 'male')
+            custom_yongshen = data.get('customYongShen')
+            now = datetime.datetime.now()
+            year = int(data.get('year', now.year))
+            month = int(data.get('month', now.month))
+
+            if not birth_date_str:
+                return {'success': False, 'error': '出生日期必填', 'code': 400}
+            if month < 1 or month > 12:
+                return {'success': False, 'error': '月份无效', 'code': 400}
+
+            try:
+                from ..utils.date_utils import parse_datetime
+            except ImportError:
+                from utils.date_utils import parse_datetime
+            birth_dt = parse_datetime(birth_date_str, birth_time_str)
+            bazi = calculate_bazi(birth_dt, longitude)
+
+            try:
+                from ..core.bazi_engine import generate_bazi_cache_key, _create_custom_yongshen
+            except ImportError:
+                from core.bazi_engine import generate_bazi_cache_key, _create_custom_yongshen
+            cache_key = generate_bazi_cache_key(birth_date_str, birth_time_str, longitude)
+            analysis_result = analyze_bazi_cached(cache_key, birth_date_str, birth_time_str, longitude)
+            if custom_yongshen:
+                analysis_result['yong_shen_result'] = _create_custom_yongshen(custom_yongshen, bazi)
+
+            yongshen_data = analysis_result.get('yong_shen_result', {})
+            strength_result = analysis_result.get('strength_result', {})
+            level = strength_result.get('level', '中和')
+            level_to_pattern = {'身弱': 'Weak', '身旺': 'Strong', '中和': 'Neutral'}
+            pattern = level_to_pattern.get(level, 'Neutral')
+            element_analysis = {
+                'pattern': pattern,
+                'score': strength_result.get('score', 0.5),
+                'level': level
+            }
+
+            last_day = calendar.monthrange(year, month)[1]
+            daily_scores = []
+            for d in range(1, last_day + 1):
+                target_dt = datetime.datetime(year, month, d, 12, 0, 0)
+                liu_nian = calculate_liu_nian(target_dt.year)
+                liu_yue = calculate_liu_yue(target_dt.year, target_dt.month, target_dt.day)
+                liu_ri = calculate_liu_ri(target_dt.year, target_dt.month, target_dt.day)
+                dayun = calculate_dayun(birth_dt, target_dt.year, gender, longitude)
+                score_res = calculate_fortune_score_v5(
+                    bazi, element_analysis, yongshen_data,
+                    liu_nian, liu_yue, liu_ri, dayun=dayun
+                )
+                daily_scores.append({
+                    'date': f'{year}-{month:02d}-{d:02d}',
+                    'score': score_res['total_score'],
+                })
+
+            mid = min(15, last_day)
+            mid_dt = datetime.datetime(year, month, mid, 12, 0, 0)
+            liu_nian_m = calculate_liu_nian(mid_dt.year)
+            liu_yue_m = calculate_liu_yue(mid_dt.year, mid_dt.month, mid_dt.day)
+            liu_ri_m = calculate_liu_ri(mid_dt.year, mid_dt.month, mid_dt.day)
+            dayun_m = calculate_dayun(birth_dt, mid_dt.year, gender, longitude)
+
+            month_total = calculate_fortune_score_month(
+                bazi, element_analysis, yongshen_data,
+                liu_nian_m, liu_yue_m, liu_ri_m, dayun=dayun_m
+            )
+            score_mid = calculate_fortune_score_v5(
+                bazi, element_analysis, yongshen_data,
+                liu_nian_m, liu_yue_m, liu_ri_m, dayun=dayun_m
+            )
+            shensha_mid = score_mid.get('shensha', score_mid.get('shensha_result', {}))
+            dimensions = calculate_dimensions_v5(
+                bazi, liu_ri_m, month_total, yongshen_data, element_analysis, shensha_mid
+            )
+            import random
+            seed_str = f"{bazi['day_gan']}{bazi['day_zhi']}{liu_ri_m['gan']}{liu_ri_m['zhi']}month"
+            rng = random.Random(hash(seed_str))
+            main_theme = generate_main_theme(
+                month_total, bazi['day_gan'], liu_ri_m['gan'], rng=rng
+            )
+            todo_list = generate_todo(
+                yongshen_data.get('primary', '木'),
+                yongshen_data.get('ji_shen', []),
+                liu_ri=liu_ri_m,
+                bazi=bazi,
+                yongshen=yongshen_data,
+                rng=rng
+            )
+
+            avg_score = round(sum(x['score'] for x in daily_scores) / len(daily_scores), 1)
+            best = max(daily_scores, key=lambda x: x['score'])
+            worst = min(daily_scores, key=lambda x: x['score'])
+
+            response_data = {
+                'year': year,
+                'month': month,
+                'bazi': clean_for_json(bazi),
+                'analysis': clean_for_json(analysis_result),
+                'summary': {
+                    'avgScore': avg_score,
+                    'bestDay': best['date'],
+                    'worstDay': worst['date'],
+                    'bestScore': best['score'],
+                    'worstScore': worst['score'],
+                },
+                'fortune': {
+                    'totalScore': month_total,
+                    'dimensions': clean_for_json(dimensions),
+                    'mainTheme': clean_for_json(main_theme),
+                    'todoList': clean_for_json(todo_list),
+                    'liuNian': clean_for_json(liu_nian_m),
+                    'liuYue': clean_for_json(liu_yue_m),
+                    'liuRi': clean_for_json(liu_ri_m),
+                },
+                'dailyScores': clean_for_json(daily_scores),
+            }
+
+            return {'success': True, 'data': response_data, 'code': 200}
 
         except Exception as e:
             import traceback

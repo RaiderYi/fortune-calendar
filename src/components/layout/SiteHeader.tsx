@@ -62,7 +62,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
           {/* Right: CTA + Login + Language */}
           <div className="flex items-center gap-3">
             <Link
-              to="/app/today"
+              to="/app/fortune/today"
               className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
             >
               {isEnglish ? 'Get Started' : '进入应用'}
@@ -122,7 +122,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                 </Link>
               ))}
               <Link
-                to="/app/today"
+                to="/app/fortune/today"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block w-full py-3 mt-2 rounded-lg bg-indigo-500 text-white font-medium text-center"
               >

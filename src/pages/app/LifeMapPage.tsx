@@ -20,7 +20,7 @@ export default function LifeMapPage() {
       <div className="flex-shrink-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 lg:p-6">
         <div className="flex items-center gap-3">
           <Link
-            to="/app/today"
+            to="/app/fortune/today"
             className="p-2 hover:bg-white/20 rounded-full transition"
             aria-label={isEnglish ? 'Back' : '返回'}
           >
@@ -37,10 +37,10 @@ export default function LifeMapPage() {
       {/* 内容 */}
       <LifeMapContent
         userProfile={userProfile}
-        onOpenYongShenSettings={() => navigate('/app/today')}
+        onOpenYongShenSettings={() => navigate('/app/fortune/today')}
         onViewToday={() => {
           setCurrentDate(new Date());
-          navigate('/app/today');
+          navigate('/app/fortune/today');
         }}
       />
     </div>

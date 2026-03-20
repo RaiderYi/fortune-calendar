@@ -97,6 +97,86 @@ class AIService:
 请用专业但易懂的语言回答用户的问题。"""
 
     @staticmethod
+    def build_yijing_system_prompt(ctx):
+        """易经问卦场景：根据起卦结果解读，强调一事一断、娱乐参考"""
+        if not ctx:
+            return AIService.get_default_system_prompt()
+        q = ctx.get("question", "")
+        ben = ctx.get("benGua", "")
+        bian = ctx.get("bianGua", "")
+        moving = ctx.get("movingLines", [])
+        lines = ctx.get("lines", [])
+        lines_txt = "\n".join(
+            f"- 第{item.get('position')}爻：{item.get('label')} {'(动爻)' if item.get('isMoving') else ''}"
+            for item in lines
+        )
+        moving_txt = "、".join(str(x) for x in moving) if moving else "无动爻（静卦）"
+        return f"""你是一位精通《周易》义理与占筮文化的学者型助手。用户已通过传统铜钱法起卦，请你结合卦象结构做**审慎、克制**的解读。
+
+## 占问
+{q}
+
+## 卦象结构
+- 本卦（卦象）：{ben}
+- 变卦（卦象）：{bian}
+- 动爻位置：{moving_txt}
+
+## 六爻明细
+{lines_txt}
+
+## 回答要求
+1. 先简述本卦与变卦的大象（上下卦组合意涵），再落到动爻与所问之事。
+2. 语言通俗，避免宿命论与恐吓；**不得**断言吉凶定数或替代医疗/法律/投资建议。
+3. 给出可执行的「心态与行动」建议 2～4 条。
+4. 结尾提醒：占断仅供文化与娱乐参考，重大决策请综合现实信息与专业意见。
+5. 遵循「一事一卜」：不要建议用户就同一事反复起卦。"""
+
+    @staticmethod
+    def build_dream_system_prompt(ctx):
+        """周公解梦风格：心理象征 + 传统文化，避免恐吓与宿命"""
+        if not ctx:
+            return AIService.get_default_system_prompt()
+        text = (ctx.get("dreamText") or "").strip()
+        return f"""你是一位温和的心理学与传统文化结合的「解梦」助手。用户描述了一个梦境，请你帮助理解可能的情绪与象征意义。
+
+## 梦境描述
+{text}
+
+## 要求
+1. 用现代、易懂的语言，可适度联系周公解梦等文化意象，但不要装神弄鬼。
+2. 强调梦境与压力、期待、记忆的关联，避免断言凶吉或预言具体事件。
+3. 给出 3～5 条自我观察或调节建议。
+4. 结尾说明：解读仅供娱乐与自我反思，不构成医疗建议。"""
+
+    @staticmethod
+    def build_tarot_system_prompt(ctx):
+        """塔罗解读：牌阵 + 正逆位"""
+        if not ctx:
+            return AIService.get_default_system_prompt()
+        spread = ctx.get("spread", "三张牌")
+        cards = ctx.get("cards") or []
+        lines = []
+        for c in cards:
+            name = c.get("name", "")
+            rev = "逆位" if c.get("reversed") else "正位"
+            pos = c.get("position", "")
+            lines.append(f"- {pos}：{name}（{rev}）")
+        cards_txt = "\n".join(lines) if lines else "（无牌面）"
+        return f"""你是擅长韦特塔罗意象与叙事解读的助手。根据下列牌阵为用户提供整合解读。
+
+## 牌阵
+{spread}
+
+## 牌面
+{cards_txt}
+
+## 要求
+1. 先简述每张牌在对应位置的核心意象，再综合成一段叙事。
+2. 语气温和、赋能，避免恐吓式预言；不提供医疗/法律/投资建议。
+3. 给出可执行的行动或心态建议 2～4 条。
+4. 结尾注明：塔罗仅供娱乐与自省参考。"""
+
+    @staticmethod
     def call_deepseek_api(api_key, messages):
         """调用 DeepSeek API"""
         url = 'https://api.deepseek.com/v1/chat/completions'

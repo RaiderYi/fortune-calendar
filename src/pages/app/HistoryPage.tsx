@@ -48,7 +48,7 @@ function HistoryPage() {
       const [year, month, day] = dateStr.split('-').map(Number);
       const date = new Date(year, month - 1, day, 12, 0, 0);
       setCurrentDate(date);
-      navigate('/app/today');
+      navigate('/app/fortune/today');
     },
     [setCurrentDate, navigate]
   );
@@ -59,7 +59,7 @@ function HistoryPage() {
       <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
         <div className="flex items-center gap-3 mb-4">
           <Link
-            to="/app/today"
+            to="/app/fortune/today"
             className="p-2 hover:bg-white/20 rounded-full transition"
             aria-label={isEnglish ? 'Back' : '返回'}
           >
@@ -134,7 +134,7 @@ function HistoryPage() {
             <button
               onClick={() => {
                 onCompareClick();
-                navigate('/app/today');
+                navigate('/app/fortune/today');
               }}
               className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2"
             >

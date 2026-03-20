@@ -66,7 +66,7 @@ export default function AIDeduction({
     setIsLoading(true);
 
     try {
-      const response = await chatWithAI(newMessages, baziContext);
+      const response = await chatWithAI(newMessages, { baziContext });
 
       if (response.success && response.message) {
         const assistantMessage: ChatMessage = {
@@ -106,7 +106,7 @@ export default function AIDeduction({
         setIsLoading(true);
 
         try {
-          const response = await chatWithAI([userMessage], baziContext);
+          const response = await chatWithAI([userMessage], { baziContext });
           if (response.success && response.message) {
             const assistantMessage: ChatMessage = {
               role: 'assistant',

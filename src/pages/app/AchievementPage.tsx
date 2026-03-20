@@ -36,7 +36,7 @@ export default function AchievementPage() {
     <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
       <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
         <div className="flex items-center justify-between mb-4">
-          <Link to="/app/today" className="flex items-center gap-2 text-white/90 hover:text-white">
+          <Link to="/app/fortune/today" className="flex items-center gap-2 text-white/90 hover:text-white">
             <ChevronLeft size={24} />
             <div className="flex items-center gap-3">
               <div className="bg-white/20 backdrop-blur-md rounded-full p-3">

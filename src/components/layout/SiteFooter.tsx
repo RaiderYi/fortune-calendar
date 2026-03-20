@@ -12,7 +12,7 @@ export default function SiteFooter() {
   const isEnglish = i18n.language === 'en';
 
   const productLinks = [
-    { to: '/app/today', label: isEnglish ? 'Today' : '今日运势' },
+    { to: '/app/fortune/today', label: isEnglish ? 'Today' : '今日运势' },
     { to: '/app/calendar', label: isEnglish ? 'Calendar' : '日历' },
     { to: '/app/me', label: isEnglish ? 'Me' : '我的' },
     { to: '/features', label: isEnglish ? 'Features' : '功能详解' },

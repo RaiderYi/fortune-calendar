@@ -42,10 +42,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ) => {
     // 基础样式
     const baseStyles: React.CSSProperties = {
-      background: variant === 'glass' 
-        ? 'rgba(255, 255, 255, 0.7)' 
+      background: variant === 'glass'
+        ? 'rgba(255, 255, 255, 0.7)'
         : colors.background.elevated,
-      borderRadius: radius.xl,
+      borderRadius: radius.lg,
       transition: `all ${duration.normal} ${easing.DEFAULT}`,
       position: 'relative' as const,
       overflow: 'hidden',
@@ -55,11 +55,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const variantStyles: Record<string, React.CSSProperties> = {
       default: {
         border: '1px solid transparent',
-        boxShadow: shadow ? shadows.md : 'none',
+        boxShadow: shadow ? shadows.DEFAULT : 'none',
       },
       elevated: {
         border: '1px solid transparent',
-        boxShadow: shadow ? shadows.lg : shadows.md,
+        boxShadow: shadow ? shadows.lg : shadows.DEFAULT,
       },
       outlined: {
         border: `1px solid ${colors.border.light}`,
@@ -104,11 +104,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           animate: { opacity: 1, y: 0 },
           transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
           whileHover: hover || clickable
-            ? { 
-                y: -2, 
-                boxShadow: variant === 'glass' 
-                  ? '0 8px 32px 0 rgba(31, 38, 135, 0.25)' 
-                  : shadows.lg 
+            ? {
+                y: -2,
+                boxShadow: variant === 'glass'
+                  ? '0 8px 32px 0 rgba(31, 38, 135, 0.25)'
+                  : shadows.lg
               }
             : undefined,
         }

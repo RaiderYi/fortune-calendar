@@ -10,7 +10,13 @@
   },
   "sub": {
     "today": "Today",
+    "monthly": "Monthly",
     "trends": "Trends",
+    "yijing": "I Ching",
+    "hepan": "Synastry",
+    "dream": "Dream",
+    "tarot": "Tarot",
+    "year2026": "2026",
     "ai": "AI Chat",
     "knowledge": "Knowledge",
     "calendar": "Calendar",

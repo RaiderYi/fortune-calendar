@@ -70,7 +70,7 @@ export default function LifeMap({
               onViewToday={() => {
                 onClose();
                 setCurrentDate(new Date());
-                navigate('/app/today');
+                navigate('/app/fortune/today');
               }}
             />
           </motion.div>

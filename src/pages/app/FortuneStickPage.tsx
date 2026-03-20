@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // 抽签页 - 现代抽牌样式
 // ==========================================
 
@@ -61,7 +61,7 @@ export default function FortuneStickPage() {
         <div className="flex-shrink-0 px-4 pt-4 lg:px-8 lg:pt-6">
           <div className="flex items-center gap-3 mb-5">
             <Link
-              to="/app/today"
+              to="/app/fortune/today"
               className="p-2 rounded-full transition bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur"
             aria-label={isEnglish ? 'Back' : '\u8fd4\u56de'}
             >

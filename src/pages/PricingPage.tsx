@@ -26,6 +26,9 @@ export default function PricingPage({ onLoginClick }: PricingPageProps) {
     isEnglish ? 'History & calendar view' : '历史记录与日历',
     isEnglish ? 'Check-in & achievements' : '签到与成就',
     isEnglish ? 'Basic AI fortune analysis' : '基础 AI 命理解读',
+    isEnglish
+      ? 'Credits for AI / Tarot / Dream (invite friends to earn more)'
+      : '积分制：AI、塔罗、解梦等消耗积分，邀请好友可获赠积分',
   ];
 
   const futureFeatures = [
@@ -87,7 +90,7 @@ export default function PricingPage({ onLoginClick }: PricingPageProps) {
                   </li>
                 ))}
               </ul>
-              <Link to="/app/today">
+              <Link to="/app/fortune/today">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

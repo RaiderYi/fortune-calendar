@@ -50,9 +50,36 @@ export interface BaziContext {
   };
 }
 
+/** 易经问卦上下文（与 baziContext 二选一或并存） */
+export interface YijingContext {
+  question: string;
+  benGua: string;
+  bianGua: string;
+  movingLines: number[];
+  lines: Array<{
+    position: number;
+    value: number;
+    label: string;
+    isMoving: boolean;
+  }>;
+  seed?: number;
+  category?: string;
+}
+
+export interface TarotContext {
+  spread: string;
+  cards: Array<{
+    name: string;
+    nameEn: string;
+    reversed: boolean;
+    position: string;
+  }>;
+}
+
 export interface AIChatRequest {
   messages: ChatMessage[];
-  baziContext: BaziContext;
+  baziContext?: BaziContext;
+  yijingContext?: YijingContext;
 }
 
 export interface AIChatResponse {

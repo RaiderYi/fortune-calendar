@@ -154,6 +154,42 @@ def calculate_fortune_score_year(bazi, element_analysis, yongshen,
     return final_score
 
 
+def calculate_fortune_score_month(bazi, element_analysis, yongshen,
+                                liu_nian, liu_yue, liu_ri, dayun=None):
+    """
+    月运势评分 - 用于月度总览（以月中代表日流月流日为主）
+    权重：流月为主、流日次之，流年与大运辅助
+    """
+    seed_str = (
+        f"month_{bazi['day_gan']}{bazi['day_zhi']}"
+        f"{liu_nian['gan']}{liu_nian['zhi']}{liu_yue['gan']}{liu_yue['zhi']}"
+        f"{liu_ri['gan']}{liu_ri['zhi']}"
+    )
+    random.seed(hash(seed_str))
+
+    base_score = FORTUNE_WEIGHTS_V5['base_score']
+    dayun_adjust = 0
+    if dayun:
+        dayun_gan_element = WU_XING_MAP.get(dayun.get('current_gan'))
+        if dayun_gan_element in yongshen.get('favorable', []):
+            dayun_adjust = FORTUNE_WEIGHTS_V5['dayun_adjust']['favorable']
+        elif dayun_gan_element in yongshen.get('unfavorable', []):
+            dayun_adjust = FORTUNE_WEIGHTS_V5['dayun_adjust']['unfavorable']
+
+    liunian_score = _calculate_liunian_score(liu_nian, yongshen)
+    liuyue_score = _calculate_liuyue_score(liu_yue, yongshen)
+    liuri_score = _calculate_liuri_score(liu_ri, yongshen)
+
+    # 流月约 40%、流日约 35%、流年约 15%、大运约 10%（通过系数缩放叠加到 base 体系）
+    liuyue_weighted = liuyue_score * 1.35
+    liuri_weighted = liuri_score * 0.55
+    liunian_weighted = liunian_score * 1.0
+    dayun_weighted = dayun_adjust * 1.0
+
+    total = base_score + dayun_weighted + liunian_weighted + liuyue_weighted + liuri_weighted
+    return max(20, min(100, int(total)))
+
+
 def _calculate_liunian_score(liu_nian, yongshen):
     """计算流年影响（滴天髓：用神为纲，流年干支五行与用神关系）"""
     liunian_weight = FORTUNE_WEIGHTS_V5['liunian']['weight']

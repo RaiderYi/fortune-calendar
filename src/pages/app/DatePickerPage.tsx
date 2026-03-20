@@ -261,7 +261,7 @@ export default function DatePickerPage() {
   const handleSelectDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split('-').map(Number);
     setCurrentDate(new Date(y, m - 1, d, 12, 0, 0));
-    navigate('/app/today');
+    navigate('/app/fortune/today');
   };
 
   const toggleCompare = (dateStr: string) => {

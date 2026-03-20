@@ -2,6 +2,8 @@
 // 每日签到存储工具
 // ==========================================
 
+import { addCredits } from './creditsStorage';
+
 export interface CheckinRecord {
   date: string; // YYYY-MM-DD
   timestamp: number;
@@ -93,6 +95,11 @@ export function checkIn(): CheckinRecord | null {
       .sort((a, b) => b.timestamp - a.timestamp);
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recentRecords));
+    try {
+      addCredits(5, 'daily_checkin');
+    } catch {
+      /* ignore */
+    }
   } catch (error) {
     console.error('保存签到记录失败:', error);
   }

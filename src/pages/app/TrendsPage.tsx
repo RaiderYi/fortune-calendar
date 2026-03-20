@@ -56,14 +56,14 @@ export default function TrendsPage() {
 
   const handleSelectDate = (date: Date) => {
     setCurrentDate(date);
-    navigate('/app/today');
+    navigate('/app/fortune/today');
   };
 
   if (trendData.length < 2) {
     return (
       <div className="flex flex-col min-h-full">
         <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
-          <Link to="/app/today" className="flex items-center gap-2 text-white/90 hover:text-white">
+          <Link to="/app/fortune/today" className="flex items-center gap-2 text-white/90 hover:text-white">
             <ChevronLeft size={24} />
             {isEnglish ? 'Back' : '返回'}
           </Link>
@@ -77,7 +77,7 @@ export default function TrendsPage() {
             {isEnglish ? 'Query at least 2 days of fortune to generate the trend chart.' : '至少需要查询 2 天的运势才能生成趋势图哦！'}
           </p>
           <Link
-            to="/app/today"
+            to="/app/fortune/today"
             className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition"
           >
             {isEnglish ? 'Query fortune' : '继续查询运势'}
@@ -91,7 +91,7 @@ export default function TrendsPage() {
     <div className="flex flex-col min-h-full overflow-y-auto">
       <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6 rounded-b-2xl">
         <div className="flex items-center justify-between mb-4">
-          <Link to="/app/today" className="flex items-center gap-2 text-white/90 hover:text-white">
+          <Link to="/app/fortune/today" className="flex items-center gap-2 text-white/90 hover:text-white">
             <ChevronLeft size={24} />
             <div className="flex items-center gap-2">
               <TrendingUp size={24} />

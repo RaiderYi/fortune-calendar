@@ -7,10 +7,24 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, TrendingUp, MessageCircle, BookOpen, CalendarDays, Target, BookHeart, CheckCircle, UserCircle, Settings, Trophy } from 'lucide-react';
+import { Sparkles, TrendingUp, MessageCircle, BookOpen, CalendarDays, CalendarRange, Flame, Users, Moon, LayoutGrid, Calendar, Target, BookHeart, CheckCircle, UserCircle, Trophy } from 'lucide-react';
 
 export type MainCategory = 'fortune' | 'plan' | 'profile';
-export type SubTab = 'today' | 'trends' | 'ai' | 'knowledge' | 'calendar' | 'datepicker' | 'diary' | 'checkin';
+export type SubTab =
+  | 'today'
+  | 'monthly'
+  | 'trends'
+  | 'yijing'
+  | 'hepan'
+  | 'dream'
+  | 'tarot'
+  | 'year2026'
+  | 'ai'
+  | 'knowledge'
+  | 'calendar'
+  | 'datepicker'
+  | 'diary'
+  | 'checkin';
 
 interface SubNavItem {
   id: SubTab;
@@ -26,7 +40,13 @@ interface TopSubNavProps {
 const subNavConfig: Record<MainCategory, SubNavItem[]> = {
   fortune: [
     { id: 'today', label: 'sub.today', icon: Sparkles, path: '/app/fortune/today' },
+    { id: 'monthly', label: 'sub.monthly', icon: CalendarRange, path: '/app/fortune/monthly' },
     { id: 'trends', label: 'sub.trends', icon: TrendingUp, path: '/app/fortune/trends' },
+    { id: 'yijing', label: 'sub.yijing', icon: Flame, path: '/app/fortune/yijing' },
+    { id: 'hepan', label: 'sub.hepan', icon: Users, path: '/app/fortune/hepan' },
+    { id: 'dream', label: 'sub.dream', icon: Moon, path: '/app/fortune/dream' },
+    { id: 'tarot', label: 'sub.tarot', icon: LayoutGrid, path: '/app/fortune/tarot' },
+    { id: 'year2026', label: 'sub.year2026', icon: Calendar, path: '/app/fortune/year-2026' },
     { id: 'ai', label: 'sub.ai', icon: MessageCircle, path: '/app/fortune/ai' },
     { id: 'knowledge', label: 'sub.knowledge', icon: BookOpen, path: '/app/fortune/knowledge' },
   ],
@@ -64,7 +84,7 @@ export default function TopSubNav({ category }: TopSubNavProps) {
         <div className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-hide">
           {items.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPath === item.path || currentPath.startsWith(item.path);
+            const isActive = currentPath === item.path;
             
             return (
               <button
@@ -103,7 +123,7 @@ export default function TopSubNav({ category }: TopSubNavProps) {
           </h3>
           {items.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPath === item.path || currentPath.startsWith(item.path);
+            const isActive = currentPath === item.path;
             
             return (
               <button

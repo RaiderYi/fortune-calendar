@@ -19,6 +19,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authApi from '../../services/authApi';
+import { addCredits } from '../../utils/creditsStorage';
 
 interface InviteStats {
   inviteCode: string;
@@ -52,6 +53,16 @@ export default function InvitePage() {
       loadInviteStats();
     }
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!stats) return;
+    const key = 'fc_last_seen_invite_success';
+    const last = parseInt(localStorage.getItem(key) || '0', 10);
+    if (stats.successfulInvites > last) {
+      addCredits((stats.successfulInvites - last) * 100, 'invite_friend');
+      localStorage.setItem(key, String(stats.successfulInvites));
+    }
+  }, [stats]);
 
   const loadInviteStats = async () => {
     try {
@@ -129,7 +140,7 @@ export default function InvitePage() {
       {/* 头部 */}
       <header className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/app/today" className="p-2 hover:bg-white/10 rounded-lg transition">
+          <Link to="/app/fortune/today" className="p-2 hover:bg-white/10 rounded-lg transition">
             <ArrowLeft className="w-5 h-5 text-white/60" />
           </Link>
           <h1 className="text-lg font-bold text-white">邀请好友</h1>

@@ -46,6 +46,13 @@ export default function FeaturesPage({ onLoginClick }: FeaturesPageProps) {
         : '探索未来十年的运势走向。了解人生大运周期，提前规划。',
     },
     {
+      icon: Calendar,
+      title: isEnglish ? 'Monthly Fortune' : '每月运势',
+      desc: isEnglish
+        ? 'Month-level scores with a daily heatmap. Spot your best and cautious days at a glance.'
+        : '月度综合评分与每日热力日历，一眼看出当月高光日与需注意日。',
+    },
+    {
       icon: Sparkles,
       title: isEnglish ? 'AI Fortune Analysis' : 'AI 命理解读',
       desc: isEnglish
@@ -151,7 +158,7 @@ export default function FeaturesPage({ onLoginClick }: FeaturesPageProps) {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {isEnglish ? 'Enter your birth info and get your first fortune.' : '输入出生信息，获取您的第一份运势。'}
             </p>
-            <Link to="/app/today">
+            <Link to="/app/fortune/today">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

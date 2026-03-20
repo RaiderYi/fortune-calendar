@@ -98,7 +98,7 @@ export default function KnowledgePage() {
       <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
         <div className="flex items-center gap-3 mb-4">
           <Link
-            to="/app/today"
+            to="/app/fortune/today"
             className="p-2 hover:bg-white/20 rounded-full transition"
             aria-label={t('common:buttons.back', { defaultValue: 'Back' })}
           >

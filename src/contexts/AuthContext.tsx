@@ -32,7 +32,10 @@ export interface User {
 interface AuthContextType {
   // 状态
   user: User | null;
+  /** 是否已登录（与 isAuthenticated 等价，保留两者以兼容各组件） */
   isLoggedIn: boolean;
+  /** 别名：与 isLoggedIn 相同 */
+  isAuthenticated: boolean;
   isLoading: boolean;
   isSyncing: boolean;
   syncEnabled: boolean;
@@ -228,9 +231,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
+  const loggedIn = !!user;
   const value: AuthContextType = {
     user,
-    isLoggedIn: !!user,
+    isLoggedIn: loggedIn,
+    isAuthenticated: loggedIn,
     isLoading,
     isSyncing,
     syncEnabled: user?.syncEnabled ?? false,

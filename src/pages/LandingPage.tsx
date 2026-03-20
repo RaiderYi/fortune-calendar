@@ -45,6 +45,7 @@ import SiteHeader from '../components/layout/SiteHeader';
 import SiteFooter from '../components/layout/SiteFooter';
 import DonateQR from '../components/DonateQR';
 import { PageSection } from '../components/ui';
+import { HOME_PROMO_ITEMS } from '../data/homePromo';
 
 interface LandingPageProps {
   onLoginClick?: () => void;
@@ -279,7 +280,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
 
                 {/* CTA 按钮 - 移除价格，强调免费 */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
-                  <Link to="/app/today">
+                  <Link to="/app/fortune/today">
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
@@ -465,6 +466,50 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
                 );
               })}
             </motion.div>
+          </div>
+        </section>
+
+        {/* 精选推荐 · 占卜工具矩阵 */}
+        <section className="py-14 bg-gradient-to-b from-indigo-50/80 to-white dark:from-slate-900 dark:to-slate-950 border-y border-indigo-100/80 dark:border-slate-800">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-center text-slate-900 dark:text-white mb-2">
+              {isEnglish ? 'Featured tools' : '精选功能'}
+            </h2>
+            <p className="text-center text-slate-600 dark:text-slate-400 text-sm mb-10 max-w-xl mx-auto">
+              {isEnglish
+                ? 'Monthly I Ching, synastry & more — same Bazi profile, richer rituals.'
+                : '月运、问卦、合盘等入口，沿用同一套命理档案，丰富使用场景。'}
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {HOME_PROMO_ITEMS.map((item) => {
+                const ring =
+                  item.accent === 'amber'
+                    ? 'ring-amber-200 dark:ring-amber-900/40 hover:border-amber-300'
+                    : item.accent === 'rose'
+                      ? 'ring-rose-200 dark:ring-rose-900/40 hover:border-rose-300'
+                      : item.accent === 'emerald'
+                        ? 'ring-emerald-200 dark:ring-emerald-900/40 hover:border-emerald-300'
+                        : 'ring-violet-200 dark:ring-violet-900/40 hover:border-violet-300';
+                return (
+                  <Link
+                    key={item.id}
+                    to={item.to}
+                    className={`block rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 p-5 shadow-sm hover:shadow-md transition-all ring-1 ${ring}`}
+                  >
+                    <h3 className="font-bold text-slate-900 dark:text-white mb-1">
+                      {isEnglish ? item.titleEn : item.titleZh}
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      {isEnglish ? item.descEn : item.descZh}
+                    </p>
+                    <span className="inline-flex items-center gap-1 mt-3 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                      {isEnglish ? 'Open' : '进入'}
+                      <ArrowRight size={14} />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -654,7 +699,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-                <Link to="/app/today">
+                <Link to="/app/fortune/today">
                   <motion.button
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}

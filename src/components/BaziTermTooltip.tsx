@@ -57,7 +57,7 @@ export default function BaziTermTooltip({
             content: prompt,
           },
         ],
-        baziContext || {}
+        { baziContext: baziContext || {} }
       );
 
       if (response.success && response.message) {

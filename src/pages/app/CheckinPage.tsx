@@ -56,7 +56,7 @@ export default function CheckinPage() {
     <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
       <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Link to="/app/today" className="p-2 hover:bg-white/20 rounded-full transition" aria-label={isEnglish ? 'Back' : '返回'}>
+          <Link to="/app/fortune/today" className="p-2 hover:bg-white/20 rounded-full transition" aria-label={isEnglish ? 'Back' : '返回'}>
             <ChevronLeft size={24} />
           </Link>
           <div className="flex items-center gap-3">

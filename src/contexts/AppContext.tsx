@@ -23,6 +23,20 @@ interface AppContextValue {
   onCheckinSuccess?: (record: CheckinRecord) => void;
   /** 获取指定日期的运势（用于择日等） */
   fetchFortuneForDate?: (date: Date) => Promise<DailyFortuneBasic | null>;
+
+  // Today 视图模型（核心流程）
+  isLoading?: boolean;
+  isStale?: boolean;
+  slideDirection?: 'left' | 'right' | null;
+  currentThemeStyle?: { bg: string; text: string };
+  showBazi?: boolean;
+  toggleBazi?: () => void;
+  onFeedbackClick?: () => void;
+  onAIClick?: (question?: string) => void;
+  onGenerateImage?: () => void;
+  isGenerating?: boolean;
+  contentRef?: React.RefObject<HTMLDivElement>;
+  onRetryFetch?: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);

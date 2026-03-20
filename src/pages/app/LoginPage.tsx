@@ -59,7 +59,7 @@ export default function LoginPage() {
         sessionStorage.removeItem('login_redirect');
         navigate(redirect);
       } else {
-        navigate('/app/today');
+        navigate('/app/fortune/today');
       }
     }
   }, [isLoggedIn, navigate]);
@@ -155,7 +155,7 @@ export default function LoginPage() {
     try {
       const result = await login(email, password, rememberMe);
       if (result.success) {
-        navigate('/app/today');
+        navigate('/app/fortune/today');
       } else {
         setError(result.error || '登录失败');
       }
@@ -168,7 +168,7 @@ export default function LoginPage() {
 
   // 奖励动画完成后跳转
   const handleRewardComplete = () => {
-    navigate('/app/today');
+    navigate('/app/fortune/today');
   };
 
   return (

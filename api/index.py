@@ -145,18 +145,52 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json(status, result)
                 return
 
+            if path.endswith("/fortune-month"):
+                from services.fortune_service import FortuneService
+
+                result = FortuneService.handle_fortune_month_request(body)
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
+            if path.endswith("/yijing-divination"):
+                from services.yijing_service import YijingService
+
+                result = YijingService.handle_divination_request(body)
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
+            if path.endswith("/hepan"):
+                from services.hepan_service import HepanService
+
+                result = HepanService.handle_hepan_request(body)
+                status = result.pop("code", 200)
+                self._send_json(status, result)
+                return
+
             if path.endswith("/ai-chat"):
                 from services.ai_service import AIService
 
                 messages = body.get("messages", [])
-                bazi_context = body.get("baziContext", {})
+                bazi_context = body.get("baziContext") or {}
+                yijing_context = body.get("yijingContext")
+                dream_context = body.get("dreamContext")
+                tarot_context = body.get("tarotContext")
 
                 api_key = os.environ.get("DEEPSEEK_API_KEY")
                 if not api_key:
                     self._send_json(500, {"success": False, "error": "AI not configured"})
                     return
 
-                system_prompt = AIService.build_bazi_system_prompt(bazi_context)
+                if tarot_context:
+                    system_prompt = AIService.build_tarot_system_prompt(tarot_context)
+                elif dream_context:
+                    system_prompt = AIService.build_dream_system_prompt(dream_context)
+                elif yijing_context:
+                    system_prompt = AIService.build_yijing_system_prompt(yijing_context)
+                else:
+                    system_prompt = AIService.build_bazi_system_prompt(bazi_context)
                 full_messages = [{"role": "system", "content": system_prompt}] + messages
                 ai_message = AIService.call_deepseek_api(api_key, full_messages)
                 self._send_json(200, {"success": True, "message": ai_message})
