@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authApi from '../../services/authApi';
 import { addCredits } from '../../utils/creditsStorage';
+import { trackEvent } from '../../utils/analytics';
 
 interface InviteStats {
   inviteCode: string;
@@ -79,6 +80,7 @@ export default function InvitePage() {
 
   const handleCopyCode = () => {
     if (stats?.inviteCode) {
+      trackEvent('invite_copy_code');
       navigator.clipboard.writeText(stats.inviteCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -87,6 +89,7 @@ export default function InvitePage() {
 
   const handleCopyLink = () => {
     if (stats?.inviteLink) {
+      trackEvent('invite_copy_link');
       navigator.clipboard.writeText(stats.inviteLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -95,6 +98,7 @@ export default function InvitePage() {
 
   const handleShare = async () => {
     if (navigator.share && stats?.inviteLink) {
+      trackEvent('invite_native_share');
       try {
         await navigator.share({
           title: '加入命运日历',

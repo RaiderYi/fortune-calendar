@@ -2,39 +2,28 @@
 // 人生大图景 - 功能页
 // ==========================================
 
-import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../contexts/AppContext';
 import LifeMapContent from '../../components/LifeMapContent';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
 
 export default function LifeMapPage() {
-  const { t, i18n } = useTranslation(['ui', 'fortune']);
-  const isEnglish = i18n.language === 'en';
+  const { t } = useTranslation(['ui', 'fortune']);
   const navigate = useNavigate();
   const { userProfile, setCurrentDate } = useAppContext();
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
-      {/* 头部 */}
-      <div className="flex-shrink-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 lg:p-6">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/app/fortune/today"
-            className="p-2 hover:bg-white/20 rounded-full transition"
-            aria-label={isEnglish ? 'Back' : '返回'}
-          >
-            <ChevronLeft size={24} />
-          </Link>
-          <div className="flex items-center gap-2">
-            <TrendingUp size={24} />
-            <h2 className="text-xl font-bold">{t('ui:lifemap.title')}</h2>
-          </div>
-        </div>
-        <p className="text-sm opacity-90 mt-1 pl-11">{t('ui:lifemap.description')}</p>
-      </div>
-
-      {/* 内容 */}
+    <AppSubPageShell
+      variant="light"
+      lightTone="spectrum"
+      title={t('ui:lifemap.title')}
+      icon={TrendingUp}
+      subtitle={t('ui:lifemap.description')}
+      scrollable={false}
+      contentClassName="!p-0 lg:!p-0 flex min-h-0 flex-1 flex-col"
+    >
       <LifeMapContent
         userProfile={userProfile}
         onOpenYongShenSettings={() => navigate('/app/fortune/today')}
@@ -43,6 +32,6 @@ export default function LifeMapPage() {
           navigate('/app/fortune/today');
         }}
       />
-    </div>
+    </AppSubPageShell>
   );
 }

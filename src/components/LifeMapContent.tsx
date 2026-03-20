@@ -139,7 +139,7 @@ export default function LifeMapContent({
   const lowPoint = useMemo(() => points.reduce((acc, p) => (p.overall < acc.overall ? p : acc), points[0] || ({} as LifeMapTrendPoint)), [points]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-[radial-gradient(circle_at_15%_10%,rgba(16,185,129,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.12),transparent_35%),linear-gradient(170deg,#f8fafc_0%,#ecfeff_50%,#f8fafc_100%)]">
+    <div className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_15%_10%,rgba(16,185,129,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.12),transparent_35%),linear-gradient(170deg,#f8fafc_0%,#ecfeff_50%,#f8fafc_100%)] p-4 lg:p-6">
       {!hasCustomYongShen && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}

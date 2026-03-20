@@ -2,12 +2,12 @@
 // 成就系统 - 功能页
 // ==========================================
 
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Star, Target, Sparkles, Award, ChevronLeft } from 'lucide-react';
+import { Trophy, Star, Target, Sparkles, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getAllAchievements, getAchievementStats, type Achievement } from '../../utils/achievementStorage';
 import { useTranslation } from 'react-i18next';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
 
 const CATEGORY_CONFIG: Record<string, { name: string; nameEn: string; icon: typeof Trophy }> = {
   checkin: { name: '签到', nameEn: 'Check-in', icon: Target },
@@ -32,43 +32,40 @@ export default function AchievementPage() {
 
   const getCategoryIcon = (category: string) => CATEGORY_CONFIG[category]?.icon || Award;
 
-  return (
-    <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
-      <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <Link to="/app/fortune/today" className="flex items-center gap-2 text-white/90 hover:text-white">
-            <ChevronLeft size={24} />
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-md rounded-full p-3">
-                <Trophy size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">{isEnglish ? 'Achievements' : '成就系统'}</h2>
-                <p className="text-white/90 text-sm">
-                  {stats.unlocked} / {stats.total} {isEnglish ? 'unlocked' : '已解锁'}
-                </p>
-              </div>
+  const categoryHeader = (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
+        const categoryStats = stats.byCategory[key] || { total: 0, unlocked: 0 };
+        const Icon = config.icon;
+        return (
+          <div key={key} className="rounded-xl bg-white/20 p-3 text-center backdrop-blur-md">
+            <Icon size={20} className="mx-auto mb-1" />
+            <div className="mb-1 text-xs opacity-90">{isEnglish ? config.nameEn : config.name}</div>
+            <div className="text-lg font-bold">
+              {categoryStats.unlocked}/{categoryStats.total}
             </div>
-          </Link>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
-            const categoryStats = stats.byCategory[key] || { total: 0, unlocked: 0 };
-            const Icon = config.icon;
-            return (
-              <div key={key} className="bg-white/20 backdrop-blur-md rounded-xl p-3 text-center">
-                <Icon size={20} className="mx-auto mb-1" />
-                <div className="text-xs opacity-90 mb-1">{isEnglish ? config.nameEn : config.name}</div>
-                <div className="text-lg font-bold">
-                  {categoryStats.unlocked}/{categoryStats.total}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 
-      <div className="flex-1 overflow-y-auto p-4">
+  return (
+    <AppSubPageShell
+      variant="light"
+      lightTone="spectrum"
+      title={isEnglish ? 'Achievements' : '成就系统'}
+      icon={Trophy}
+      subtitle={
+        <>
+          {stats.unlocked} / {stats.total} {isEnglish ? 'unlocked' : '已解锁'}
+        </>
+      }
+      backTo="/app/profile"
+      headerBottom={categoryHeader}
+      contentClassName="!px-3 !pb-4 lg:!px-4"
+    >
+      <div className="overflow-y-auto">
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
           <motion.button
             onClick={() => setSelectedCategory(null)}
@@ -148,6 +145,6 @@ export default function AchievementPage() {
           })}
         </div>
       </div>
-    </div>
+    </AppSubPageShell>
   );
 }

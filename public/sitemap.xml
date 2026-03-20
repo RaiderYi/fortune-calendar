@@ -5,7 +5,7 @@
   <!-- 首页 - 中文版本 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/?lang=zh</loc>
-    <lastmod>2025-01-05</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
@@ -16,7 +16,7 @@
   <!-- 首页 - 英文版本 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/?lang=en</loc>
-    <lastmod>2025-01-05</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
@@ -27,7 +27,7 @@
   <!-- 默认首页 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/</loc>
-    <lastmod>2025-01-05</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/?lang=zh" />
@@ -38,7 +38,7 @@
   <!-- Features - 中文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/features?lang=zh</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/features?lang=zh" />
@@ -49,7 +49,7 @@
   <!-- Features - 英文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/features?lang=en</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/features?lang=zh" />
@@ -60,7 +60,7 @@
   <!-- About - 中文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/about?lang=zh</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/about?lang=zh" />
@@ -71,7 +71,7 @@
   <!-- About - 英文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/about?lang=en</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/about?lang=zh" />
@@ -82,7 +82,7 @@
   <!-- Pricing - 中文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/pricing?lang=zh</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/pricing?lang=zh" />
@@ -93,7 +93,7 @@
   <!-- Pricing - 英文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/pricing?lang=en</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/pricing?lang=zh" />
@@ -104,7 +104,7 @@
   <!-- Help - 中文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/help?lang=zh</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/help?lang=zh" />
@@ -115,12 +115,93 @@
   <!-- Help - 英文 -->
   <url>
     <loc>https://fortunecalendar.vercel.app/help?lang=en</loc>
-    <lastmod>2025-02-06</lastmod>
+    <lastmod>2026-03-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/help?lang=zh" />
     <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/help?lang=en" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/help?lang=en" />
+  </url>
+
+  <!-- Blog - 中文 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/blog?lang=zh</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/blog?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/blog?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/blog?lang=en" />
+  </url>
+  <!-- Blog - 英文 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/blog?lang=en</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/blog?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/blog?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/blog?lang=en" />
+  </url>
+
+  <!-- Privacy - 中文 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/privacy?lang=zh</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/privacy?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/privacy?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/privacy?lang=en" />
+  </url>
+  <url>
+    <loc>https://fortunecalendar.vercel.app/privacy?lang=en</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/privacy?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/privacy?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/privacy?lang=en" />
+  </url>
+
+  <!-- Terms - 中文 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/terms?lang=zh</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/terms?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/terms?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/terms?lang=en" />
+  </url>
+  <url>
+    <loc>https://fortunecalendar.vercel.app/terms?lang=en</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/terms?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/terms?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/terms?lang=en" />
+  </url>
+
+  <!-- Invite - 中文 -->
+  <url>
+    <loc>https://fortunecalendar.vercel.app/invite?lang=zh</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/invite?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/invite?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/invite?lang=en" />
+  </url>
+  <url>
+    <loc>https://fortunecalendar.vercel.app/invite?lang=en</loc>
+    <lastmod>2026-03-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fortunecalendar.vercel.app/invite?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://fortunecalendar.vercel.app/invite?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fortunecalendar.vercel.app/invite?lang=en" />
   </url>
   
 </urlset>

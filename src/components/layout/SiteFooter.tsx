@@ -2,27 +2,35 @@
 // 站点页脚 - 关于、联系、版权
 // ==========================================
 
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DonateQR from '../DonateQR';
+import { buildTodayEntryLink } from '../../utils/appEntry';
 
 export default function SiteFooter() {
   const { t, i18n } = useTranslation('ui');
   const isEnglish = i18n.language === 'en';
 
-  const productLinks = [
-    { to: '/app/fortune/today', label: isEnglish ? 'Today' : '今日运势' },
-    { to: '/app/calendar', label: isEnglish ? 'Calendar' : '日历' },
-    { to: '/app/me', label: isEnglish ? 'Me' : '我的' },
-    { to: '/features', label: isEnglish ? 'Features' : '功能详解' },
-    { to: '/pricing', label: isEnglish ? 'Pricing' : '定价' },
-  ];
-  const supportLinks = [
-    { to: '/help', label: isEnglish ? 'Help Center' : '帮助中心' },
-    { to: '/help#faq', label: 'FAQ' },
-    { to: '/app/me', label: isEnglish ? 'Feedback' : '反馈' },
-  ];
+  const productLinks = useMemo(
+    () => [
+      { to: buildTodayEntryLink('sitefooter'), label: t('pages.today') },
+      { to: '/app/plan/calendar', label: t('pages.calendar') },
+      { to: '/app/profile', label: t('pages.my') },
+      { to: '/features', label: isEnglish ? 'Features' : '功能详解' },
+      { to: '/pricing', label: isEnglish ? 'Pricing' : '定价' },
+    ],
+    [t, isEnglish]
+  );
+  const supportLinks = useMemo(
+    () => [
+      { to: '/help', label: isEnglish ? 'Help Center' : '帮助中心' },
+      { to: '/help#faq', label: 'FAQ' },
+      { to: '/app/profile', label: isEnglish ? 'Feedback' : '反馈' },
+    ],
+    [isEnglish]
+  );
   const companyLinks = [
     { to: '/about', label: isEnglish ? 'About' : '关于我们' },
     { to: '/blog', label: isEnglish ? 'Blog' : '博客' },

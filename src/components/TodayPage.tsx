@@ -7,8 +7,9 @@ import FortuneCard from './FortuneCard';
 import FortuneCardV2 from './FortuneCardV2';
 import DimensionCard from './DimensionCard';
 import { SkeletonFortuneCard, SkeletonDimensionCard } from './SkeletonLoader';
-import { useState, useMemo } from 'react';
-import { TrendingUp, Sparkles, Crown, Loader2, Share2, PenLine, LayoutGrid, Layers } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { TrendingUp, Sparkles, Crown, Loader2, Share2, PenLine, LayoutGrid, Layers, ChevronDown } from 'lucide-react';
+import DailySignThemeSelector, { type DailySignTheme } from './DailySignThemeSelector';
 
 // 新版卡片数据转换包装器
 const FortuneCardV2Wrapper: React.FC<{ fortune: any; animate?: boolean }> = ({ fortune, animate }) => {
@@ -117,13 +118,21 @@ interface TodayPageProps {
   onGenerateImage: () => void;
   isGenerating: boolean;
   contentRef: React.RefObject<HTMLDivElement>;
-  dailySignTheme?: 'zen' | 'minimal' | 'oracle';
-  onThemeChange?: (theme: 'zen' | 'minimal' | 'oracle') => void;
+  dailySignTheme?: DailySignTheme;
+  onThemeChange?: (theme: DailySignTheme) => void;
   showThemeSelector?: boolean;
   onToggleThemeSelector?: () => void;
   baziContext?: any;
   customYongShen?: string | null;
   onCustomYongShenChange?: (yongShen: string | string[] | null) => void;
+  /** G-022：运势接口错误文案 */
+  fortuneLoadError?: string | null;
+  /** 缺少出生日期或时间 */
+  profileIncomplete?: boolean;
+  onOpenProfileSettings?: () => void;
+  onRetryFortune?: () => void;
+  /** 首页/营销入口进入后的承接提示 */
+  entryBridge?: { show: boolean; onDismiss: () => void };
 }
 
 export default function TodayPage({
@@ -147,10 +156,19 @@ export default function TodayPage({
   customYongShen,
   onCustomYongShenChange,
   onDiaryClick,
+  fortuneLoadError,
+  profileIncomplete,
+  onOpenProfileSettings,
+  onRetryFortune,
+  entryBridge,
 }: TodayPageProps) {
   const { t } = useTranslation(['ui', 'bazi']);
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
   const [useNewCard, setUseNewCard] = useState(false); // 切换新旧卡片
+
+  const scrollToDetails = useCallback(() => {
+    document.getElementById('today-yiji')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   // 使术语可点击
   const TermButton = ({ term, className = '' }: { term: string; className?: string }) => (
@@ -164,8 +182,32 @@ export default function TodayPage({
 
   return (
     <div className="flex-1 overflow-y-auto px-5 pb-24 relative">
+      {entryBridge?.show && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 bg-indigo-50/95 dark:bg-indigo-950/40 px-4 py-3"
+          role="status"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+            <div className="flex gap-3 flex-1 min-w-0">
+              <Sparkles size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-indigo-900 dark:text-indigo-100 leading-relaxed">
+                {t('homeToApp.bridgeMessage')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={entryBridge.onDismiss}
+              className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 px-3 py-2 rounded-lg hover:bg-indigo-100/80 dark:hover:bg-indigo-900/50 self-end sm:self-start shrink-0"
+            >
+              {t('ui:homeToApp.bridgeDismiss')}
+            </button>
+          </div>
+        </motion.div>
+      )}
       <AnimatePresence mode="wait">
-        {isLoading || !fortune ? (
+        {isLoading ? (
           <motion.div
             key="loading"
             initial={{ opacity: 0 }}
@@ -175,6 +217,46 @@ export default function TodayPage({
           >
             <SkeletonFortuneCard />
             <SkeletonDimensionCard />
+          </motion.div>
+        ) : !fortune ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border border-amber-200/80 dark:border-amber-900/40 bg-amber-50/90 dark:bg-amber-950/30 p-6 text-center space-y-4"
+          >
+            <p className="text-lg font-bold text-amber-900 dark:text-amber-100">
+              {profileIncomplete
+                ? t('ui:todayPage.stateIncompleteTitle')
+                : t('ui:todayPage.stateErrorTitle')}
+            </p>
+            <p className="text-sm text-amber-800/90 dark:text-amber-200/80">
+              {profileIncomplete
+                ? t('ui:todayPage.stateIncompleteDesc')
+                : fortuneLoadError || t('ui:todayPage.stateGenericDesc')}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              {profileIncomplete && onOpenProfileSettings && (
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onOpenProfileSettings}
+                  className="px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm"
+                >
+                  {t('ui:todayPage.stateOpenProfile')}
+                </motion.button>
+              )}
+              {!profileIncomplete && onRetryFortune && (
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onRetryFortune}
+                  className="px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm"
+                >
+                  {t('ui:todayPage.stateRetry')}
+                </motion.button>
+              )}
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -192,6 +274,78 @@ export default function TodayPage({
             ref={contentRef}
             style={{ paddingBottom: '24px', background: '#F5F5F7', paddingLeft: '4px', paddingRight: '4px' }}
           >
+            {/* G-021：首屏一句结论 + 主 CTA */}
+            {fortuneLoadError && (
+              <div
+                className="mb-3 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-800 dark:text-red-200 flex flex-col gap-2"
+                role="alert"
+              >
+                <span>{fortuneLoadError}</span>
+                {onRetryFortune && (
+                  <button
+                    type="button"
+                    onClick={onRetryFortune}
+                    className="text-left font-semibold text-red-700 dark:text-red-300 underline"
+                  >
+                    {t('ui:todayPage.stateRetry')}
+                  </button>
+                )}
+              </div>
+            )}
+            <section
+              className="mb-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700 p-4 shadow-sm"
+              aria-label={t('ui:todayPage.heroScore')}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-4xl shrink-0" aria-hidden>
+                  {fortune.mainTheme?.emoji || '✨'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-base font-bold text-gray-900 dark:text-gray-100 leading-snug">
+                    {fortune.mainTheme?.keyword}
+                    {fortune.mainTheme?.subKeyword ? (
+                      <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
+                        {' · '}
+                        {fortune.mainTheme.subKeyword}
+                      </span>
+                    ) : null}
+                  </p>
+                  {fortune.mainTheme?.description ? (
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                      {fortune.mainTheme.description}
+                    </p>
+                  ) : null}
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs font-bold px-2.5 py-1">
+                      {t('ui:todayPage.heroScore')} {fortune.totalScore}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <motion.button
+                  type="button"
+                  onClick={() => onAIClick()}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+                >
+                  <Sparkles size={16} />
+                  {t('ui:todayPage.heroCtaAi')}
+                </motion.button>
+                <motion.button
+                  type="button"
+                  onClick={scrollToDetails}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-1"
+                >
+                  {t('ui:todayPage.heroCtaDetails')}
+                  <ChevronDown size={16} />
+                </motion.button>
+              </div>
+            </section>
+
             {/* 卡片版本切换 */}
             <div className="flex justify-end mb-2">
               <motion.button
@@ -258,7 +412,7 @@ export default function TodayPage({
             )}
 
             {/* Todo List */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
+            <div id="today-yiji" className="grid grid-cols-2 gap-3 mt-4 scroll-mt-24">
               {fortune.todo.map((item, idx) => (
                 <div key={idx} className={`p-4 rounded-2xl ${item.type === 'up' ? 'bg-white dark:bg-gray-800' : 'bg-gray-200/50 dark:bg-gray-700/50'} flex flex-col justify-between shadow-sm border border-transparent`}>
                   <span className={`text-[10px] font-black px-2 py-0.5 rounded w-fit mb-2 uppercase tracking-wide ${

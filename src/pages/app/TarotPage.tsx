@@ -3,14 +3,15 @@
 // ==========================================
 
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, LayoutGrid, Loader2, RefreshCw } from 'lucide-react';
+import { LayoutGrid, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TAROT_MAJOR } from '../../data/tarotMajor';
 import { chatWithAI } from '../../services/api';
 import type { TarotContext } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
 import { trySpendCredits, addCredits } from '../../utils/creditsStorage';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appDarkPurpleButtonClass, appDarkResultCardClass } from '../../constants/appUiClasses';
 
 function drawSpread(seed: number) {
   const rng = (function simple(s: number) {
@@ -90,60 +91,51 @@ export default function TarotPage() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-purple-950 to-slate-950 text-white pb-24">
-      <div className="p-4 border-b border-white/10 flex items-center gap-3">
-        <Link to="/app/fortune/today">
-          <ChevronLeft size={22} />
-        </Link>
-        <LayoutGrid className="text-purple-300" size={22} />
-        <h1 className="font-bold">{isEnglish ? 'Tarot' : '塔罗占卜'}</h1>
-      </div>
-      <div className="p-4 max-w-lg mx-auto space-y-6">
-        <p className="text-sm text-white/60">
-          {isEnglish ? 'Major Arcana only. For reflection, not fortune-telling.' : '仅大阿尔卡那，供自省与娱乐。'}
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setSeed(Date.now() % 1000000);
-            setReply('');
-          }}
-          className="flex items-center gap-2 text-sm text-purple-300"
-        >
-          <RefreshCw size={16} />
-          {isEnglish ? 'Redraw' : '重新抽牌'}
-        </button>
-        <div className="grid grid-cols-3 gap-2">
-          {cards.map((c) => (
-            <div
-              key={c.position}
-              className="rounded-xl bg-white/10 border border-white/15 p-3 text-center min-h-[120px] flex flex-col justify-center"
-            >
-              <div className="text-[10px] text-white/50 mb-1">
-                {isEnglish ? c.positionEn : c.position}
-              </div>
-              <div className="text-sm font-bold">{isEnglish ? c.nameEn : c.name}</div>
-              <div className="text-xs mt-1 text-amber-300">
-                {c.reversed ? (isEnglish ? 'Reversed' : '逆位') : isEnglish ? 'Upright' : '正位'}
-              </div>
+    <AppSubPageShell
+      variant="dark"
+      darkTone="purple"
+      title={isEnglish ? 'Tarot' : '塔罗占卜'}
+      icon={LayoutGrid}
+      iconClassName="text-purple-300"
+      contentClassName="space-y-6"
+    >
+      <p className="text-sm text-white/60">
+        {isEnglish ? 'Major Arcana only. For reflection, not fortune-telling.' : '仅大阿尔卡那，供自省与娱乐。'}
+      </p>
+      <button
+        type="button"
+        onClick={() => {
+          setSeed(Date.now() % 1000000);
+          setReply('');
+        }}
+        className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-purple-300 transition hover:bg-white/10"
+      >
+        <RefreshCw size={16} />
+        {isEnglish ? 'Redraw' : '重新抽牌'}
+      </button>
+      <div className="grid grid-cols-3 gap-2">
+        {cards.map((c) => (
+          <div
+            key={c.position}
+            className="flex min-h-[120px] flex-col justify-center rounded-xl border border-white/15 bg-white/10 p-3 text-center"
+          >
+            <div className="mb-1 text-[10px] text-white/50">{isEnglish ? c.positionEn : c.position}</div>
+            <div className="text-sm font-bold">{isEnglish ? c.nameEn : c.name}</div>
+            <div className="mt-1 text-xs text-amber-300">
+              {c.reversed ? (isEnglish ? 'Reversed' : '逆位') : isEnglish ? 'Upright' : '正位'}
             </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          disabled={loading}
-          onClick={interpret}
-          className="w-full py-3 rounded-xl bg-purple-600 font-bold flex justify-center gap-2"
-        >
-          {loading ? <Loader2 className="animate-spin" /> : null}
-          {isEnglish ? 'AI reading' : 'AI 解读'}
-        </button>
-        {reply && (
-          <div className="rounded-xl bg-purple-950/50 border border-purple-500/30 p-4 text-sm whitespace-pre-wrap leading-relaxed">
-            {reply}
           </div>
-        )}
+        ))}
       </div>
-    </div>
+      <button type="button" disabled={loading} onClick={interpret} className={appDarkPurpleButtonClass}>
+        {loading ? <Loader2 className="animate-spin" /> : null}
+        {isEnglish ? 'AI reading' : 'AI 解读'}
+      </button>
+      {reply ? (
+        <div className={`${appDarkResultCardClass} border-purple-500/30 bg-purple-950/50 whitespace-pre-wrap`}>
+          {reply}
+        </div>
+      ) : null}
+    </AppSubPageShell>
   );
 }

@@ -39,6 +39,7 @@ export default {
       },
       fontFamily: {
         sans: ['Noto Sans SC', 'system-ui', 'sans-serif'],
+        serif: ['Noto Serif SC', 'Source Han Serif SC', 'STSong', 'SimSun', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
@@ -49,7 +50,7 @@ export default {
       boxShadow: {
         'card': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
         'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-        'card-focus': '0 0 0 3px rgb(99 102 241 / 0.3)',
+        'card-focus': '0 0 0 3px rgb(139 92 246 / 0.35)',
       },
       transitionDuration: {
         'fast': '150ms',

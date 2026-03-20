@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Bot, User, Loader2, Sparkles, ChevronLeft } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { chatWithAI } from '../../services/api';
 import type { ChatMessage, BaziContext, QuickQuestion } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
@@ -13,6 +13,8 @@ import { useAppContext } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
 import TypewriterText from '../../components/TypewriterText';
 import { trySpendCredits, addCredits } from '../../utils/creditsStorage';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appSpectrumCtaButtonClass } from '../../constants/appUiClasses';
 
 export default function AIPage() {
   const { t } = useTranslation('ui');
@@ -125,67 +127,39 @@ export default function AIPage() {
   // 无运势数据时显示提示
   if (!baziContext) {
     return (
-      <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
-        <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/app/fortune/today"
-              className="p-2 hover:bg-white/20 rounded-full transition"
-              aria-label={t('common:buttons.back', { defaultValue: 'Back' })}
-            >
-              <ChevronLeft size={24} />
-            </Link>
-            <div className="flex items-center gap-2">
-              <Sparkles size={24} />
-              <h2 className="text-xl font-bold">{t('header.aiConsult')}</h2>
-            </div>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <Bot size={64} className="text-indigo-400 mb-4" />
-          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">
-            {t('aiDeduction.welcome')}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
-            {t('aiDeduction.description')}
-          </p>
-          <p className="text-amber-600 dark:text-amber-400 mb-6">
-            {t('aiDeduction.viewTodayFirst', {
-              defaultValue: '请先查看今日运势，以便 AI 基于您的八字提供个性化分析',
-            })}
-          </p>
-          <Link
-            to="/app/fortune/today"
-            className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold transition"
-          >
-            {t('aiDeduction.goToToday', { defaultValue: '查看今日运势' })}
-          </Link>
-        </div>
-      </div>
+      <AppSubPageShell
+        variant="light"
+        lightTone="spectrum"
+        title={t('header.aiConsult')}
+        icon={Sparkles}
+        contentClassName="flex flex-col items-center justify-center py-12 text-center"
+      >
+        <Bot size={64} className="mb-4 text-indigo-400" />
+        <h3 className="mb-2 text-lg font-bold text-gray-800 dark:text-gray-200">{t('aiDeduction.welcome')}</h3>
+        <p className="mb-6 max-w-md text-gray-600 dark:text-gray-400">{t('aiDeduction.description')}</p>
+        <p className="mb-6 text-amber-600 dark:text-amber-400">
+          {t('aiDeduction.viewTodayFirst', {
+            defaultValue: '请先查看今日运势，以便 AI 基于您的八字提供个性化分析',
+          })}
+        </p>
+        <Link to="/app/fortune/today" className={appSpectrumCtaButtonClass}>
+          {t('aiDeduction.goToToday', { defaultValue: '查看今日运势' })}
+        </Link>
+      </AppSubPageShell>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
-      {/* 头部 */}
-      <div className="flex-shrink-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 lg:p-6">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/app/fortune/today"
-            className="p-2 hover:bg-white/20 rounded-full transition"
-            aria-label={t('common:buttons.back', { defaultValue: 'Back' })}
-          >
-            <ChevronLeft size={24} />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Sparkles size={24} />
-            <h2 className="text-xl font-bold">{t('header.aiConsult')}</h2>
-          </div>
-        </div>
-      </div>
-
-      {/* 消息区域 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <AppSubPageShell
+      variant="light"
+      lightTone="spectrum"
+      title={t('header.aiConsult')}
+      icon={Sparkles}
+      scrollable={false}
+      contentClassName="!p-0 lg:!p-0 flex min-h-0 flex-1 flex-col"
+    >
+      <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {messages.length === 0 && (
           <div className="text-center py-8">
             <Bot size={48} className="mx-auto mb-4 text-indigo-500" />
@@ -266,8 +240,7 @@ export default function AIPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 输入区域 */}
-      <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
+      <div className="shrink-0 border-t border-gray-200 bg-white/95 p-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -297,6 +270,7 @@ export default function AIPage() {
           })}
         </p>
       </div>
-    </div>
+      </div>
+    </AppSubPageShell>
   );
 }

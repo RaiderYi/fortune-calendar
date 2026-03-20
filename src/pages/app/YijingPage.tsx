@@ -3,13 +3,14 @@
 // ==========================================
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, Flame, Loader2, Sparkles } from 'lucide-react';
+import { Flame, Loader2, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { postYijingDivination, chatWithAI, type YijingDivinationData } from '../../services/api';
 import type { YijingContext } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
 import { trySpendCredits, addCredits } from '../../utils/creditsStorage';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appDarkSecondaryButtonClass, appDarkTextareaClass } from '../../constants/appUiClasses';
 
 const CATEGORIES = [
   { id: 'career', zh: '事业', en: 'Career' },
@@ -98,16 +99,14 @@ export default function YijingPage() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-amber-950 via-slate-950 to-slate-950 text-white pb-24">
-      <div className="sticky top-0 z-10 bg-slate-950/90 backdrop-blur border-b border-white/10 px-4 py-4 flex items-center gap-3">
-        <Link to="/app/fortune/today" className="p-2 hover:bg-white/10 rounded-lg">
-          <ChevronLeft size={22} />
-        </Link>
-        <Flame className="text-amber-400" size={22} />
-        <h1 className="text-lg font-bold">{isEnglish ? 'I Ching' : '易经问卦'}</h1>
-      </div>
-
-      <div className="px-4 py-6 space-y-6 max-w-lg mx-auto">
+    <AppSubPageShell
+      variant="dark"
+      darkTone="amber"
+      title={isEnglish ? 'I Ching' : '易经问卦'}
+      icon={Flame}
+      iconClassName="text-amber-400"
+      contentClassName="space-y-6"
+    >
         <div className="bg-white/5 border border-amber-500/20 rounded-2xl p-4 space-y-2 text-sm text-amber-100/80">
           <p className="font-medium text-amber-200">
             {isEnglish ? 'How to ask' : '如何提问'}
@@ -161,7 +160,7 @@ export default function YijingPage() {
                 ? 'e.g. Should I change jobs in the next three months?'
                 : '例如：未来三个月内是否适合换工作？'
             }
-            className="w-full rounded-xl bg-white/10 border border-white/15 px-4 py-3 text-white placeholder:text-white/35 focus:ring-2 focus:ring-amber-500/50 outline-none resize-none"
+            className={`${appDarkTextareaClass} focus:ring-amber-500/50`}
           />
         </div>
 
@@ -210,7 +209,7 @@ export default function YijingPage() {
               type="button"
               disabled={aiLoading}
               onClick={handleAi}
-              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+              className={appDarkSecondaryButtonClass}
             >
               {aiLoading ? <Loader2 className="animate-spin" size={20} /> : null}
               {isEnglish ? 'AI interpretation' : 'AI 深度解读'}
@@ -223,7 +222,6 @@ export default function YijingPage() {
             )}
           </div>
         )}
-      </div>
-    </div>
+    </AppSubPageShell>
   );
 }

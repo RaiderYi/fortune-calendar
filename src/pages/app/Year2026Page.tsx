@@ -4,10 +4,11 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fetchFortuneYear } from '../../services/api';
 import { getCustomYongShen } from '../../utils/yongShenStorage';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
 
 export default function Year2026Page() {
   const { i18n } = useTranslation();
@@ -41,15 +42,14 @@ export default function Year2026Page() {
   }, []);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-red-950 via-slate-950 to-slate-950 text-white pb-24">
-      <div className="p-4 border-b border-white/10 flex items-center gap-3">
-        <Link to="/app/fortune/today">
-          <ChevronLeft size={22} />
-        </Link>
-        <Sparkles className="text-amber-400" size={22} />
-        <h1 className="font-bold">2026 {isEnglish ? 'Bingwu Year' : '丙午年'}</h1>
-      </div>
-      <div className="p-6 max-w-lg mx-auto space-y-6">
+    <AppSubPageShell
+      variant="dark"
+      darkTone="red"
+      title={`2026 ${isEnglish ? 'Bingwu Year' : '丙午年'}`}
+      icon={Sparkles}
+      iconClassName="text-amber-400"
+      contentClassName="space-y-6"
+    >
         <p className="text-white/80 leading-relaxed text-sm">
           {isEnglish
             ? '2026 is a fiery horse year in the sexagenary cycle. Use your personal annual score as a soft reference alongside daily habits and planning.'
@@ -87,13 +87,12 @@ export default function Year2026Page() {
             <li key={t}>{t}</li>
           ))}
         </ul>
-        <Link
-          to="/app/fortune/monthly"
-          className="block text-center py-3 rounded-xl bg-amber-600 text-slate-900 font-bold"
-        >
-          {isEnglish ? 'View monthly heatmap' : '查看每月运势热力'}
-        </Link>
-      </div>
-    </div>
+      <Link
+        to="/app/fortune/monthly"
+        className="block rounded-xl bg-amber-500 py-3.5 text-center font-bold text-slate-900 transition hover:bg-amber-400"
+      >
+        {isEnglish ? 'View monthly heatmap' : '查看每月运势热力'}
+      </Link>
+    </AppSubPageShell>
   );
 }

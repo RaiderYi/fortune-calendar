@@ -10,6 +10,9 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
 import ToastContainer from './components/Toast.tsx'
 import { collectWebVitals, reportToAnalytics } from './utils/performance'
+import { initAnalytics } from './utils/analytics'
+
+initAnalytics()
 
 // 性能监控
 collectWebVitals((metrics) => {

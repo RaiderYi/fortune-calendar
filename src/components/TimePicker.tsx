@@ -44,7 +44,7 @@ export default function TimePicker({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 z-[110] backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -54,7 +54,7 @@ export default function TimePicker({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-[70] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-[120] overflow-hidden flex flex-col"
           >
             {/* 头部 */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">

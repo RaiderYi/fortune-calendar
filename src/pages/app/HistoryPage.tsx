@@ -2,14 +2,15 @@
 // 历史记录 - 功能页
 // ==========================================
 
-import { Link, useNavigate } from 'react-router-dom';
-import { Clock, Trash2, BarChart3, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Clock, Trash2, BarChart3 } from 'lucide-react';
 import { getHistory, clearHistory, formatHistoryDate, getHistoryStats, HistoryRecord } from '../../utils/historyStorage';
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { updateAchievementProgress } from '../../utils/achievementStorage';
 import { useAppContext } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
 
 function HistoryPage() {
   const { t, i18n } = useTranslation('ui');
@@ -53,43 +54,35 @@ function HistoryPage() {
     [setCurrentDate, navigate]
   );
 
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      {/* 头部 */}
-      <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Link
-            to="/app/fortune/today"
-            className="p-2 hover:bg-white/20 rounded-full transition"
-            aria-label={isEnglish ? 'Back' : '返回'}
-          >
-            <ChevronLeft size={24} />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Clock size={24} />
-            <h2 className="text-xl font-bold">{isEnglish ? 'History' : '历史记录'}</h2>
-          </div>
+  const statsBar =
+    stats != null ? (
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl bg-white/20 p-3 text-center backdrop-blur-md">
+          <div className="text-2xl font-black">{stats.total}</div>
+          <div className="mt-1 text-xs opacity-90">{isEnglish ? 'Queries' : '查询次数'}</div>
         </div>
-        {stats && (
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-2xl font-black">{stats.total}</div>
-              <div className="text-xs opacity-90 mt-1">{isEnglish ? 'Queries' : '查询次数'}</div>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-2xl font-black">{stats.avgScore}</div>
-              <div className="text-xs opacity-90 mt-1">{isEnglish ? 'Avg Score' : '平均分'}</div>
-            </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-2xl font-black">{stats.maxRecord.fortune.totalScore}</div>
-              <div className="text-xs opacity-90 mt-1">{isEnglish ? 'Best' : '最高分'}</div>
-            </div>
-          </div>
-        )}
+        <div className="rounded-xl bg-white/20 p-3 text-center backdrop-blur-md">
+          <div className="text-2xl font-black">{stats.avgScore}</div>
+          <div className="mt-1 text-xs opacity-90">{isEnglish ? 'Avg Score' : '平均分'}</div>
+        </div>
+        <div className="rounded-xl bg-white/20 p-3 text-center backdrop-blur-md">
+          <div className="text-2xl font-black">{stats.maxRecord.fortune.totalScore}</div>
+          <div className="mt-1 text-xs opacity-90">{isEnglish ? 'Best' : '最高分'}</div>
+        </div>
       </div>
+    ) : null;
 
-      {/* 内容 */}
-      <div ref={parentRef} className="flex-1 overflow-y-auto p-4 bg-[#F5F5F7] dark:bg-slate-900">
+  return (
+    <AppSubPageShell
+      variant="light"
+      lightTone="spectrum"
+      title={isEnglish ? 'History' : '历史记录'}
+      icon={Clock}
+      scrollable={false}
+      headerBottom={statsBar}
+      contentClassName="!p-0 lg:!p-0"
+    >
+      <div ref={parentRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4 dark:bg-slate-900 lg:px-6 lg:py-4">
         {history.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[200px] text-gray-400 gap-3">
             <Clock size={48} className="opacity-30" />
@@ -127,9 +120,8 @@ function HistoryPage() {
         )}
       </div>
 
-      {/* 底部 */}
       {history.length > 0 && (
-        <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-slate-700 space-y-2 bg-white dark:bg-slate-800/50">
+        <div className="shrink-0 space-y-2 border-t border-gray-200 bg-white/95 p-4 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/95">
           {onCompareClick && (
             <button
               onClick={() => {
@@ -151,7 +143,7 @@ function HistoryPage() {
           </button>
         </div>
       )}
-    </div>
+    </AppSubPageShell>
   );
 }
 

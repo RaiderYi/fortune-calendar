@@ -14,6 +14,7 @@ import {
   getWeekStart,
   type FortuneReport,
 } from '../utils/reportGenerator';
+import { trackEvent } from '../utils/analytics';
 
 interface FortuneReportProps {
   isOpen: boolean;
@@ -93,6 +94,7 @@ export default function FortuneReport({
   };
 
   const handleShare = async () => {
+    trackEvent('share_click', { source: 'fortune_report' });
     const text = buildShareText();
     const url = typeof window !== 'undefined' ? window.location.origin + '/app/fortune/today' : '';
 

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import LanguageSwitcher from '../LanguageSwitcher';
+import { buildTodayEntryLink } from '../../utils/appEntry';
 
 interface SiteHeaderProps {
   onLoginClick?: () => void;
@@ -20,6 +21,10 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
   const location = useLocation();
   const isEnglish = i18n.language === 'en';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const todayHref = location.pathname.startsWith('/app')
+    ? buildTodayEntryLink('internal')
+    : buildTodayEntryLink('siteheader');
 
   const navItems = [
     { to: '/', label: isEnglish ? 'Home' : '首页' },
@@ -38,7 +43,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
             to="/"
             className="flex items-center gap-2 text-gray-900 dark:text-white hover:opacity-80 transition"
           >
-            <Sparkles size={24} className="text-indigo-500" />
+            <Sparkles size={24} className="text-primary-600 dark:text-primary-400" />
             <span className="text-lg font-bold">{t('header.title', { defaultValue: '命运日历' })}</span>
           </Link>
 
@@ -50,7 +55,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                 to={item.to}
                 className={`text-sm font-medium transition ${
                   location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to))
-                    ? 'text-indigo-600 dark:text-indigo-400'
+                    ? 'text-primary-600 dark:text-primary-400'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
@@ -62,10 +67,10 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
           {/* Right: CTA + Login + Language */}
           <div className="flex items-center gap-3">
             <Link
-              to="/app/fortune/today"
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
+              to={todayHref}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
             >
-              {isEnglish ? 'Get Started' : '进入应用'}
+              {t('homeToApp.primaryCta')}
             </Link>
             {!isAuthenticated && onLoginClick && (
               <button
@@ -88,7 +93,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
             aria-label={mobileMenuOpen ? (isEnglish ? 'Close menu' : '关闭菜单') : (isEnglish ? 'Open menu' : '打开菜单')}
             aria-expanded={mobileMenuOpen}
           >
@@ -114,7 +119,7 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block py-2 px-3 rounded-lg text-sm font-medium ${
                     location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to))
-                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20'
+                      ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/30'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -122,11 +127,11 @@ export default function SiteHeader({ onLoginClick }: SiteHeaderProps) {
                 </Link>
               ))}
               <Link
-                to="/app/fortune/today"
+                to={todayHref}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block w-full py-3 mt-2 rounded-lg bg-indigo-500 text-white font-medium text-center"
+                className="block w-full py-3 mt-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-center"
               >
-                {isEnglish ? 'Get Started' : '进入应用'}
+                {t('homeToApp.primaryCta')}
               </Link>
               {!isAuthenticated && onLoginClick && (
                 <button

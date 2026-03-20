@@ -2,8 +2,7 @@
 // 每日签到 - 功能页
 // ==========================================
 
-import { Link } from 'react-router-dom';
-import { Calendar, ChevronLeft } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -16,6 +15,8 @@ import {
 import { useToast } from '../../contexts/ToastContext';
 import { useAppContext } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appLightPanelClass } from '../../constants/appUiClasses';
 
 export default function CheckinPage() {
   const { t, i18n } = useTranslation(['ui']);
@@ -53,26 +54,15 @@ export default function CheckinPage() {
   const weekDays = (t('ui:calendar.weekDays', { returnObjects: true }) as string[]) || ['日', '一', '二', '三', '四', '五', '六'];
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F5F5F7] dark:bg-slate-900">
-      <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Link to="/app/fortune/today" className="p-2 hover:bg-white/20 rounded-full transition" aria-label={isEnglish ? 'Back' : '返回'}>
-            <ChevronLeft size={24} />
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 backdrop-blur-md rounded-full p-3">
-              <Calendar size={24} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">{isEnglish ? 'Daily Check-in' : '每日签到'}</h2>
-              <p className="text-white/90 text-sm">{isEnglish ? 'Keep checking in for rewards' : '坚持签到，解锁更多奖励'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+    <AppSubPageShell
+      variant="light"
+      lightTone="spectrum"
+      title={isEnglish ? 'Daily Check-in' : '每日签到'}
+      icon={Calendar}
+      subtitle={isEnglish ? 'Keep checking in for rewards' : '坚持签到，解锁更多奖励'}
+      backTo="/app/plan/calendar"
+    >
+      <div className={`${appLightPanelClass} !p-6 space-y-6`}>
           {checkinResult ? (
             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-4">
               <div className="text-6xl mb-4">🎉</div>
@@ -160,7 +150,6 @@ export default function CheckinPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </AppSubPageShell>
   );
 }

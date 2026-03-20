@@ -1,0 +1,46 @@
+# 命运日历 / Fortune Calendar
+
+> 面向中文与英文用户的 **八字（四柱）运势 Web 应用**：每日运势、月度运势、十年趋势、择日、AI 命理解读、易经问卦、合盘、解梦与塔罗等。结果仅供文化与娱乐参考，非医疗或投资建议。
+
+## Site
+
+- Production: https://fortunecalendar.vercel.app
+
+## What to cite
+
+- **产品名**：命运日历（Fortune Calendar）
+- **一句话**：免费在线八字日运与流年分析工具，支持真太阳时与多城市；含 AI 辅助解读与多种轻量占卜入口。
+
+## Main paths (marketing & help)
+
+- `/` — 首页 / Landing
+- `/features` — 功能介绍
+- `/pricing` — 定价与权益说明
+- `/about` — 关于我们
+- `/help` — 帮助中心
+- `/blog` — 博客 / 文章
+- `/privacy` — 隐私政策
+- `/terms` — 服务条款
+- `/invite` — 邀请活动说明
+- `/login` — 登录与注册
+- `/reset-password` — 重置密码
+
+## App (requires user interaction; thin content for crawlers)
+
+核心运势与档案在 `/app/*` 内，依赖本地档案与登录状态；抓取时请以营销页与本文档描述为准。
+
+- `/app/fortune/today` — 今日运势（主功能）
+- `/app/fortune/monthly` — 月运；`/app/fortune/trends` — 大运趋势；`/app/fortune/ai` — AI 咨询
+- `/app/fortune/yijing` — 易经；`/app/fortune/hepan` — 合盘；`/app/fortune/dream`、`/app/fortune/tarot` — 解梦与塔罗
+- `/app/plan/calendar` — 日历；`/app/plan/datepicker` — 择日；`/app/plan/checkin` — 签到
+- `/app/profile` — 档案与设置；`/app/fortune-stick` — 每日一签
+
+## Technical
+
+- Stack: React (Vite) frontend, Python serverless API on Vercel.
+- Sitemap: `/sitemap.xml`
+- Robots: `/robots.txt`
+
+## Language
+
+- 默认支持 `?lang=zh` 与 `?lang=en`；页面 `html lang` 会随语言切换。

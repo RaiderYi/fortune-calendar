@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toPng, toJpeg, toSvg } from 'html-to-image';
 import { useTranslation } from 'react-i18next';
+import { trackEvent } from '../utils/analytics';
 
 // ==================== 类型定义 ====================
 
@@ -235,6 +236,7 @@ export default function DailySignGenerator({
 
   // 分享到社交平台
   const shareToSocial = useCallback(async (platform: 'twitter' | 'facebook' | 'weibo' | 'wechat') => {
+    trackEvent('share_click', { source: 'daily_sign', platform });
     const text = isEnglish 
       ? `My fortune for ${signData.date}: ${signData.score} points! ${signData.emoji} ${signData.keyword}`
       : `${signData.date} 我的运势：${signData.score}分！${signData.emoji} ${signData.keyword}`;

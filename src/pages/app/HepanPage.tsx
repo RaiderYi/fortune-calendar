@@ -3,11 +3,12 @@
 // ==========================================
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, Users, Loader2 } from 'lucide-react';
+import { Users, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { postHepan } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appLightPanelClass } from '../../constants/appUiClasses';
 
 const PARTNER_KEY = 'partner_profile';
 
@@ -87,23 +88,20 @@ export default function HepanPage() {
   const points = (result?.summaryPoints as string[]) || [];
 
   return (
-    <div className="min-h-full bg-[#F5F5F7] dark:bg-slate-900 pb-24">
-      <div className="bg-gradient-to-r from-rose-600 to-pink-600 text-white p-4 flex items-center gap-3">
-        <Link to="/app/fortune/today">
-          <ChevronLeft size={24} />
-        </Link>
-        <Users size={22} />
-        <h1 className="text-lg font-bold">{isEnglish ? 'Bazi Synastry' : '八字合盘'}</h1>
-      </div>
-
-      <div className="p-4 max-w-lg mx-auto space-y-6">
+    <AppSubPageShell
+      variant="light"
+      lightTone="rose"
+      title={isEnglish ? 'Bazi Synastry' : '八字合盘'}
+      icon={Users}
+      contentClassName="mx-auto max-w-lg space-y-6"
+    >
         <p className="text-sm text-gray-600 dark:text-gray-400">
           {isEnglish
             ? 'Heuristic compatibility for two birth charts. Entertainment only.'
             : '基于双人八字的启发式契合度分析，仅供娱乐参考。'}
         </p>
 
-        <fieldset className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-3 border border-gray-100 dark:border-slate-700">
+        <fieldset className={`${appLightPanelClass} space-y-3`}>
           <legend className="text-sm font-bold px-2">{isEnglish ? 'You' : '我'}</legend>
           <input
             type="date"
@@ -134,7 +132,7 @@ export default function HepanPage() {
           </select>
         </fieldset>
 
-        <fieldset className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-3 border border-gray-100 dark:border-slate-700">
+        <fieldset className={`${appLightPanelClass} space-y-3`}>
           <legend className="text-sm font-bold px-2">{isEnglish ? 'Partner' : '对方'}</legend>
           <input
             type="date"
@@ -176,7 +174,7 @@ export default function HepanPage() {
           type="button"
           disabled={loading}
           onClick={run}
-          className="w-full py-3 rounded-xl bg-rose-600 text-white font-bold flex justify-center gap-2"
+          className="flex w-full justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 py-3.5 font-bold text-white shadow-md transition hover:from-rose-500 hover:to-pink-500 disabled:opacity-50"
         >
           {loading ? <Loader2 className="animate-spin" /> : null}
           {isEnglish ? 'Analyze' : '开始合盘'}
@@ -185,7 +183,7 @@ export default function HepanPage() {
         {scores && (
           <div className="grid grid-cols-2 gap-3">
             {(['overall', 'communication', 'romance', 'stability'] as const).map((k) => (
-              <div key={k} className="bg-white dark:bg-slate-800 rounded-xl p-4 border dark:border-slate-700">
+              <div key={k} className={`${appLightPanelClass}`}>
                 <div className="text-xs text-gray-500">
                   {k === 'overall'
                     ? isEnglish
@@ -210,13 +208,12 @@ export default function HepanPage() {
         )}
 
         {points.length > 0 && (
-          <ul className="bg-white dark:bg-slate-800 rounded-xl p-4 text-sm space-y-2 list-disc pl-5 dark:border-slate-700 border">
+          <ul className={`${appLightPanelClass} list-disc space-y-2 pl-5 text-sm`}>
             {points.map((p, i) => (
               <li key={`${i}-${p.slice(0, 12)}`}>{p}</li>
             ))}
           </ul>
         )}
-      </div>
-    </div>
+    </AppSubPageShell>
   );
 }

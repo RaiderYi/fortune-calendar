@@ -1,7 +1,38 @@
 # robots.txt for fortunecalendar.vercel.app
 
+# 供大模型 / AI 摘要引用（可选阅读站点说明）
+# LLM context: https://fortunecalendar.vercel.app/llms.txt
+
 # 允许所有搜索引擎抓取
 User-agent: *
+Allow: /
+
+# ---------- AI / LLM 爬虫（便于「AI 推荐」与检索增强；若不希望被训练可改为 Disallow）----------
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
 Allow: /
 
 # 特殊优化：百度爬虫（最重要！中国市场）
@@ -20,10 +51,9 @@ Allow: /
 User-agent: Sogou Spider
 Allow: /
 
-# 禁止抓取的目录
+# 禁止抓取的目录（API 与后台）
 Disallow: /api/
 Disallow: /admin/
-Disallow: /*.json$
 
 # Sitemap位置（重要！）
 Sitemap: https://fortunecalendar.vercel.app/sitemap.xml

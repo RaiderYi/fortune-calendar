@@ -20,6 +20,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authApi from '../../services/authApi';
+import { trackEvent } from '../../utils/analytics';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -130,6 +131,9 @@ export default function LoginPage() {
       });
       
       if (result.success) {
+        trackEvent('auth_register_success', {
+          has_invite: Boolean(inviteCode?.trim()),
+        });
         setRewards(result.rewards || []);
         setShowRewards(true);
       } else {
@@ -155,6 +159,7 @@ export default function LoginPage() {
     try {
       const result = await login(email, password, rememberMe);
       if (result.success) {
+        trackEvent('auth_login_success', { method: 'password' });
         navigate('/app/fortune/today');
       } else {
         setError(result.error || '登录失败');

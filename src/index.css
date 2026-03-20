@@ -61,6 +61,14 @@ body {
   src: local('Noto Sans SC');
 }
 
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: local('Noto Serif SC');
+}
+
 /* 日签主题样式 */
 .daily-sign-theme-zen {
   font-family: 'KaiTi', '楷体', 'STKaiti', serif !important;

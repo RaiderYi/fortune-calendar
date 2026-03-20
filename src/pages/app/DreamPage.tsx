@@ -3,12 +3,17 @@
 // ==========================================
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, Moon, Loader2 } from 'lucide-react';
+import { Moon, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { chatWithAI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { trySpendCredits, addCredits } from '../../utils/creditsStorage';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import {
+  appDarkTextareaClass,
+  appDarkSecondaryButtonClass,
+  appDarkResultCardClass,
+} from '../../constants/appUiClasses';
 
 export default function DreamPage() {
   const { i18n } = useTranslation();
@@ -58,42 +63,40 @@ export default function DreamPage() {
   };
 
   return (
-    <div className="min-h-full bg-slate-950 text-white pb-24">
-      <div className="p-4 border-b border-white/10 flex items-center gap-3">
-        <Link to="/app/fortune/today">
-          <ChevronLeft size={22} />
-        </Link>
-        <Moon className="text-indigo-300" size={22} />
-        <h1 className="font-bold">{isEnglish ? 'Dream insight' : '周公解梦'}</h1>
-      </div>
-      <div className="p-4 max-w-lg mx-auto space-y-4">
-        <p className="text-sm text-white/60">
-          {isEnglish
-            ? 'Psychological & cultural symbols only. Not medical advice.'
-            : '侧重心理与象征，非医疗建议，仅供娱乐与自省。'}
-        </p>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={6}
-          placeholder={isEnglish ? 'What did you dream?' : '请描述梦境…'}
-          className="w-full rounded-xl bg-white/10 border border-white/15 px-4 py-3 text-white placeholder:text-white/35"
-        />
-        <button
-          type="button"
-          disabled={loading}
-          onClick={submit}
-          className="w-full py-3 rounded-xl bg-indigo-600 font-bold flex justify-center gap-2"
-        >
-          {loading ? <Loader2 className="animate-spin" /> : null}
-          {isEnglish ? 'Interpret' : 'AI 解读'}
-        </button>
-        {reply && (
-          <div className="rounded-xl bg-indigo-950/60 border border-indigo-500/30 p-4 text-sm leading-relaxed whitespace-pre-wrap">
-            {reply}
-          </div>
-        )}
-      </div>
-    </div>
+    <AppSubPageShell
+      variant="dark"
+      darkTone="slate"
+      title={isEnglish ? 'Dream insight' : '周公解梦'}
+      icon={Moon}
+      iconClassName="text-indigo-300"
+      contentClassName="space-y-4"
+    >
+      <p className="text-sm text-white/60">
+        {isEnglish
+          ? 'Psychological & cultural symbols only. Not medical advice.'
+          : '侧重心理与象征，非医疗建议，仅供娱乐与自省。'}
+      </p>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={6}
+        placeholder={isEnglish ? 'What did you dream?' : '请描述梦境…'}
+        className={appDarkTextareaClass}
+      />
+      <button
+        type="button"
+        disabled={loading}
+        onClick={submit}
+        className={appDarkSecondaryButtonClass}
+      >
+        {loading ? <Loader2 className="animate-spin" /> : null}
+        {isEnglish ? 'Interpret' : 'AI 解读'}
+      </button>
+      {reply ? (
+        <div className={`${appDarkResultCardClass} border-indigo-500/30 bg-indigo-950/60 whitespace-pre-wrap`}>
+          {reply}
+        </div>
+      ) : null}
+    </AppSubPageShell>
   );
 }

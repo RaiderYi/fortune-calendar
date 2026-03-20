@@ -1,66 +1,76 @@
 // ==========================================
-// 数据收集工具
-// 收集用户行为数据用于统计分析
+// 增长埋点：可选 GA4 + 站内 CustomEvent（便于接 Plausible / 自建）
 // ==========================================
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
-export interface AnalyticsEvent {
-  type: string;
-  timestamp: number;
-  userId?: string;
-  data?: Record<string, any>;
-}
-
-/**
- * 发送分析事件
- */
-export async function trackEvent(event: AnalyticsEvent): Promise<void> {
-  try {
-    // 异步发送，不阻塞主流程
-    fetch(`${API_BASE_URL}/analytics/track`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(event),
-    }).catch(error => {
-      console.error('发送分析事件失败:', error);
-    });
-  } catch (error) {
-    console.error('trackEvent 错误:', error);
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
+const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined;
+
 /**
- * 追踪页面访问
+ * 初始化 gtag（无测量 ID 时为空操作，生产需在 Vercel 配置 VITE_GA_MEASUREMENT_ID）
  */
-export function trackPageView(page: string): void {
-  trackEvent({
-    type: 'page_view',
-    timestamp: Date.now(),
-    data: { page },
-  });
+export function initAnalytics(): void {
+  if (typeof window === 'undefined' || !GA_ID) return;
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag(...args: unknown[]) {
+    window.dataLayer!.push(args);
+  };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_ID, { send_page_view: false });
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`;
+  document.head.appendChild(script);
 }
 
 /**
- * 追踪功能使用
+ * SPA 页面浏览（path 建议含 query，如 /blog?lang=en）
  */
-export function trackFeatureUsage(feature: string, action?: string): void {
-  trackEvent({
-    type: 'feature_usage',
-    timestamp: Date.now(),
-    data: { feature, action },
-  });
+export function trackPageView(pagePath: string, pageTitle?: string): void {
+  const title = pageTitle ?? (typeof document !== 'undefined' ? document.title : '');
+  if (GA_ID && typeof window !== 'undefined' && window.gtag) {
+    window.gtag('config', GA_ID, {
+      page_path: pagePath,
+      page_title: title,
+    });
+  }
+  dispatchAnalytics({ type: 'page_view', page_path: pagePath, page_title: title });
+  if (import.meta.env.DEV) {
+    console.debug('[analytics] page_view', pagePath, title);
+  }
 }
 
+export type AnalyticsEventParams = Record<string, string | number | boolean | undefined>;
+
 /**
- * 追踪用户操作
+ * 自定义事件（GA4 推荐 snake_case 事件名）
  */
-export function trackUserAction(action: string, data?: Record<string, any>): void {
-  trackEvent({
-    type: 'user_action',
-    timestamp: Date.now(),
-    data: { action, ...data },
-  });
+export function trackEvent(eventName: string, params?: AnalyticsEventParams): void {
+  const clean = Object.fromEntries(
+    Object.entries(params || {}).filter(([, v]) => v !== undefined)
+  ) as Record<string, string | number | boolean>;
+
+  if (GA_ID && typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, clean);
+  }
+  dispatchAnalytics({ type: 'event', name: eventName, params: clean });
+  if (import.meta.env.DEV) {
+    console.debug('[analytics] event', eventName, clean);
+  }
+}
+
+function dispatchAnalytics(detail: Record<string, unknown>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.dispatchEvent(new CustomEvent('fc_analytics', { detail }));
+  } catch {
+    /* ignore */
+  }
 }

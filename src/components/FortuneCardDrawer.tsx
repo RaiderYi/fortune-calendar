@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // 抽牌交互组件 - 完整牌库随机25张 + 3D效果
 // ==========================================
 
@@ -6,6 +6,7 @@ import { useState, useCallback, useMemo, useRef, type MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, RotateCcw, Share2, Lightbulb, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { trackEvent } from '../utils/analytics';
 
 export interface FortuneStick {
   id: number;
@@ -348,6 +349,7 @@ export default function FortuneCardDrawer({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
+                        trackEvent('share_click', { source: 'fortune_stick_card' });
                         const text = [
                           drawnStick.poem,
                           drawnStick.meaning,

@@ -8,9 +8,9 @@
     <!-- SEO优化 - 基础Meta标签 -->
     <!-- ============================================ -->
     
-    <title>命运日历 - 免费八字运势查询_每日运势预测_2025年运势分析</title>
-    <meta name="description" content="命运日历提供免费八字运势查询，每日运势预测，流年运势分析。精准的真太阳时校准，涵盖330+城市。查询事业、财运、桃花、健康运势，助您趋吉避凶。" />
-    <meta name="keywords" content="运势查询,八字算命,每日运势,流年运势,八字排盘,免费算命,运势预测,2025年运势,真太阳时,生辰八字" />
+    <title>命运日历 - 免费八字运势查询_每日月运_易经AI_合盘_2026运势</title>
+    <meta name="description" content="命运日历：免费八字每日运势、月度运势、十年大运与流年分析；真太阳时与330+城市；事业财运桃花健康六维评分。含AI命理咨询、易经问卦、八字合盘、解梦与塔罗。仅供娱乐与文化参考。" />
+    <meta name="keywords" content="运势查询,八字算命,每日运势,月运,每月运势,流年运势,十年大运,八字排盘,免费算命,易经,问卦,合盘,八字合盘,AI算命,解梦,塔罗,2026运势,真太阳时,生辰八字,择日,PWA" />
     <meta name="author" content="命运日历" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     
@@ -40,6 +40,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Fortune Calendar - Free Bazi Fortune Reading" />
     <meta name="twitter:description" content="Accurate Bazi fortune predictions, daily fortune queries, supporting true solar time calibration for 330+ cities." />
+    <meta name="twitter:image" content="https://fortunecalendar.vercel.app/og-image.png" />
     
     <!-- ============================================ -->
     <!-- 字体预加载 (性能优化) -->
@@ -47,8 +48,8 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" /></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;700&display=swap" /></noscript>
     
     <!-- ============================================ -->
     <!-- 关键 CSS 内联 (首屏渲染优化) -->
@@ -117,7 +118,8 @@
     
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="canonical" href="https://fortunecalendar.vercel.app" />
+    <link rel="canonical" href="https://fortunecalendar.vercel.app/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
     
     <!-- PWA 相关 -->
     <meta name="theme-color" content="#6366f1" />
@@ -131,43 +133,97 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "命运日历",
-      "alternateName": "Fortune Calendar",
-      "description": "免费八字运势查询，每日运势预测，流年运势分析",
-      "inLanguage": ["zh-CN", "en"],
-      "url": "https://fortunecalendar.vercel.app",
-      "applicationCategory": "LifestyleApplication",
-      "operatingSystem": "All",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "CNY"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "1250",
-        "bestRating": "5",
-        "worstRating": "1"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Fortune Calendar",
-      "description": "Free Bazi fortune reading, daily fortune predictions, annual cycle analysis",
-      "inLanguage": "en",
-      "url": "https://fortunecalendar.vercel.app/?lang=en",
-      "applicationCategory": "LifestyleApplication",
-      "operatingSystem": "All",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://fortunecalendar.vercel.app/#organization",
+          "name": "命运日历",
+          "alternateName": ["Fortune Calendar", "Fortune Calendar App"],
+          "url": "https://fortunecalendar.vercel.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://fortunecalendar.vercel.app/og-image.png"
+          },
+          "description": "八字运势与传统文化类 Web 应用开发与运营方（命运日历）。"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://fortunecalendar.vercel.app/#website",
+          "url": "https://fortunecalendar.vercel.app/",
+          "name": "命运日历",
+          "alternateName": "Fortune Calendar",
+          "description": "免费八字每日运势、月运、流年与十年趋势；真太阳时；AI 命理、易经问卦、合盘、解梦与塔罗。",
+          "inLanguage": ["zh-CN", "en"],
+          "publisher": { "@id": "https://fortunecalendar.vercel.app/#organization" }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://fortunecalendar.vercel.app/#webapp",
+          "name": "命运日历",
+          "alternateName": "Fortune Calendar",
+          "url": "https://fortunecalendar.vercel.app/",
+          "description": "免费在线八字运势：日运、月运、大运流年、择日；六维评分；AI 解读、易经问卦、八字合盘、解梦与塔罗。仅供娱乐与文化参考。",
+          "applicationCategory": "LifestyleApplication",
+          "operatingSystem": "Any",
+          "browserRequirements": "Requires JavaScript. Modern browser (Chrome, Safari, Firefox, Edge).",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CNY"
+          },
+          "featureList": [
+            "八字每日运势与六维分析",
+            "月度运势与日历热力",
+            "十年大运与趋势图表",
+            "真太阳时与多城市经度",
+            "AI 命理与易经问卦",
+            "八字合盘、解梦、塔罗",
+            "择日与万年历",
+            "中英双语与 PWA 安装"
+          ],
+          "inLanguage": ["zh-CN", "en"],
+          "isAccessibleForFree": true,
+          "publisher": { "@id": "https://fortunecalendar.vercel.app/#organization" }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://fortunecalendar.vercel.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "命运日历是免费的吗？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "核心八字运势与日运查询可免费使用；部分 AI 与增值功能可能有次数或会员限制，详见站内定价页。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "什么是真太阳时？为什么影响八字？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "真太阳时是根据出生地经度对钟表时间校正后的太阳时。八字排盘以时辰为界，经度不同会导致时辰偏差，从而影响四柱。命运日历支持多城市经度校正。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Fortune Calendar 和「算命」有什么区别？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Fortune Calendar（命运日历）是结合传统八字逻辑与算法的在线工具，并可选 AI 生成解读文案。输出仅供娱乐、文化与自我反思参考，不能替代专业决策、医疗或法律意见。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does Fortune Calendar work in English?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. You can switch the interface to English (lang=en). Bazi terms may still include Chinese characters where culturally standard."
+              }
+            }
+          ]
+        }
+      ]
     }
     </script>
     

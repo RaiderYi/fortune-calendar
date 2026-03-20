@@ -19,6 +19,7 @@ import { useState, useCallback, useMemo, useRef, useEffect, type MouseEvent } fr
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from 'framer-motion';
 import { Sparkles, RotateCcw, Share2, Lightbulb, Tag, Zap, Orbit, Atom } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { trackEvent } from '../utils/analytics';
 
 export interface FortuneStick {
   id: number;
@@ -820,6 +821,7 @@ export default function EpicFortuneDrawer({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
+                        trackEvent('share_click', { source: 'fortune_stick_epic' });
                         const text = `${drawnStick.poem}\n\n${drawnStick.meaning}${drawnStick.advice ? `\n\n${isEnglish ? 'Advice' : '建议'}: ${drawnStick.advice}` : ''}`;
                         if (navigator.share) {
                           navigator.share({

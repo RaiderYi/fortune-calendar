@@ -1,0 +1,102 @@
+{
+  "/features": {
+    "title": "Features - Fortune Calendar | Bazi Daily & Monthly, I Ching, AI, Synastry",
+    "description": "Fortune Calendar features: free Bazi daily & monthly fortune, true solar time, six dimensions, decade trends, AI chat, I Ching, synastry, dream & tarot, date picker and check-in. For entertainment and cultural reference only."
+  },
+  "/about": {
+    "title": "About - Fortune Calendar",
+    "description": "Learn about Fortune Calendar: a modern Bazi-based fortune app with English & Chinese, true solar time, and privacy-friendly local profile storage."
+  },
+  "/help": {
+    "title": "Help Center - Fortune Calendar",
+    "description": "FAQ and how-to: birth time setup, true solar time, daily & monthly fortune, AI and I Ching."
+  },
+  "/privacy": {
+    "title": "Privacy Policy - Fortune Calendar",
+    "description": "How we handle data: sensitive birth data stays in your browser by default; account and sync explained."
+  },
+  "/terms": {
+    "title": "Terms of Service - Fortune Calendar",
+    "description": "Terms of use, disclaimers (not medical or investment advice), and user responsibilities."
+  },
+  "/blog": {
+    "title": "Blog & Guides - Fortune Calendar",
+    "description": "Articles on Bazi basics, fortune reading, solar terms and annual cycles."
+  },
+  "/pricing": {
+    "title": "Pricing - Fortune Calendar",
+    "description": "Plans, credits, AI usage, invites and member benefits."
+  },
+  "/login": {
+    "title": "Sign in / Register - Fortune Calendar",
+    "description": "Log in to sync data, use invite codes and member features; email sign-up with verification."
+  },
+  "/invite": {
+    "title": "Invite Friends - Fortune Calendar",
+    "description": "Invite friends to earn credits and rewards; get your link after signing in."
+  },
+  "/reset-password": {
+    "title": "Reset Password - Fortune Calendar",
+    "description": "Reset your Fortune Calendar password via email link."
+  },
+  "/app/fortune/today": {
+    "title": "Today's Fortune - Fortune Calendar | Free Bazi Daily",
+    "description": "Today's Bazi fortune score, main theme and six dimensions: career, wealth, love, health, study, travel. True solar time supported."
+  },
+  "/app/fortune/monthly": {
+    "title": "Monthly Fortune - Fortune Calendar",
+    "description": "Monthly outlook and suggestions based on Bazi and luck pillars."
+  },
+  "/app/fortune/trends": {
+    "title": "Decade Luck Trends - Fortune Calendar",
+    "description": "Ten-year luck trend charts for your Bazi chart."
+  },
+  "/app/fortune/yijing": {
+    "title": "I Ching - Fortune Calendar",
+    "description": "Online I Ching divination and readings for cultural reference."
+  },
+  "/app/fortune/ai": {
+    "title": "AI Bazi Chat - Fortune Calendar",
+    "description": "Ask AI about your chart and today's fortune; follow-up questions supported."
+  },
+  "/app/fortune/knowledge": {
+    "title": "Knowledge Base - Fortune Calendar",
+    "description": "Bazi terms, ten gods and concepts to understand your reports."
+  },
+  "/app/fortune/hepan": {
+    "title": "Bazi Synastry - Fortune Calendar",
+    "description": "Two-person chart comparison for relationship insights (cultural reference only)."
+  },
+  "/app/fortune/dream": {
+    "title": "Dream Interpretation - Fortune Calendar",
+    "description": "Describe dreams and get AI-assisted interpretations."
+  },
+  "/app/fortune/tarot": {
+    "title": "Tarot - Fortune Calendar",
+    "description": "Draw tarot cards with readings for reflection and fun."
+  },
+  "/app/fortune/year-2026": {
+    "title": "2026 Annual Theme - Fortune Calendar",
+    "description": "2026 annual fortune focus and Bazi cycle notes."
+  },
+  "/app/plan/calendar": {
+    "title": "Fortune Calendar View - Fortune Calendar",
+    "description": "Multi-day fortune on a calendar for planning."
+  },
+  "/app/plan/datepicker": {
+    "title": "Date Picker - Fortune Calendar",
+    "description": "Pick favorable dates using Bazi (reference only)."
+  },
+  "/app/plan/checkin": {
+    "title": "Daily Check-in - Fortune Calendar",
+    "description": "Check in for credits and achievements."
+  },
+  "/app/profile": {
+    "title": "Profile & Settings - Fortune Calendar",
+    "description": "Edit birth data, city, true solar time, yong shen and account settings."
+  },
+  "/app/fortune-stick": {
+    "title": "Daily Fortune Stick - Fortune Calendar",
+    "description": "Draw a stick, read the poem and share the result."
+  }
+}

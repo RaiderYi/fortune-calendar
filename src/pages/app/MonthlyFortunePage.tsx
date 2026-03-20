@@ -3,13 +3,15 @@
 // ==========================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CalendarRange, Loader2, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CalendarRange, Loader2, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fetchFortuneMonth, type FortuneMonthData } from '../../services/api';
 import { getCustomYongShen } from '../../utils/yongShenStorage';
 import { useAppContext } from '../../contexts/AppContext';
 import { useToast } from '../../contexts/ToastContext';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appLightPanelClass } from '../../constants/appUiClasses';
 
 interface UserProfile {
   birthDate: string;
@@ -103,56 +105,50 @@ export default function MonthlyFortunePage() {
     navigate('/app/fortune/today');
   };
 
-  return (
-    <div className="flex flex-col min-h-full overflow-y-auto bg-[#F5F5F7] dark:bg-slate-900">
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-4 lg:p-6 rounded-b-2xl shadow-lg">
-        <div className="flex items-center gap-3 mb-4">
-          <Link
-            to="/app/fortune/today"
-            className="flex items-center gap-2 text-white/90 hover:text-white"
-          >
-            <ChevronLeft size={24} />
-          </Link>
-          <CalendarRange size={24} />
-          <h1 className="text-xl font-bold">
-            {isEnglish ? 'Monthly Fortune' : '每月运势'}
-          </h1>
-        </div>
-        <div className="flex flex-wrap gap-2 items-center">
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="bg-white/20 text-white border border-white/30 rounded-lg px-3 py-2 text-sm font-medium"
-          >
-            {Array.from({ length: 11 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
-              <option key={y} value={y} className="text-slate-900">
-                {y}
-              </option>
-            ))}
-          </select>
-          <select
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
-            className="bg-white/20 text-white border border-white/30 rounded-lg px-3 py-2 text-sm font-medium"
-          >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m} className="text-slate-900">
-                {m} {isEnglish ? '' : '月'}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => load()}
-            disabled={loading}
-            className="ml-auto px-4 py-2 bg-white text-indigo-600 rounded-lg text-sm font-bold disabled:opacity-50"
-          >
-            {loading ? <Loader2 className="animate-spin inline w-4 h-4" /> : t('common:buttons.refresh')}
-          </button>
-        </div>
-      </div>
+  const headerToolbar = (
+    <div className="flex flex-wrap items-center gap-2">
+      <select
+        value={year}
+        onChange={(e) => setYear(Number(e.target.value))}
+        className="rounded-lg border border-white/30 bg-white/20 px-3 py-2 text-sm font-medium text-white"
+      >
+        {Array.from({ length: 11 }, (_, i) => now.getFullYear() - 5 + i).map((y) => (
+          <option key={y} value={y} className="text-slate-900">
+            {y}
+          </option>
+        ))}
+      </select>
+      <select
+        value={month}
+        onChange={(e) => setMonth(Number(e.target.value))}
+        className="rounded-lg border border-white/30 bg-white/20 px-3 py-2 text-sm font-medium text-white"
+      >
+        {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+          <option key={m} value={m} className="text-slate-900">
+            {m} {isEnglish ? '' : '月'}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={() => load()}
+        disabled={loading}
+        className="ml-auto rounded-lg bg-white px-4 py-2 text-sm font-bold text-indigo-600 disabled:opacity-50"
+      >
+        {loading ? <Loader2 className="inline h-4 w-4 animate-spin" /> : t('common:buttons.refresh')}
+      </button>
+    </div>
+  );
 
-      <div className="p-4 lg:p-6 space-y-6">
+  return (
+    <AppSubPageShell
+      variant="light"
+      lightTone="brand"
+      title={isEnglish ? 'Monthly Fortune' : '每月运势'}
+      icon={CalendarRange}
+      headerBottom={headerToolbar}
+      contentClassName="space-y-6"
+    >
         {loading && !data ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
@@ -160,7 +156,7 @@ export default function MonthlyFortunePage() {
         ) : data ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className={appLightPanelClass}>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {isEnglish ? 'Month score' : '流月综合'}
                 </div>
@@ -168,24 +164,24 @@ export default function MonthlyFortunePage() {
                   {data.fortune.totalScore}
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className={appLightPanelClass}>
                 <div className="text-xs text-gray-500">{isEnglish ? 'Daily avg' : '日均分'}</div>
                 <div className="text-3xl font-black text-violet-600">{data.summary.avgScore}</div>
               </div>
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className={appLightPanelClass}>
                 <div className="text-xs text-gray-500">{isEnglish ? 'Best day' : '最佳日'}</div>
                 <div className="text-lg font-bold text-emerald-600">{data.summary.bestDay.slice(5)}</div>
                 <div className="text-sm text-gray-500">{data.summary.bestScore}</div>
               </div>
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
+              <div className={appLightPanelClass}>
                 <div className="text-xs text-gray-500">{isEnglish ? 'Low day' : '注意日'}</div>
                 <div className="text-lg font-bold text-rose-600">{data.summary.worstDay.slice(5)}</div>
                 <div className="text-sm text-gray-500">{data.summary.worstScore}</div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
-              <div className="flex items-center gap-2 mb-3">
+            <div className={appLightPanelClass}>
+              <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="text-amber-500" size={20} />
                 <span className="font-bold text-gray-900 dark:text-white">
                   {data.fortune.mainTheme.emoji} {data.fortune.mainTheme.keyword}
@@ -197,8 +193,8 @@ export default function MonthlyFortunePage() {
               </p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-700">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-3">
+            <div className={appLightPanelClass}>
+              <h3 className="mb-3 font-bold text-gray-900 dark:text-white">
                 {isEnglish ? 'Calendar heatmap' : '月历热力'}
               </h3>
               <p className="text-xs text-gray-500 mb-3">
@@ -242,7 +238,7 @@ export default function MonthlyFortunePage() {
               {Object.entries(data.fortune.dimensions).map(([key, dim]) => (
                 <div
                   key={key}
-                  className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-gray-100 dark:border-slate-700"
+                  className={appLightPanelClass}
                 >
                   <div className="text-xs text-gray-500">
                     {key === 'career'
@@ -280,7 +276,6 @@ export default function MonthlyFortunePage() {
             {isEnglish ? 'No data' : '暂无数据'}
           </div>
         )}
-      </div>
-    </div>
+    </AppSubPageShell>
   );
 }

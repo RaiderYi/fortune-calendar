@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import SiteHeader from '../components/layout/SiteHeader';
 import SiteFooter from '../components/layout/SiteFooter';
 import { PageSection, PageHeader, Breadcrumb } from '../components/ui';
+import { buildTodayEntryLink } from '../utils/appEntry';
 
 interface PricingPageProps {
   onLoginClick?: () => void;
@@ -90,13 +91,13 @@ export default function PricingPage({ onLoginClick }: PricingPageProps) {
                   </li>
                 ))}
               </ul>
-              <Link to="/app/fortune/today">
+              <Link to={buildTodayEntryLink('pricing')}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-lg transition"
                 >
-                  {isEnglish ? 'Get Started Free' : '免费开始使用'}
+                  {t('homeToApp.primaryCta')}
                 </motion.button>
               </Link>
             </motion.div>

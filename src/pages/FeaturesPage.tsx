@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import SiteHeader from '../components/layout/SiteHeader';
 import SiteFooter from '../components/layout/SiteFooter';
 import { PageSection, PageHeader, Breadcrumb, FeatureCard } from '../components/ui';
+import { buildTodayEntryLink } from '../utils/appEntry';
 
 interface FeaturesPageProps {
   onLoginClick?: () => void;
@@ -158,13 +159,13 @@ export default function FeaturesPage({ onLoginClick }: FeaturesPageProps) {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {isEnglish ? 'Enter your birth info and get your first fortune.' : '输入出生信息，获取您的第一份运势。'}
             </p>
-            <Link to="/app/fortune/today">
+            <Link to={buildTodayEntryLink('features')}>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="px-8 py-4 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold shadow-lg transition"
               >
-                {isEnglish ? 'Get Started' : '开始查看运势'}
+                {t('homeToApp.primaryCta')}
               </motion.button>
             </Link>
           </div>

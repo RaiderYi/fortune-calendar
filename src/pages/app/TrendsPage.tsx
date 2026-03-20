@@ -3,7 +3,7 @@
 // ==========================================
 
 import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Minus, Calendar, Award, ChevronLeft } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Calendar, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { updateAchievementProgress } from '../../utils/achievementStorage';
 import {
@@ -28,6 +28,8 @@ import {
 } from 'recharts';
 import { useAppContext } from '../../contexts/AppContext';
 import { useTranslation } from 'react-i18next';
+import { AppSubPageShell } from '../../components/layout/AppSubPageShell';
+import { appLightPanelClass } from '../../constants/appUiClasses';
 
 export default function TrendsPage() {
   const { t, i18n } = useTranslation('ui');
@@ -61,60 +63,57 @@ export default function TrendsPage() {
 
   if (trendData.length < 2) {
     return (
-      <div className="flex flex-col min-h-full">
-        <div className="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
-          <Link to="/app/fortune/today" className="flex items-center gap-2 text-white/90 hover:text-white">
-            <ChevronLeft size={24} />
-            {isEnglish ? 'Back' : '返回'}
-          </Link>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F5F5F7] dark:bg-slate-900">
-          <Calendar size={64} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-            {isEnglish ? 'Not enough data' : '数据不足'}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {isEnglish ? 'Query at least 2 days of fortune to generate the trend chart.' : '至少需要查询 2 天的运势才能生成趋势图哦！'}
-          </p>
-          <Link
-            to="/app/fortune/today"
-            className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition"
-          >
-            {isEnglish ? 'Query fortune' : '继续查询运势'}
-          </Link>
-        </div>
-      </div>
+      <AppSubPageShell
+        variant="light"
+        lightTone="spectrum"
+        title={isEnglish ? 'Trend Analysis' : '运势趋势分析'}
+        icon={TrendingUp}
+        showBackText
+        contentClassName="flex flex-col items-center justify-center py-12 text-center"
+      >
+        <Calendar size={64} className="mx-auto mb-4 text-gray-300" />
+        <h3 className="mb-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+          {isEnglish ? 'Not enough data' : '数据不足'}
+        </h3>
+        <p className="mb-6 text-gray-600 dark:text-gray-400">
+          {isEnglish ? 'Query at least 2 days of fortune to generate the trend chart.' : '至少需要查询 2 天的运势才能生成趋势图哦！'}
+        </p>
+        <Link
+          to="/app/fortune/today"
+          className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-bold text-white shadow-md transition hover:from-indigo-500 hover:to-purple-500"
+        >
+          {isEnglish ? 'Query fortune' : '继续查询运势'}
+        </Link>
+      </AppSubPageShell>
     );
   }
 
-  return (
-    <div className="flex flex-col min-h-full overflow-y-auto">
-      <div className="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 lg:p-6 rounded-b-2xl">
-        <div className="flex items-center justify-between mb-4">
-          <Link to="/app/fortune/today" className="flex items-center gap-2 text-white/90 hover:text-white">
-            <ChevronLeft size={24} />
-            <div className="flex items-center gap-2">
-              <TrendingUp size={24} />
-              <h2 className="text-xl font-bold">{isEnglish ? 'Trend Analysis' : '运势趋势分析'}</h2>
-            </div>
-          </Link>
-        </div>
-        <div className="flex gap-2">
-          {([7, 14, 30] as const).map((d) => (
-            <button
-              key={d}
-              onClick={() => setDays(d)}
-              className={`px-4 py-2 rounded-xl font-bold transition ${
-                days === d ? 'bg-white text-indigo-600' : 'bg-white/20 hover:bg-white/30'
-              }`}
-            >
-              {d} {isEnglish ? 'days' : '天'}
-            </button>
-          ))}
-        </div>
-      </div>
+  const rangeToolbar = (
+    <div className="flex flex-wrap gap-2">
+      {([7, 14, 30] as const).map((d) => (
+        <button
+          key={d}
+          type="button"
+          onClick={() => setDays(d)}
+          className={`rounded-xl px-4 py-2 font-bold transition ${
+            days === d ? 'bg-white text-indigo-600' : 'bg-white/20 hover:bg-white/30'
+          }`}
+        >
+          {d} {isEnglish ? 'days' : '天'}
+        </button>
+      ))}
+    </div>
+  );
 
-      <div className="p-4 lg:p-6 space-y-6 bg-[#F5F5F7] dark:bg-slate-900">
+  return (
+    <AppSubPageShell
+      variant="light"
+      lightTone="spectrum"
+      title={isEnglish ? 'Trend Analysis' : '运势趋势分析'}
+      icon={TrendingUp}
+      headerBottom={rangeToolbar}
+      contentClassName="space-y-6"
+    >
         {analysis && (
           <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800">
             <div className="flex items-start justify-between mb-4">
@@ -167,8 +166,8 @@ export default function TrendsPage() {
           </div>
         )}
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-200 dark:border-slate-700">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">{isEnglish ? 'Fortune Trend' : '运势走势'}</h3>
+        <div className={`${appLightPanelClass} p-6`}>
+          <h3 className="mb-4 text-lg font-bold text-gray-800 dark:text-gray-200">{isEnglish ? 'Fortune Trend' : '运势走势'}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -181,8 +180,8 @@ export default function TrendsPage() {
         </div>
 
         {dimensionData.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-200 dark:border-slate-700">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">{isEnglish ? 'Six Dimensions' : '六维度对比'}</h3>
+          <div className={`${appLightPanelClass} p-6`}>
+            <h3 className="mb-4 text-lg font-bold text-gray-800 dark:text-gray-200">{isEnglish ? 'Six Dimensions' : '六维度对比'}</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={dimensionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -202,8 +201,8 @@ export default function TrendsPage() {
         )}
 
         {topDays.length > 0 && (
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-gray-200 dark:border-slate-700">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+          <div className={`${appLightPanelClass} p-6`}>
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">
               <Award className="text-yellow-500" size={20} />
               {isEnglish ? 'Best Days' : '历史最佳日期'}
             </h3>
@@ -234,7 +233,6 @@ export default function TrendsPage() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </AppSubPageShell>
   );
 }

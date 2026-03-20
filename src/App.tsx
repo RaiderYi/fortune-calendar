@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { updateSEOMeta } from './utils/seo';
+import { trackPageView, trackEvent } from './utils/analytics';
+import { shouldShowEntryBridge } from './utils/appEntry';
 import { useHaptics } from './utils/haptics';
 import { useSwipeGesture } from './hooks/useSwipeGesture';
 import { fetchWithRetryAndCache } from './utils/apiRetry';
@@ -205,8 +207,16 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    const completed = localStorage.getItem('onboarding_completed');
-    return !completed;
+    try {
+      if (localStorage.getItem('onboarding_completed') === 'true') return false;
+      const raw = localStorage.getItem('user_profile');
+      if (!raw) return true;
+      const p = JSON.parse(raw) as { birthDate?: string; birthTime?: string };
+      if (p?.birthDate?.trim() && p?.birthTime?.trim()) return false;
+      return true;
+    } catch {
+      return true;
+    }
   });
 
   // UI 状态
@@ -218,6 +228,24 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const entryBridgeVisible =
+    pathname === '/app/fortune/today' &&
+    shouldShowEntryBridge(searchParams.get('from'), searchParams.get('intent'));
+
+  const dismissEntryBridge = useCallback(() => {
+    trackEvent('entry_bridge_dismiss', { from: searchParams.get('from') || '' });
+    setSearchParams(
+      (prev) => {
+        const n = new URLSearchParams(prev);
+        n.delete('from');
+        n.delete('intent');
+        return n;
+      },
+      { replace: true }
+    );
+  }, [searchParams, setSearchParams]);
   const FEATURE_PATHS = [
     '/app/fortune/trends', '/app/fortune/monthly', '/app/fortune/ai', '/app/fortune/knowledge',
     '/app/fortune/yijing', '/app/fortune/hepan', '/app/fortune/dream', '/app/fortune/tarot', '/app/fortune/year-2026',
@@ -280,16 +308,26 @@ const mainCategory = getMainCategory(pathname);
   // 用户数据状态
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('user_profile');
-    // 初始化默认值，增加北京作为默认地点
-    return saved ? JSON.parse(saved) : {
-      name: '张三',
-      birthDate: '1995-08-15',
-      birthTime: '09:30',
-      city: '北京',
-      longitude: '116.40',
-      gender: 'male' // 新增：默认性别为男
+    if (saved) {
+      try {
+        return JSON.parse(saved) as UserProfile;
+      } catch {
+        /* fallthrough */
+      }
+    }
+    // 新用户：空档案，引导三步内填写（G-020）；经度默认 120 便于未选城市时 API 可用
+    return {
+      name: '',
+      birthDate: '',
+      birthTime: '',
+      city: '',
+      longitude: '120',
+      gender: 'male',
     };
   });
+
+  const [fortuneLoadError, setFortuneLoadError] = useState<string | null>(null);
+  const [fortuneRetryNonce, setFortuneRetryNonce] = useState(0);
 
   // 截图相关
   const contentRef = useRef<HTMLDivElement>(null);
@@ -327,20 +365,28 @@ const mainCategory = getMainCategory(pathname);
     </div>
   );
 
-  // 语言变化时更新 SEO
+  // 语言 / 路由变化：按页 SEO + canonical/og:url + 页面浏览埋点
   useEffect(() => {
-    updateSEOMeta(i18n.language);
-    
-    // 监听语言变化
+    updateSEOMeta(i18n.language, pathname);
+
+    const pathForGa = `${pathname}${location.search}`;
+    queueMicrotask(() => {
+      trackPageView(pathForGa, document.title);
+    });
+
     const handleLanguageChange = (lng: string) => {
-      updateSEOMeta(lng);
+      updateSEOMeta(lng, window.location.pathname);
+      queueMicrotask(() => {
+        const p = `${window.location.pathname}${window.location.search}`;
+        trackPageView(p, document.title);
+      });
     };
-    
+
     i18n.on('languageChanged', handleLanguageChange);
     return () => {
       i18n.off('languageChanged', handleLanguageChange);
     };
-  }, [i18n]);
+  }, [i18n, pathname, location.search]);
 
   // --- 核心：调用后端接口（带重试和缓存） ---
   const fetchFortuneData = useCallback(async (date: Date, profile: UserProfile, yongShen: string | string[] | null) => {
@@ -357,11 +403,12 @@ const mainCategory = getMainCategory(pathname);
     
     // 注：不直接使用 getCachedData 提前返回，因为 fetchWithRetryAndCache 缓存的是原始 API 响应，
     // 若直接返回会导致 dateStr 等字段缺失。统一走 fetchWithRetryAndCache + transform 流程。
+    const lng = Number.parseFloat(String(profile.longitude));
     const requestBody = {
       date: dateStr,
       birthDate: profile.birthDate,
       birthTime: profile.birthTime,
-      longitude: profile.longitude,
+      longitude: Number.isFinite(lng) ? lng : 120,
       gender: profile.gender,
       customYongShen: yongShen
     };
@@ -561,9 +608,22 @@ const mainCategory = getMainCategory(pathname);
     throw new Error('API 响应格式错误');
   }, []);
 
+  const refetchFortune = useCallback(() => {
+    setFortuneLoadError(null);
+    setFortuneRetryNonce((n) => n + 1);
+  }, []);
+
   useEffect(() => {
+    if (!userProfile.birthDate?.trim() || !userProfile.birthTime?.trim()) {
+      setIsLoading(false);
+      setFortune(null);
+      setFortuneLoadError(null);
+      return;
+    }
+
     const fetchFortune = async () => {
       setIsLoading(true);
+      setFortuneLoadError(null);
       try {
         const year = currentDate.getFullYear();
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -593,7 +653,10 @@ const mainCategory = getMainCategory(pathname);
           keyword: backendData.mainTheme?.keyword,
           dimensionsCount: Object.keys(backendData.dimensions || {}).length
         });
-        
+
+        trackEvent('fortune_load_success', { date: dateStr });
+
+        setFortuneLoadError(null);
           setFortune({ ...backendData, dateObj: currentDate });
 
         // 更新成就进度（查询运势）
@@ -653,7 +716,13 @@ const mainCategory = getMainCategory(pathname);
 
       } catch (error) {
         console.error("获取运势数据失败", error);
-        
+
+        const msg =
+          error instanceof Error ? error.message : String(error);
+        trackEvent('fortune_load_error', {
+          error_message: msg.slice(0, 120),
+        });
+
         // 提取错误信息
         let errorMessage = '运势数据加载失败，请稍后重试';
         if (error instanceof Error) {
@@ -670,7 +739,8 @@ const mainCategory = getMainCategory(pathname);
         
         // 显示错误提示
         showToast(errorMessage, 'error');
-        
+        setFortuneLoadError(errorMessage);
+
         // 如果用户档案不完整，提示用户
         if (!userProfile.birthDate || !userProfile.birthTime) {
           setTimeout(() => {
@@ -682,7 +752,7 @@ const mainCategory = getMainCategory(pathname);
       }
     };
     fetchFortune();
-  }, [currentDate, userProfile, customYongShen, fetchFortuneData, showToast]);
+  }, [currentDate, userProfile, customYongShen, fetchFortuneData, showToast, fortuneRetryNonce]);
 
   // --- 截图逻辑（使用html-to-image，完美支持lab颜色）---
   const handleGenerateImage = async () => {
@@ -732,6 +802,7 @@ const mainCategory = getMainCategory(pathname);
       haptics.success(); // 震动反馈
       showToast('日签生成成功！', 'success');
       console.log('✅ 截图成功！');
+      trackEvent('daily_sign_image_generated', { theme: dailySignTheme });
 
     } catch (error: any) {
       console.error('截图失败:', error);
@@ -745,6 +816,11 @@ const mainCategory = getMainCategory(pathname);
   const handleSaveSettings = (profile: UserProfile) => {
     setUserProfile(profile);
     localStorage.setItem('user_profile', JSON.stringify(profile));
+    if (profile.birthDate && profile.birthTime) {
+      trackEvent('profile_complete_save', {
+        has_city: Boolean(profile.city?.trim()),
+      });
+    }
   };
 
   // --- 日期切换 ---
@@ -768,12 +844,14 @@ const mainCategory = getMainCategory(pathname);
   const handleOnboardingComplete = () => {
     localStorage.setItem('onboarding_completed', 'true');
     setShowOnboarding(false);
+    trackEvent('onboarding_flow_completed');
   };
 
   // 跳过引导
   const handleOnboardingSkip = () => {
     localStorage.setItem('onboarding_completed', 'true');
     setShowOnboarding(false);
+    trackEvent('onboarding_flow_skipped');
   };
 
   return (
@@ -892,6 +970,16 @@ const mainCategory = getMainCategory(pathname);
                       showThemeSelector={showThemeSelector}
                       onToggleThemeSelector={() => setShowThemeSelector(!showThemeSelector)}
                       onDiaryClick={() => setShowDiary(true)}
+                      fortuneLoadError={fortuneLoadError}
+                      profileIncomplete={
+                        !userProfile.birthDate?.trim() || !userProfile.birthTime?.trim()
+                      }
+                      onOpenProfileSettings={() => setIsSettingsOpen(true)}
+                      onRetryFortune={refetchFortune}
+                      entryBridge={{
+                        show: entryBridgeVisible,
+                        onDismiss: dismissEntryBridge,
+                      }}
                       baziContext={fortune ? {
                         baziDetail: fortune.baziDetail,
                         yongShen: fortune.yongShen,
@@ -944,6 +1032,16 @@ const mainCategory = getMainCategory(pathname);
                         showThemeSelector={showThemeSelector}
                         onToggleThemeSelector={() => setShowThemeSelector(!showThemeSelector)}
                         onDiaryClick={() => setShowDiary(true)}
+                        fortuneLoadError={fortuneLoadError}
+                        profileIncomplete={
+                          !userProfile.birthDate?.trim() || !userProfile.birthTime?.trim()
+                        }
+                        onOpenProfileSettings={() => setIsSettingsOpen(true)}
+                        onRetryFortune={refetchFortune}
+                        entryBridge={{
+                          show: entryBridgeVisible,
+                          onDismiss: dismissEntryBridge,
+                        }}
                         baziContext={fortune ? {
                           baziDetail: fortune.baziDetail,
                           yongShen: fortune.yongShen,
@@ -1142,6 +1240,18 @@ const mainCategory = getMainCategory(pathname);
         <Route path="/app/*" element={<Navigate to="/app/fortune/today" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {showOnboarding && pathname.startsWith('/app') && (
+        <Onboarding
+          profile={userProfile}
+          onComplete={(p) => {
+            handleSaveSettings(p);
+            handleOnboardingComplete();
+          }}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
+
       {/* 个人档案设置 Modal */}
       <ProfileSettings
         isOpen={isSettingsOpen}
