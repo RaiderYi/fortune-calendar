@@ -1,0 +1,400 @@
+/* ============================================
+   东方美学主题 - CSS变量系统
+   Oriental Theme CSS Variables
+   ============================================ */
+
+:root {
+  /* ========== 背景色 ========== */
+  --bg-paper: #FAF8F3;
+  --bg-paper-dark: #F0EDE6;
+  --bg-paper-light: #FFFCF7;
+  --bg-ink: #1A1A2E;
+  --bg-ink-light: #2A2A3E;
+  --bg-ink-dark: #0F0F1A;
+  
+  /* ========== 强调色 ========== */
+  /* 朱砂红 - 印章、吉祥 */
+  --accent-vermilion: #C45C26;
+  --accent-vermilion-light: #D97B45;
+  --accent-vermilion-dark: #A34A1C;
+  --accent-vermilion-50: rgba(196, 92, 38, 0.5);
+  --accent-vermilion-20: rgba(196, 92, 38, 0.2);
+  --accent-vermilion-10: rgba(196, 92, 38, 0.1);
+  --accent-vermilion-5: rgba(196, 92, 38, 0.05);
+  
+  /* 青黛色 - 山水、青铜 */
+  --accent-qingdai: #2D5A4A;
+  --accent-qingdai-light: #3D7A64;
+  --accent-qingdai-dark: #1D3A2E;
+  --accent-qingdai-50: rgba(45, 90, 74, 0.5);
+  --accent-qingdai-20: rgba(45, 90, 74, 0.2);
+  --accent-qingdai-10: rgba(45, 90, 74, 0.1);
+  
+  /* 金色 - 贵气、高光 */
+  --accent-gold: #D4A574;
+  --accent-gold-light: #E4C59A;
+  --accent-gold-dark: #B4855A;
+  --accent-gold-50: rgba(212, 165, 116, 0.5);
+  --accent-gold-20: rgba(212, 165, 116, 0.2);
+  --accent-gold-10: rgba(212, 165, 116, 0.1);
+  
+  /* 其他主题色 */
+  --accent-peach: #E8B4B4;
+  --accent-purple: #7C6B8A;
+  --accent-ink-blue: #2C3E50;
+  
+  /* ========== 文字色 ========== */
+  --text-ink: #2C2C2C;
+  --text-ink-light: #4A4A4A;
+  --text-light-ink: #6B6B6B;
+  --text-muted: #9A9A9A;
+  --text-placeholder: #B8B8B8;
+  
+  /* 深色模式文字 */
+  --text-ink-inverse: #F0EDE6;
+  --text-light-ink-inverse: #A0A0A0;
+  
+  /* ========== 边框 ========== */
+  --border-subtle: rgba(44, 44, 44, 0.08);
+  --border-light: rgba(44, 44, 44, 0.15);
+  --border-medium: rgba(44, 44, 44, 0.25);
+  --border-accent: rgba(196, 92, 38, 0.3);
+  --border-gold: rgba(212, 165, 116, 0.4);
+  
+  /* ========== 阴影 ========== */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.1);
+  --shadow-card-active: 0 2px 10px rgba(0, 0, 0, 0.08);
+  --shadow-accent: 0 2px 8px rgba(196, 92, 38, 0.2);
+  --shadow-accent-hover: 0 4px 16px rgba(196, 92, 38, 0.3);
+  --shadow-ink: 0 8px 32px rgba(26, 26, 46, 0.15);
+  --shadow-ink-hover: 0 12px 48px rgba(26, 26, 46, 0.25);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-gold: 0 4px 20px rgba(212, 165, 116, 0.3);
+  
+  /* ========== 字体 ========== */
+  --font-serif: 'Noto Serif SC', 'STSong', 'SimSun', 'Source Han Serif SC', serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+  --font-display: 'Noto Serif SC', serif;
+  
+  /* ========== 圆角 ========== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  
+  /* ========== 过渡时间 ========== */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+  --transition-bounce: 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  
+  /* ========== 间距 ========== */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
+/* ============================================
+   深色模式
+   ============================================ */
+.dark {
+  --bg-paper: #1A1A2E;
+  --bg-paper-dark: #2A2A3E;
+  --bg-paper-light: #252540;
+  --bg-ink: #0F0F1A;
+  
+  --text-ink: #F0EDE6;
+  --text-ink-light: #D4D0C8;
+  --text-light-ink: #A0A0A0;
+  --text-muted: #707070;
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.15);
+  --border-medium: rgba(255, 255, 255, 0.25);
+  
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --shadow-ink: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   工具类 - 背景
+   ============================================ */
+.bg-paper { background-color: var(--bg-paper); }
+.bg-paper-dark { background-color: var(--bg-paper-dark); }
+.bg-paper-light { background-color: var(--bg-paper-light); }
+.bg-ink { background-color: var(--bg-ink); }
+.bg-ink-light { background-color: var(--bg-ink-light); }
+
+/* ============================================
+   工具类 - 文字颜色
+   ============================================ */
+.text-ink { color: var(--text-ink); }
+.text-ink-light { color: var(--text-ink-light); }
+.text-light-ink { color: var(--text-light-ink); }
+.text-muted { color: var(--text-muted); }
+.text-vermilion { color: var(--accent-vermilion); }
+.text-vermilion-light { color: var(--accent-vermilion-light); }
+.text-gold { color: var(--accent-gold); }
+.text-gold-light { color: var(--accent-gold-light); }
+.text-qingdai { color: var(--accent-qingdai); }
+
+/* ============================================
+   工具类 - 字体
+   ============================================ */
+.font-serif { font-family: var(--font-serif); }
+.font-sans { font-family: var(--font-sans); }
+.font-display { font-family: var(--font-display); }
+
+/* ============================================
+   工具类 - 渐变
+   ============================================ */
+.gradient-gold {
+  background: linear-gradient(135deg, var(--accent-gold-light), var(--accent-gold));
+}
+
+.gradient-gold-text {
+  background: linear-gradient(135deg, var(--accent-gold-light), var(--accent-gold-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-vermilion {
+  background: linear-gradient(135deg, var(--accent-vermilion-light), var(--accent-vermilion));
+}
+
+.gradient-vermilion-text {
+  background: linear-gradient(135deg, var(--accent-vermilion-light), var(--accent-vermilion-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   水墨纹理背景
+   ============================================ */
+.ink-wash-bg {
+  background: 
+    radial-gradient(ellipse at 20% 30%, rgba(196, 92, 38, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(45, 90, 74, 0.05) 0%, transparent 50%),
+    var(--bg-paper);
+}
+
+.ink-wash-bg-dark {
+  background: 
+    radial-gradient(ellipse at 30% 20%, rgba(196, 92, 38, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 80%, rgba(45, 90, 74, 0.06) 0%, transparent 45%),
+    var(--bg-ink);
+}
+
+/* ============================================
+   宣纸纹理效果
+   ============================================ */
+.paper-texture {
+  background-color: var(--bg-paper);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   动画定义
+   ============================================ */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.6; }
+}
+
+@keyframes inkSpread {
+  0% { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ink-drop {
+  0% { 
+    transform: scale(0) translateY(-50px); 
+    opacity: 0; 
+  }
+  50% { 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: scale(2) translateY(0); 
+    opacity: 0; 
+  }
+}
+
+/* ============================================
+   动画工具类
+   ============================================ */
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-ink-spread {
+  animation: inkSpread 1s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 8s linear infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-ink-drop {
+  animation: ink-drop 1.2s ease-out forwards;
+}
+
+/* ============================================
+   减少动画（无障碍支持）
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-ink-spread,
+  .animate-float,
+  .animate-shimmer,
+  .animate-pulse-gentle,
+  .animate-rotate-slow,
+  .animate-scale-in,
+  .animate-slide-up,
+  .animate-ink-drop {
+    animation: none;
+  }
+}
+
+/* ============================================
+   装饰元素
+   ============================================ */
+.divider-ink {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-light) 20%,
+    var(--border-light) 80%,
+    transparent 100%
+  );
+}
+
+.divider-vermilion {
+  height: 2px;
+  width: 60px;
+  background: var(--accent-vermilion);
+  border-radius: 1px;
+}
+
+.corner-decoration {
+  position: relative;
+}
+
+.corner-decoration::before,
+.corner-decoration::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--border-accent);
+  border-style: solid;
+}
+
+.corner-decoration::before {
+  top: 0;
+  left: 0;
+  border-width: 1px 0 0 1px;
+}
+
+.corner-decoration::after {
+  bottom: 0;
+  right: 0;
+  border-width: 0 1px 1px 0;
+}
+
+/* ============================================
+   滚动条样式
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-paper-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============================================
+   选中文字样式
+   ============================================ */
+::selection {
+  background: var(--accent-vermilion-20);
+  color: var(--accent-vermilion-dark);
+}

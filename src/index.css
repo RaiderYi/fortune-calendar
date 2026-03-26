@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* 东方美学主题系统 */
+@import './styles/fonts.css';
+@import './styles/oriental-theme.css';
+
 :root {
   --bg-primary: #F5F5F7;
   --bg-secondary: #ffffff;

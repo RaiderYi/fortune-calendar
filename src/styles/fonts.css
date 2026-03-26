@@ -1,0 +1,98 @@
+/* ============================================
+   字体加载 - 东方美学
+   Fonts Loading for Oriental Theme
+   ============================================ */
+
+/* Noto Serif SC - 从 Google Fonts 加载 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   字体回退栈
+   ============================================ */
+.font-serif-zh {
+  font-family: 
+    'Noto Serif SC',      /* 首选 - Google Fonts */
+    'STSong',             /* Windows 宋体 */
+    'SimSun',             /* Windows 备选 */
+    'Source Han Serif SC', /* Adobe 思源宋体 */
+    'PingFang SC',        /* macOS 苹方 */
+    'Microsoft YaHei',    /* Windows 雅黑 */
+    serif;
+}
+
+.font-sans-zh {
+  font-family: 
+    'Noto Sans SC',       /* 首选 - Google Fonts */
+    'PingFang SC',        /* macOS 苹方 */
+    'Microsoft YaHei',    /* Windows 雅黑 */
+    'Hiragino Sans GB',   /* macOS 冬青黑体 */
+    'WenQuanYi Micro Hei', /* Linux 文泉驿 */
+    sans-serif;
+}
+
+/* ============================================
+   字体优化
+   ============================================ */
+html {
+  /* 启用字体连字和字距调整 */
+  font-feature-settings: "kern" 1;
+  font-kerning: normal;
+  
+  /* 优化文字渲染 */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 中文正文优化 */
+body {
+  font-family: var(--font-sans);
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+
+/* 中文标题优化 */
+h1, h2, h3, h4, h5, h6,
+.font-serif {
+  font-family: var(--font-serif);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* 大标题字重调整 */
+h1 {
+  font-weight: 600;
+}
+
+h2, h3 {
+  font-weight: 500;
+}
+
+/* ============================================
+   特殊文字效果
+   ============================================ */
+
+/* 书法风格标题 */
+.calligraphy {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  writing-mode: vertical-rl;
+}
+
+/* 印章风格 */
+.seal-text {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--accent-vermilion);
+}
+
+/* 引用文字 */
+.quote-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--text-light-ink);
+  border-left: 2px solid var(--accent-vermilion-20);
+  padding-left: 1em;
+}
