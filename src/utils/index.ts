@@ -109,6 +109,13 @@ export {
   setLastSyncTime,
 } from './syncStorage';
 
+// AI聊天存储
+export {
+  getAIChatHistory,
+  addAIChatMessage,
+  clearAIChatHistory,
+} from './aiChatStorage';
+
 // 任务系统
 export {
   getTasks,

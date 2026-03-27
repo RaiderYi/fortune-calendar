@@ -64,6 +64,7 @@ import DatePickerPage from './pages/app/DatePickerPage';
 import FortuneStickPage from './pages/app/FortuneStickPage';
 import LoginPage from './pages/app/LoginPage';
 import InvitePage from './pages/app/InvitePage';
+import MembershipPage from './pages/app/MembershipPage';
 import ProfilePage from './pages/app/ProfilePage';
 import ResetPasswordPage from './pages/app/ResetPasswordPage';
 import DisclaimerModal, { hasAcknowledgedDisclaimer } from './components/DisclaimerModal';
@@ -871,6 +872,7 @@ const mainCategory = getMainCategory(pathname);
         <Route path="/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/invite" element={<InvitePage />} />
+        <Route path="/membership" element={<MembershipPage />} />
         {/* 旧路径重定向 - 保持兼容性 */}
         <Route path="/app" element={<Navigate to="/app/fortune/today" replace />} />
         <Route path="/app/today" element={<Navigate to="/app/fortune/today" replace />} />
