@@ -101,14 +101,23 @@ export function BirthForm() {
               id="date"
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              placeholder="MM/DD/YYYY"
               className={cn(
                 'w-full pl-12 pr-4 py-4 rounded-xl border bg-white/50 focus:bg-white transition-all duration-200 outline-none',
                 errors.date 
                   ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
-                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200',
+                !formData.date && 'text-charcoal/50'
               )}
               max={new Date().toISOString().split('T')[0]}
+              onFocus={(e) => e.target.classList.remove('text-charcoal/50')}
+              onBlur={(e) => !formData.date && e.target.classList.add('text-charcoal/50')}
             />
+            {!formData.date && (
+              <span className="absolute left-12 top-1/2 -translate-y-1/2 text-charcoal/50 pointer-events-none">
+                MM / DD / YYYY
+              </span>
+            )}
           </div>
           {errors.date && (
             <p className="mt-2 text-sm text-red-500">{errors.date}</p>
