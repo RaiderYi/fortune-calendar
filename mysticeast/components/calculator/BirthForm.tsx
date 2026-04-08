@@ -80,6 +80,13 @@ export function BirthForm() {
     }
   };
 
+  // Format date for display (YYYY-MM-DD to MM/DD/YYYY)
+  const formatDisplayDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${month}/${day}/${year}`;
+  };
+
   return (
     <motion.form
       initial={{ opacity: 0, y: 20 }}
@@ -97,27 +104,27 @@ export function BirthForm() {
           <div className="relative">
             <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
             <input
-              type="date"
+              type="text"
               id="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              value={formatDisplayDate(formData.date)}
+              onChange={(e) => {
+                // Parse MM/DD/YYYY back to YYYY-MM-DD for storage
+                const parts = e.target.value.split('/');
+                if (parts.length === 3) {
+                  const [month, day, year] = parts;
+                  setFormData({ ...formData, date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}` });
+                } else {
+                  setFormData({ ...formData, date: e.target.value });
+                }
+              }}
               placeholder="MM/DD/YYYY"
               className={cn(
                 'w-full pl-12 pr-4 py-4 rounded-xl border bg-white/50 focus:bg-white transition-all duration-200 outline-none',
                 errors.date 
                   ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
-                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200',
-                !formData.date && 'text-charcoal/50'
+                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
               )}
-              max={new Date().toISOString().split('T')[0]}
-              onFocus={(e) => e.target.classList.remove('text-charcoal/50')}
-              onBlur={(e) => !formData.date && e.target.classList.add('text-charcoal/50')}
             />
-            {!formData.date && (
-              <span className="absolute left-12 top-1/2 -translate-y-1/2 text-charcoal/50 pointer-events-none">
-                MM / DD / YYYY
-              </span>
-            )}
           </div>
           {errors.date && (
             <p className="mt-2 text-sm text-red-500">{errors.date}</p>
