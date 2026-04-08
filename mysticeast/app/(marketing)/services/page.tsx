@@ -1,65 +1,93 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
-import { Sparkles, Calendar, Heart, ArrowRight, Check, Star } from 'lucide-react';
+import { Sparkles, Compass, Heart, Users, Star, Gem, Home, Scroll, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
-  title: 'Our Services - Personalized BaZi Readings | MysticEast',
-  description: 'Choose from our range of personalized BaZi readings: Complete Destiny Map, Annual Forecast, and Compatibility Analysis. Ancient wisdom for modern decisions.',
+  title: 'Our Services - BaZi Destiny Reading & Feng Shui | MysticEast',
+  description: 'Discover your destiny through authentic BaZi Four Pillars readings, personalized Feng Shui guidance, and energy-enhancing crystals. Ancient wisdom for modern transformation.',
 };
 
 const services = [
   {
-    id: 'destiny-map',
-    name: 'Complete Destiny Map',
-    price: 99,
-    description: 'Our signature 30+ page comprehensive reading. Discover your full elemental blueprint, life cycles, and personalized guidance.',
-    features: [
-      'Complete birth chart analysis',
-      'Day Master element interpretation',
-      '10-year luck cycle forecast',
-      'Next 12 months detailed outlook',
-      'Career & wealth path guidance',
-      'Relationship dynamics analysis',
-      'Feng Shui recommendations',
-      'Crystal & color guidance',
-      'Action steps for current cycle',
+    id: 'bazi-reading',
+    icon: Scroll,
+    name: 'Complete BaZi Destiny Reading',
+    tagline: 'Your Blueprint for Life',
+    description: 'A comprehensive analysis of your Four Pillars birth chart, revealing your elemental nature, life patterns, and destiny path.',
+    includes: [
+      'Complete Four Pillars birth chart analysis',
+      'Day Master element interpretation and personality profile',
+      'Ten-year luck cycle forecast and major transitions',
+      'Annual energy flow and timing guidance',
+      'Career path alignment and wealth potential',
+      'Relationship dynamics and compatibility insights',
+      'Health tendencies and wellness recommendations',
+      'Personalized action plan for current cycle',
     ],
-    popular: true,
-    delivery: 'Within 2 hours via email',
+    deliverable: 'Comprehensive written report with visual charts',
   },
   {
-    id: 'annual-forecast',
-    name: 'Annual Forecast',
-    price: 79,
-    description: 'Year-ahead guidance for optimal timing. Know when to act and when to wait in the coming 12 months.',
-    features: [
-      'Annual luck analysis',
-      'Month-by-month outlook',
-      'Best timing for major decisions',
+    id: 'annual-guidance',
+    icon: Compass,
+    name: 'Annual Destiny Guidance',
+    tagline: 'Navigate Your Year with Clarity',
+    description: 'Focused yearly forecast to help you understand the energy patterns ahead and make optimal decisions for career, relationships, and personal growth.',
+    includes: [
+      'Yearly elemental energy analysis',
+      'Month-by-month timing guidance',
+      'Favorable periods for major decisions',
       'Career opportunity windows',
-      'Relationship highlights',
-      'Health & wellness focus',
-      'Remedies & enhancements',
+      'Relationship and social dynamics',
+      'Financial flow predictions',
+      'Health and wellness focus areas',
+      'Remedies and enhancement strategies',
     ],
-    popular: false,
-    delivery: 'Within 2 hours via email',
+    deliverable: 'Detailed annual forecast report',
   },
   {
     id: 'compatibility',
-    name: 'Compatibility Reading',
-    price: 89,
-    description: 'Relationship dynamics between two charts. Understand your natural connection and growth areas.',
-    features: [
-      'Two complete chart analyses',
-      'Element compatibility score',
-      'Strengths & challenges',
-      'Communication insights',
-      'Long-term potential',
-      'Harmony recommendations',
+    icon: Heart,
+    name: 'Relationship Harmony Reading',
+    tagline: 'Understand Your Connections',
+    description: 'Deep analysis of relationship dynamics between two individuals, revealing natural affinities, challenges, and pathways to harmony.',
+    includes: [
+      'Individual chart analysis for both parties',
+      'Elemental compatibility assessment',
+      'Natural strengths and growth areas',
+      'Communication style insights',
+      'Long-term harmony potential',
+      'Conflict resolution guidance',
+      'Optimal timing for important discussions',
+      'Strategies for deeper connection',
     ],
-    popular: false,
-    delivery: 'Within 2 hours via email',
+    deliverable: 'Joint compatibility report with guidance',
+  },
+];
+
+const enhancements = [
+  {
+    icon: Gem,
+    title: 'Crystal Energy Selection',
+    description: 'Personalized crystal recommendations based on your elemental chart to enhance your natural strengths and balance areas of deficiency.',
+    items: [
+      'Birth chart-based crystal prescriptions',
+      'Energy amplification stones',
+      'Protective and grounding crystals',
+      'Abundance and success enhancers',
+      'Love and relationship harmonizers',
+    ],
+  },
+  {
+    icon: Home,
+    title: 'Feng Shui Space Optimization',
+    description: 'Practical Feng Shui guidance to align your living and working spaces with your personal energy for optimal flow and prosperity.',
+    items: [
+      'Personal elemental direction analysis',
+      'Workspace arrangement for success',
+      'Bedroom layout for rest and harmony',
+      'Color palette recommendations',
+      'Energy activation techniques',
+    ],
   },
 ];
 
@@ -76,70 +104,87 @@ export default function ServicesPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/10 rounded-full mb-6">
             <Sparkles className="w-4 h-4 text-gold-400" />
-            <span className="text-sm font-medium text-gold-400">Personalized Readings</span>
+            <span className="text-sm font-medium text-gold-400">Ancient Wisdom, Modern Application</span>
           </div>
           
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Choose Your Path to Clarity
+            Discover Your Path Through<br />
+            <span className="text-gradient-gold">BaZi & Feng Shui</span>
           </h1>
-          <p className="text-xl text-primary-200/80 max-w-2xl mx-auto">
-            From free elemental insights to comprehensive destiny readings, 
-            find the guidance that resonates with your journey.
+          <p className="text-xl text-primary-200/80 max-w-3xl mx-auto">
+            Unlock the secrets of your destiny with authentic Eastern metaphysics. 
+            Personalized readings, energy alignment, and crystal guidance for your unique elemental nature.
           </p>
         </div>
       </section>
 
-      {/* Services Grid */}
+      {/* Philosophy */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-serif text-3xl font-bold text-primary-950 mb-6">
+            The Art of BaZi (Four Pillars)
+          </h2>
+          <p className="text-lg text-charcoal/70 leading-relaxed mb-6">
+            BaZi, meaning "Eight Characters," is an ancient Chinese metaphysical system that analyzes the 
+            five elements present at your moment of birth. Your birth chart reveals your unique energetic 
+            blueprint—your natural strengths, challenges, optimal timing, and life path.
+          </p>
+          <p className="text-lg text-charcoal/70 leading-relaxed">
+            Unlike fortune-telling, BaZi is a sophisticated pattern recognition system that helps you 
+            understand the natural rhythms of your life and make conscious choices aligned with your energy.
+          </p>
+        </div>
+      </section>
+
+      {/* Main Services */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {services.map((service) => (
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-serif text-4xl font-bold text-primary-950 mb-4">
+              Our Reading Services
+            </h2>
+            <p className="text-lg text-charcoal/70">
+              Each reading is personalized based on your unique birth chart, 
+              providing insights that resonate with your specific elemental composition.
+            </p>
+          </div>
+
+          <div className="space-y-12">
+            {services.map((service, index) => (
               <div
                 key={service.id}
-                className={`relative bg-white rounded-2xl shadow-soft hover:shadow-xl transition-all duration-300 overflow-hidden ${
-                  service.popular ? 'lg:-mt-4 lg:mb-4 border-2 border-gold-200' : ''
-                }`}
+                className="bg-white rounded-2xl shadow-soft overflow-hidden"
               >
-                {service.popular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-gold-500 to-gold-600 text-white px-6 py-2 rounded-b-xl font-medium text-sm">
-                    Most Popular
+                <div className="grid grid-cols-1 lg:grid-cols-2">
+                  {/* Left - Content */}
+                  <div className={`p-8 md:p-12 ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-100 to-gold-200 flex items-center justify-center mb-6">
+                      <service.icon className="w-7 h-7 text-gold-700" />
+                    </div>
+                    <h3 className="font-serif text-3xl font-bold text-primary-950 mb-2">
+                      {service.name}
+                    </h3>
+                    <p className="text-gold-600 font-medium mb-4">{service.tagline}</p>
+                    <p className="text-charcoal/70 text-lg mb-6">{service.description}</p>
+                    
+                    <div className="inline-flex items-center space-x-2 px-4 py-2 bg-primary-50 rounded-lg">
+                      <Scroll className="w-4 h-4 text-primary-600" />
+                      <span className="text-sm text-primary-700">{service.deliverable}</span>
+                    </div>
                   </div>
-                )}
-                
-                <div className={`p-8 ${service.popular ? 'pt-12' : ''}`}>
-                  <h3 className="font-serif text-2xl font-bold text-primary-950 mb-2">
-                    {service.name}
-                  </h3>
-                  <p className="text-charcoal/70 mb-4">{service.description}</p>
-                  
-                  <div className="flex items-baseline mb-6">
-                    <span className="text-charcoal/50">$</span>
-                    <span className="font-serif text-5xl font-bold text-primary-950">{service.price}</span>
+
+                  {/* Right - Includes */}
+                  <div className={`p-8 md:p-12 bg-gradient-to-br from-primary-50 to-cream ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
+                    <h4 className="font-semibold text-primary-950 mb-4">What&apos;s Included:</h4>
+                    <ul className="space-y-3">
+                      {service.includes.map((item) => (
+                        <li key={item} className="flex items-start space-x-3">
+                          <Star className="w-5 h-5 text-gold-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-charcoal/80">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  
-                  <div className="flex items-center space-x-2 text-sm text-charcoal/60 mb-6">
-                    <Calendar className="w-4 h-4" />
-                    <span>{service.delivery}</span>
-                  </div>
-                  
-                  <ul className="space-y-3 mb-8">
-                    {service.features.map((feature) => (
-                      <li key={feature} className="flex items-start space-x-3">
-                        <Check className={`w-5 h-5 mt-0.5 flex-shrink-0 ${service.popular ? 'text-gold-500' : 'text-jade-500'}`} />
-                        <span className="text-charcoal/80 text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Link href={`/services/${service.id}`}>
-                    <Button 
-                      variant={service.popular ? 'gold' : 'primary'}
-                      className="w-full"
-                    >
-                      Get Started
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </Link>
                 </div>
               </div>
             ))}
@@ -147,39 +192,122 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Guarantee */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-jade-100 flex items-center justify-center">
-            <Star className="w-8 h-8 text-jade-600" />
+      {/* Enhancement Services */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-jade-100 rounded-full mb-4">
+              <Gem className="w-4 h-4 text-jade-600" />
+              <span className="text-sm font-medium text-jade-700">Energy Enhancement</span>
+            </div>
+            <h2 className="font-serif text-4xl font-bold text-primary-950 mb-4">
+              Complete Your Transformation
+            </h2>
+            <p className="text-lg text-charcoal/70">
+              Beyond the reading itself, we offer practical guidance to align your environment 
+              and personal energy with your chart&apos;s wisdom.
+            </p>
           </div>
-          <h2 className="font-serif text-3xl font-bold text-primary-950 mb-4">
-            100% Satisfaction Guarantee
-          </h2>
-          <p className="text-lg text-charcoal/70">
-            If your reading doesn&apos;t provide at least one meaningful insight that helps you 
-            understand yourself better, we&apos;ll refund 100% of your purchase. No questions asked.
-          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {enhancements.map((enhancement) => (
+              <div
+                key={enhancement.title}
+                className="crystal-card p-8 md:p-10"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-jade-100 to-jade-200 flex items-center justify-center mb-6">
+                  <enhancement.icon className="w-7 h-7 text-jade-700" />
+                </div>
+                <h3 className="font-serif text-2xl font-bold text-primary-950 mb-3">
+                  {enhancement.title}
+                </h3>
+                <p className="text-charcoal/70 mb-6">{enhancement.description}</p>
+                
+                <ul className="space-y-2">
+                  {enhancement.items.map((item) => (
+                    <li key={item} className="flex items-center space-x-2 text-sm text-charcoal/70">
+                      <div className="w-1.5 h-1.5 rounded-full bg-jade-500" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-20 bg-primary-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-serif text-4xl font-bold mb-4">
+              Your Journey to Clarity
+            </h2>
+            <p className="text-lg text-primary-200/80">
+              A simple process to receive personalized insights based on authentic BaZi methodology.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '01',
+                title: 'Submit Your Details',
+                description: 'Provide your birth date, time, and location for accurate chart calculation.',
+              },
+              {
+                step: '02',
+                title: 'Chart Analysis',
+                description: 'Our system calculates your Four Pillars and analyzes your elemental composition.',
+              },
+              {
+                step: '03',
+                title: 'Receive Your Reading',
+                description: 'Get your comprehensive report with personalized insights and recommendations.',
+              },
+            ].map((item) => (
+              <div key={item.step} className="text-center p-8">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-gold-500/20 to-gold-600/20 flex items-center justify-center border border-gold-500/30">
+                  <span className="font-serif text-2xl font-bold text-gold-400">{item.step}</span>
+                </div>
+                <h3 className="font-serif text-xl font-semibold mb-3">{item.title}</h3>
+                <p className="text-primary-200/70">{item.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-primary-950 text-white">
+      <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Heart className="w-12 h-12 mx-auto mb-6 text-gold-400" />
-          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
-            Not Sure Which Reading is Right for You?
+          <Users className="w-12 h-12 mx-auto mb-6 text-gold-500" />
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-950 mb-4">
+            Ready to Discover Your Elemental Nature?
           </h2>
-          <p className="text-lg text-primary-200/80 mb-8">
-            Start with our free elemental assessment to discover your Day Master, 
-            then choose the reading that best fits your needs.
+          <p className="text-lg text-charcoal/70 mb-8 max-w-2xl mx-auto">
+            Begin with our complimentary elemental assessment. Share your birth details 
+            and receive personalized insights into your unique energy blueprint.
           </p>
-          <Link href="/calculator">
-            <Button size="lg" className="bg-gold-500 hover:bg-gold-600 text-primary-950">
-              Get Free Assessment
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <a 
+              href="/calculator"
+              className="inline-flex items-center justify-center px-8 py-4 bg-primary-950 text-white font-semibold rounded-xl hover:bg-primary-900 transition-colors"
+            >
+              Try Free Calculator
               <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
+            </a>
+            <a 
+              href="mailto:bazirili@foxmail.com"
+              className="inline-flex items-center justify-center px-8 py-4 border-2 border-primary-950 text-primary-950 font-semibold rounded-xl hover:bg-primary-50 transition-colors"
+            >
+              Request Full Reading
+            </a>
+          </div>
+          <p className="mt-6 text-sm text-charcoal/50">
+            Email us at bazirili@foxmail.com with your birth details for a complete analysis.
+          </p>
         </div>
       </section>
     </div>
