@@ -1,0 +1,40 @@
+# MysticEast Project Rules
+
+## Superpower Skills - MANDATORY
+
+All work on this project MUST apply the following Superpower Skills:
+
+### 1. Content Superpower
+- Translate Eastern concepts into Western wellness language
+- Use "Elemental Blueprint" not "BaZi Chart"
+- Use "Core Element" not "Day Master"
+- Focus on empowerment, not fortune-telling
+- Action-oriented copy with clear CTAs
+
+### 2. Design Superpower  
+- Fusion aesthetic: Eastern ink wash + Western crystal wellness
+- Colors: Indigo #2D1B4E, Gold #C9A227, Jade #00A86B
+- Fonts: Cormorant Garamond (headings), Inter (body)
+- Mobile-first, conversion-focused layouts
+
+### 3. UX Superpower
+- Every page must guide to free calculator or email capture
+- Trust signals: privacy focus, no credit card required
+- Beta phase: No pricing displayed
+
+### 4. Code Superpower
+- TypeScript strict mode
+- Reusable components only
+- Accessible, performant code
+
+## Before Committing
+- [ ] Content follows Superpower guidelines?
+- [ ] Design matches Fusion aesthetic?
+- [ ] Mobile responsive?
+- [ ] Performance optimized?
+
+## Beta Phase Rules
+- NO pricing on any page
+- Email contact: bazirili@foxmail.com
+- Free calculator as primary CTA
+- Emphasize "experience phase" messaging
