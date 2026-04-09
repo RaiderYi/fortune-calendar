@@ -36,3 +36,4 @@ __pycache__/
 
 # Local AI / IDE
 .claude/
+mysticeast/.next/
