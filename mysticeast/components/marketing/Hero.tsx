@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { trackEvent } from '@/lib/analytics';
 
 export function Hero() {
   return (
@@ -63,7 +64,11 @@ export function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4"
           >
             <Link href="/calculator">
-              <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-4">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto text-lg px-8 py-4"
+                onClick={() => trackEvent('landing_cta_clicked', { source: 'hero' })}
+              >
                 Calculate Your Chart (Free)
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 
 // Common timezones
 const timezones = [
@@ -38,6 +39,10 @@ export function BirthForm() {
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
 
+  useEffect(() => {
+    trackEvent('calculator_started');
+  }, []);
+
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
     
@@ -63,7 +68,11 @@ export function BirthForm() {
     if (!validateForm()) return;
     
     setIsLoading(true);
-    
+    trackEvent('calculator_submitted', {
+      has_location: Boolean(formData.location),
+      timezone: formData.timezone,
+    });
+
     try {
       // Store form data in sessionStorage for result page
       sessionStorage.setItem('birthData', JSON.stringify(formData));

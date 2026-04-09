@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, Mail, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { trackEvent } from '@/lib/analytics';
 
 export function CTA() {
   return (
@@ -100,9 +101,10 @@ export function CTA() {
           {/* Main CTA Button */}
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Link href="/calculator">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="w-full sm:w-auto text-lg px-10 py-5 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-white shadow-gold"
+                onClick={() => trackEvent('landing_cta_clicked', { source: 'cta_section' })}
               >
                 Try the Calculator First
                 <ArrowRight className="ml-2 w-5 h-5" />
