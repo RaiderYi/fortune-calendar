@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Sparkles, Clock, FileText, Shield, Check, ArrowRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -67,14 +68,15 @@ export default function DestinyMapPage() {
             <div className="hidden lg:block">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-gold-500/20 to-jade-500/20 rounded-3xl blur-3xl" />
-                <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
-                  <div className="aspect-[3/4] bg-gradient-to-br from-primary-800 to-primary-900 rounded-2xl flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <FileText className="w-16 h-16 mx-auto mb-4 text-gold-400" />
-                      <p className="text-2xl font-serif font-bold">30+ Pages</p>
-                      <p className="text-primary-200/60">Personalized Report</p>
-                    </div>
-                  </div>
+                <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+                  <Image
+                    src="/images/destiny-map-report-cover.svg"
+                    alt="MysticEast Destiny Map sample report cover"
+                    width={900}
+                    height={1200}
+                    className="h-auto w-full rounded-2xl"
+                    priority
+                  />
                 </div>
               </div>
             </div>

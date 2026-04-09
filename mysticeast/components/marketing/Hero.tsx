@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -19,7 +20,8 @@ export function Hero() {
       
       {/* Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
+          <div className="text-center lg:text-left">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -32,7 +34,7 @@ export function Hero() {
               Ancient Wisdom • Modern Science
             </span>
           </motion.div>
-          
+
           {/* Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -44,24 +46,24 @@ export function Hero() {
             <span className="text-gradient-gold">True Nature</span>{' '}
             Through Ancient Wisdom
           </motion.h1>
-          
+
           {/* Subheadline */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xl sm:text-2xl text-charcoal/70 mb-10 max-w-2xl mx-auto leading-relaxed"
+            className="text-xl sm:text-2xl text-charcoal/70 mb-10 max-w-2xl lg:max-w-xl mx-auto lg:mx-0 leading-relaxed"
           >
-            Personalized BaZi readings reveal your elemental blueprint, natural strengths, 
+            Personalized BaZi readings reveal your elemental blueprint, natural strengths,
             and optimal timing for life's important decisions.
           </motion.p>
-          
+
           {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4"
+            className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4"
           >
             <Link href="/calculator">
               <Button
@@ -79,7 +81,7 @@ export function Hero() {
               </Button>
             </Link>
           </motion.div>
-          
+
           {/* Social Proof */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -87,7 +89,7 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="mt-16 pt-8 border-t border-primary-100"
           >
-            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-charcoal/60">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm text-charcoal/60">
               <div className="flex items-center space-x-2">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (
@@ -103,6 +105,26 @@ export function Hero() {
                 <span className="text-gold-500">★★★★★</span>
                 <span>4.9/5 average rating</span>
               </div>
+            </div>
+          </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="relative max-w-xl mx-auto w-full"
+          >
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-gold-300/25 via-transparent to-jade-300/20 blur-2xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/70 p-4 shadow-soft backdrop-blur-sm">
+              <Image
+                src="/images/hero-bazi-chart.svg"
+                alt="MysticEast elemental chart preview"
+                width={1200}
+                height={900}
+                className="h-auto w-full rounded-[1.5rem]"
+                priority
+              />
             </div>
           </motion.div>
         </div>

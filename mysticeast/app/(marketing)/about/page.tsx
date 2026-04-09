@@ -123,13 +123,15 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary-100 via-gold-100 to-jade-100 p-8">
-                <div className="w-full h-full rounded-2xl bg-white shadow-soft flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <CircleDot className="w-24 h-24 mx-auto mb-4 text-primary-700" />
-                    <p className="font-serif text-2xl font-bold text-primary-950">BaZi Wisdom</p>
-                    <p className="text-charcoal/60">3,000 years of insight</p>
-                  </div>
+              <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary-100 via-gold-100 to-jade-100 p-6 shadow-soft">
+                <div className="w-full h-full overflow-hidden rounded-[1.5rem] bg-white/70 backdrop-blur-sm">
+                  <Image
+                    src="/images/about-bazi-practice.svg"
+                    alt="MysticEast approach to BaZi pattern recognition"
+                    width={1000}
+                    height={1000}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               </div>
             </div>
@@ -138,7 +140,7 @@ export default function AboutPage() {
       </section>
 
       {/* Principles */}
-      <section className="py-20 bg-primary-950 text-white">
+      <section id="principles" className="py-20 bg-primary-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
