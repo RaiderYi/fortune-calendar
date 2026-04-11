@@ -24,29 +24,41 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-primary-100/90 bg-cream/92 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-primary-100/90 bg-cream/95 backdrop-blur-md">
+      <div className="border-b border-gold-200/60 bg-white/60">
+        <div className="section-shell py-2 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-primary-700/75">
+          <span>Editorial East Journal</span>
+          <span>Issue 04 · Spring Edition</span>
+        </div>
+      </div>
+
       <div className="section-shell">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-700 to-primary-900 shadow-soft flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-gold-400" />
             </div>
-            <span className="font-serif text-xl font-bold text-primary-950">
-              MysticEast
-            </span>
+            <div>
+              <span className="font-serif text-xl font-bold text-primary-950 block leading-none">
+                MysticEast
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-charcoal/50">
+                Cultural Reading Studio
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-10">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${
+                className={`text-[13px] uppercase tracking-[0.16em] font-medium transition-colors ${
                   isActive(link.href)
-                    ? 'text-primary-900 underline decoration-primary-300 decoration-2 underline-offset-8'
-                    : 'text-charcoal/70 hover:text-primary-900'
+                    ? 'text-primary-900'
+                    : 'text-charcoal/65 hover:text-primary-900'
                 }`}
               >
                 {link.label}
@@ -55,9 +67,10 @@ export function Header() {
           </nav>
 
           {/* CTA Button */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            <span className="text-xs text-charcoal/55 uppercase tracking-[0.14em]">Start Here</span>
             <Link href="/calculator">
-              <Button size="sm">Get Free Reading</Button>
+              <Button size="sm">Free Reading</Button>
             </Link>
           </div>
 
@@ -75,16 +88,18 @@ export function Header() {
             )}
           </button>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-primary-100/90">
-            <nav className="flex flex-col space-y-4">
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-primary-100/90 bg-white/90 backdrop-blur py-5">
+          <div className="section-shell">
+            <nav className="flex flex-col space-y-5">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors ${
+                  className={`text-sm uppercase tracking-[0.12em] font-medium transition-colors ${
                     isActive(link.href)
                       ? 'text-primary-900'
                       : 'text-charcoal/70 hover:text-primary-900'
@@ -95,12 +110,12 @@ export function Header() {
                 </Link>
               ))}
               <Link href="/calculator" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full">Get Free Reading</Button>
+                <Button className="w-full">Start Free Reading</Button>
               </Link>
             </nav>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 }

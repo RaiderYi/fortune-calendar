@@ -3,16 +3,33 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { trackEvent } from '@/lib/analytics';
 
-export function Hero() {
+type HeroVariant = 'a' | 'b';
+
+interface HeroProps {
+  variant?: HeroVariant;
+}
+
+export function Hero({ variant = 'a' }: HeroProps) {
+  const isVariantB = variant === 'b';
+  const badge = isVariantB ? 'Five Elements • Living Wisdom' : 'BaZi Philosophy • Modern Clarity';
+  const titleLead = isVariantB ? 'Read the Rhythm of Your' : 'Find Harmony in Your';
+  const titleTail = isVariantB ? 'with Eastern Insight' : 'Elemental Blueprint';
+  const subline = isVariantB
+    ? 'When timing and temperament align, decisions become lighter. We translate BaZi principles into practical guidance for modern life.'
+    : 'Ancient Chinese metaphysics, interpreted in plain English. Understand your core element and make decisions with steadier balance.';
+  const trustPoints = isVariantB
+    ? ['Free result in under 2 minutes', 'No signup required to start', 'Practical guidance you can use today']
+    : ['Free result in under 2 minutes', 'No signup required to start', 'Private by default, never sold'];
+  const primaryCta = isVariantB ? 'Reveal My Element Now' : 'Start Free Assessment';
+  const secondaryCta = isVariantB ? 'How It Works' : 'Explore Services';
+
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden ink-wash-bg">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cream via-cream to-primary-50/30" />
-      
       {/* Decorative Elements */}
       <div className="absolute top-20 right-10 w-72 h-72 bg-gold-200/20 rounded-full blur-3xl" />
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-primary-200/20 rounded-full blur-3xl" />
@@ -27,12 +44,10 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-primary-100/50 rounded-full mb-8"
+            className="seal-chip mb-4"
           >
             <Sparkles className="w-4 h-4 text-primary-600" />
-            <span className="text-sm font-medium text-primary-800">
-              Ancient Wisdom • Modern Science
-            </span>
+            <span>{badge}</span>
           </motion.div>
 
           {/* Headline */}
@@ -42,10 +57,11 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-primary-950 mb-6 leading-tight"
           >
-            Discover Your{' '}
+            {titleLead}{' '}
             <span className="text-gradient-gold">True Nature</span>{' '}
-            Through Ancient Wisdom
+            {titleTail}
           </motion.h1>
+          <div className="zen-divider lg:mx-0 mb-6" />
 
           {/* Subheadline */}
           <motion.p
@@ -54,9 +70,22 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-xl sm:text-2xl text-charcoal/70 mb-10 max-w-2xl lg:max-w-xl mx-auto lg:mx-0 leading-relaxed"
           >
-            Personalized BaZi readings reveal your elemental blueprint, natural strengths,
-            and optimal timing for life's important decisions.
+            {subline}
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mb-10 grid grid-cols-1 gap-3 text-left sm:grid-cols-3"
+          >
+            {trustPoints.map((item) => (
+              <div key={item} className="flex items-center gap-2 rounded-xl border border-primary-100/80 bg-white/72 px-3 py-2 text-sm text-charcoal/75">
+                <CheckCircle2 className="h-4 w-4 text-jade-600" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </motion.div>
 
           {/* CTAs */}
           <motion.div
@@ -71,13 +100,13 @@ export function Hero() {
                 className="w-full sm:w-auto text-lg px-8 py-4"
                 onClick={() => trackEvent('landing_cta_clicked', { source: 'hero' })}
               >
-                Start Free Assessment
+                {primaryCta}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Link href="/services">
+            <Link href={isVariantB ? '/#how-it-works' : '/services'}>
               <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 py-4">
-                Explore Services
+                {secondaryCta}
               </Button>
             </Link>
           </motion.div>
@@ -105,6 +134,10 @@ export function Hero() {
                 <span className="text-gold-500">★★★★★</span>
                 <span>4.9/5 average rating</span>
               </div>
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="h-4 w-4 text-jade-600" />
+                <span>{isVariantB ? 'Clarity-first decisions' : 'Privacy-first experience'}</span>
+              </div>
             </div>
           </motion.div>
           </div>
@@ -115,8 +148,8 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative max-w-xl mx-auto w-full"
           >
-            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-gold-300/25 via-transparent to-jade-300/20 blur-2xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/70 p-4 shadow-soft backdrop-blur-sm">
+            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-gold-300/30 via-transparent to-jade-300/25 blur-2xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-gold-200/60 bg-white/75 p-4 shadow-soft backdrop-blur-sm">
               <Image
                 src="/images/hero-bazi-chart.svg"
                 alt="MysticEast elemental chart preview"

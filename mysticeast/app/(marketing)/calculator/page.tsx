@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { BirthForm } from '@/components/calculator/BirthForm';
-import { Sparkles, Shield, Clock } from 'lucide-react';
+import { Sparkles, Shield, Clock, BadgeCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Free BaZi Calculator - Discover Your Elemental Nature | MysticEast',
@@ -29,6 +29,26 @@ export default function CalculatorPage() {
             <p className="text-lg md:text-xl text-charcoal/70 mb-8 leading-relaxed">
               Enter your birth details to discover your Day Master element—the core energy that shapes your personality, strengths, and life path according to ancient Chinese metaphysics.
             </p>
+
+            <div className="mb-8 rounded-2xl border border-primary-100/80 bg-white/70 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-700/80 mb-3">
+                What you get instantly
+              </p>
+              <ul className="space-y-2 text-sm text-charcoal/75">
+                <li className="flex items-start gap-2">
+                  <BadgeCheck className="h-4 w-4 text-jade-600 mt-0.5" />
+                  <span>Your Day Master element and personality pattern.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <BadgeCheck className="h-4 w-4 text-jade-600 mt-0.5" />
+                  <span>Five-element balance overview you can apply this week.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <BadgeCheck className="h-4 w-4 text-jade-600 mt-0.5" />
+                  <span>Practical next steps without technical jargon.</span>
+                </li>
+              </ul>
+            </div>
 
             <div className="space-y-4">
               <div className="flex items-start space-x-4">

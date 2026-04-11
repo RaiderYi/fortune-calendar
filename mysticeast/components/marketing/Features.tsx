@@ -60,14 +60,14 @@ export function Features() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-jade-600 font-medium tracking-wider uppercase text-sm">
-            What You&apos;ll Discover
+          <span className="seal-chip">
+            Five Energies, One Life Path
           </span>
-          <h2 className="section-title">
-            Insights for Every Area of Life
+          <h2 className="section-title text-primary-950">
+            A Philosophy You Can Actually Use
           </h2>
           <p className="section-description">
-            Your BaZi chart reveals practical patterns across career, relationships, wellbeing, and long-term growth.
+            From career and relationships to home energy, each insight helps you move with balance rather than force.
           </p>
         </motion.div>
 
@@ -82,7 +82,7 @@ export function Features() {
               transition={{ duration: 0.4, delay: index * 0.05 }}
               className="group"
             >
-              <div className="crystal-card p-8 h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              <div className="east-panel p-8 h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                 <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <feature.icon className={`w-7 h-7 ${feature.iconColor}`} />
                 </div>

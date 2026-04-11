@@ -20,8 +20,18 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-primary-950 via-primary-900 to-primary-950 text-white">
+    <footer className="bg-primary-950 text-white">
       <div className="section-shell py-14">
+        <div className="mb-10 border-b border-primary-800/80 pb-8">
+          <p className="text-xs uppercase tracking-[0.2em] text-primary-300/70 mb-3">
+            MysticEast Editorial Letter
+          </p>
+          <p className="max-w-3xl text-primary-100/85 leading-relaxed">
+            A living publication at the intersection of Chinese metaphysics, reflective practice, and modern life design.
+            Read it slowly. Revisit it often.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
@@ -32,8 +42,7 @@ export function Footer() {
               <span className="font-serif text-xl font-bold">MysticEast</span>
             </Link>
             <p className="text-primary-200/80 mb-6 max-w-sm leading-relaxed">
-              Bridging ancient Chinese wisdom with modern self-discovery. 
-              Discover your elemental nature and the cycles that shape your path.
+              We publish guidance rooted in Eastern philosophy and translated for modern English readers seeking calm clarity.
             </p>
             <div className="flex items-center space-x-2 text-primary-200/70">
               <Mail className="w-4 h-4" />
@@ -45,13 +54,13 @@ export function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="font-semibold mb-4 text-gold-400">Services</h3>
+            <h3 className="font-semibold mb-4 text-gold-400 uppercase tracking-[0.12em] text-xs">Readings</h3>
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-primary-200/70 hover:text-white transition-colors text-sm"
+                    className="text-primary-200/70 hover:text-white transition-colors text-sm leading-relaxed"
                   >
                     {link.label}
                   </Link>
@@ -62,7 +71,7 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4 text-gold-400">Company</h3>
+            <h3 className="font-semibold mb-4 text-gold-400 uppercase tracking-[0.12em] text-xs">Journal</h3>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
@@ -79,7 +88,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4 text-gold-400">Legal</h3>
+            <h3 className="font-semibold mb-4 text-gold-400 uppercase tracking-[0.12em] text-xs">Policies</h3>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
@@ -101,7 +110,7 @@ export function Footer() {
             © {new Date().getFullYear()} MysticEast. All rights reserved.
           </p>
           <p className="text-primary-200/50 text-sm mt-2 md:mt-0">
-            Ancient wisdom for modern seekers
+            East to West, depth to daily life.
           </p>
         </div>
       </div>

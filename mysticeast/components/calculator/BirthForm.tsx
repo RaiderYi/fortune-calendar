@@ -307,6 +307,11 @@ export function BirthForm() {
               'Reveal Your Element'
             )}
           </Button>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-charcoal/60">
+            <span className="rounded-full bg-primary-50 px-2.5 py-1">No credit card</span>
+            <span className="rounded-full bg-primary-50 px-2.5 py-1">No signup needed</span>
+            <span className="rounded-full bg-primary-50 px-2.5 py-1">Instant result</span>
+          </div>
         </div>
 
         {submitError && (

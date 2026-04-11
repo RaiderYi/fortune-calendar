@@ -103,12 +103,38 @@
     border: 1px solid var(--color-border-soft);
   }
 
+  .ink-wash-bg {
+    background:
+      radial-gradient(1200px 420px at 12% 18%, rgba(45, 27, 78, 0.07), transparent 60%),
+      radial-gradient(900px 360px at 88% 78%, rgba(0, 168, 107, 0.08), transparent 62%),
+      linear-gradient(180deg, rgba(245, 241, 232, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  }
+
+  .east-panel {
+    @apply rounded-2xl backdrop-blur-sm;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.68) 100%);
+    border: 1px solid rgba(201, 162, 39, 0.32);
+    box-shadow: 0 14px 38px rgba(45, 27, 78, 0.08);
+  }
+
+  .seal-chip {
+    @apply inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em];
+    color: #5c2f21;
+    background: linear-gradient(135deg, rgba(201, 162, 39, 0.28), rgba(201, 162, 39, 0.16));
+    border: 1px solid rgba(201, 162, 39, 0.42);
+  }
+
+  .zen-divider {
+    @apply mx-auto h-px w-20;
+    background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.9), transparent);
+  }
+
   .section-shell {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   .section-title {
-    @apply font-serif text-4xl sm:text-5xl font-bold text-primary-950 mt-4 mb-6;
+    @apply font-serif text-4xl sm:text-5xl font-bold mt-4 mb-6;
   }
 
   .section-description {

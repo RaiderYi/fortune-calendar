@@ -26,7 +26,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-24 bg-white">
+    <section id="how-it-works" className="py-24 bg-white">
       <div className="section-shell">
         {/* Header */}
         <motion.div
@@ -36,14 +36,14 @@ export function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-jade-600 font-medium tracking-wider uppercase text-sm">
-            How It Works
+          <span className="seal-chip">
+            Three-Step Eastern Reading
           </span>
-          <h2 className="section-title">
-            Your Journey to Self-Discovery
+          <h2 className="section-title text-primary-950">
+            Follow the Rhythm, Not the Rush
           </h2>
           <p className="section-description">
-            Three simple steps to unlock the ancient wisdom encoded in your birth chart
+            We translate classical BaZi into modern language so each insight feels grounded, calm, and immediately useful.
           </p>
         </motion.div>
 
@@ -63,7 +63,7 @@ export function HowItWorks() {
                 <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-primary-200 to-transparent" />
               )}
               
-              <div className="crystal-card p-8 h-full hover:shadow-lg transition-shadow duration-300">
+              <div className="east-panel p-8 h-full hover:shadow-lg transition-shadow duration-300">
                 {/* Number Badge */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">

@@ -1,71 +1,51 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, ArrowRight, Sparkles, Calendar, Heart } from 'lucide-react';
+import { ArrowRight, Sparkles, ScrollText, Gem, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 const services = [
   {
     id: 'destiny-map',
-    icon: Sparkles,
-    name: 'Complete Destiny Map',
-    price: 99,
-    description: 'Your comprehensive 30+ page personalized BaZi reading',
-    features: [
-      'Complete birth chart analysis',
-      'Day Master element interpretation',
-      '10-year luck cycle forecast',
-      'Next 12 months outlook',
-      'Career & wealth path guidance',
-      'Relationship dynamics',
-      'Feng Shui recommendations',
-      'Crystal & color guidance',
-    ],
-    popular: true,
-    cta: 'Get Your Destiny Map',
+    icon: ScrollText,
+    name: 'Destiny Map Booklet',
+    description: 'An editorial-style reading document blending BaZi analysis, story-driven interpretation, and practical timing notes.',
+    image: '/images/destiny-map-report-cover.svg',
+    cta: 'View Destiny Map',
   },
   {
     id: 'annual-forecast',
-    icon: Calendar,
-    name: 'Annual Forecast',
-    price: 79,
-    description: 'Year-ahead guidance for optimal timing',
-    features: [
-      'Annual luck analysis',
-      'Month-by-month outlook',
-      'Best timing for major decisions',
-      'Career opportunity windows',
-      'Relationship highlights',
-      'Health & wellness focus',
-      'Remedies & enhancements',
-    ],
-    popular: false,
-    cta: 'Get Annual Forecast',
+    icon: Sparkles,
+    name: 'Annual Rhythm Guide',
+    description: 'A seasonal visual guide for choosing when to push, pause, recover, and align major life decisions.',
+    image: '/images/annual-forecast-calendar.svg',
+    cta: 'Explore Annual Guide',
   },
   {
     id: 'compatibility',
-    icon: Heart,
-    name: 'Compatibility Reading',
-    price: 89,
-    description: 'Relationship dynamics between two charts',
-    features: [
-      'Two complete chart analyses',
-      'Element compatibility score',
-      'Strengths & challenges',
-      'Communication insights',
-      'Long-term potential',
-      'Harmony recommendations',
-    ],
-    popular: false,
-    cta: 'Explore Compatibility',
+    icon: Gem,
+    name: 'Compatibility Folio',
+    description: 'A two-chart narrative focused on emotional dynamics, communication style, and long-term energetic fit.',
+    image: '/images/compatibility-elements.svg',
+    cta: 'Read Compatibility Folio',
   },
 ];
 
+const monthlyFeature = {
+  monthLabel: 'Monthly Theme · April',
+  title: 'The Season of Gentle Momentum',
+  description:
+    'This month we explore how Wood and Water energies shape decisions, creativity, and relationships. A long-form editorial essay with practical rituals and imagery.',
+  image: '/images/about-bazi-practice.svg',
+  href: '/blog',
+};
+
 export function ServicesPreview() {
   return (
-    <section className="py-24 bg-cream">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-white">
+      <div className="section-shell">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -74,18 +54,79 @@ export function ServicesPreview() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-jade-600 font-medium tracking-wider uppercase text-sm">
-            Our Services
+          <span className="seal-chip">
+            Editorial East Collection
           </span>
-          <h2 className="font-serif text-4xl sm:text-5xl font-bold text-primary-950 mt-4 mb-6">
-            Choose Your Path to Clarity
+          <h2 className="section-title text-primary-950">
+            Cultural Products You Can Read, Keep, and Revisit
           </h2>
-          <p className="text-xl text-charcoal/70">
-            From free elemental insights to comprehensive destiny readings, find the guidance that resonates with your journey
+          <p className="section-description">
+            Designed as collectible guidance pieces. Each product combines Eastern philosophy, modern language, and rich visual storytelling.
           </p>
         </motion.div>
 
-        {/* Services Grid */}
+        <div className="mb-10 east-panel p-6 md:p-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-primary-700/80 font-semibold mb-3">Editorial Principle</p>
+              <h3 className="font-serif text-3xl text-primary-950 mb-3">From Fortune Telling to Cultural Reading</h3>
+              <p className="text-charcoal/75 leading-relaxed">
+                We present BaZi as a reflective cultural practice: narrative pages, image-led interpretation, and practical rituals for daily life.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-gold-200/60 bg-gradient-to-br from-gold-50/90 to-white p-5">
+              <p className="text-sm text-charcoal/75 leading-relaxed">
+                Future-ready layout: this section is designed for frequent product updates, larger artwork blocks, and campaign storytelling.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Editorial spread */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55 }}
+          className="mb-12 overflow-hidden rounded-3xl border border-gold-200/70 bg-gradient-to-br from-white via-cream/45 to-gold-50/70"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="relative min-h-[340px]">
+              <Image
+                src="/images/destiny-map-report-cover.svg"
+                alt="Editorial spread cover for MysticEast cultural reading"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-950/40 via-transparent to-transparent" />
+            </div>
+            <div className="p-8 md:p-10">
+              <p className="text-xs uppercase tracking-[0.18em] text-primary-700/80 font-semibold mb-4">
+                Featured Editorial Spread
+              </p>
+              <h3 className="font-serif text-4xl leading-tight text-primary-950 mb-4">
+                The Destiny Map Issue
+              </h3>
+              <p className="text-charcoal/75 leading-relaxed mb-8">
+                A magazine-style reading format: symbolic visuals, element narratives, and practical application notes.
+                Built to be read like a cultural publication rather than a utility report.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/services/destiny-map">
+                  <Button variant="primary">
+                    Open Featured Reading
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
+                <Link href="/services">
+                  <Button variant="outline">View All Collections</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Editorial product grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <motion.div
@@ -94,52 +135,33 @@ export function ServicesPreview() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative ${service.popular ? 'lg:-mt-4 lg:mb-4' : ''}`}
+              className="group"
             >
-              {service.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                  <span className="px-4 py-1.5 bg-gradient-to-r from-gold-500 to-gold-600 text-white text-sm font-semibold rounded-full shadow-gold">
-                    Most Popular
-                  </span>
+              <div className="h-full east-panel overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
+                <div className="relative h-52 overflow-hidden">
+                  <Image
+                    src={service.image}
+                    alt={`${service.name} preview`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary-950/20 to-transparent" />
                 </div>
-              )}
-              
-              <div className={`h-full bg-white rounded-2xl shadow-soft hover:shadow-xl transition-all duration-300 overflow-hidden ${service.popular ? 'border-2 border-gold-200' : ''}`}>
-                {/* Header */}
-                <div className={`p-8 ${service.popular ? 'bg-gradient-to-br from-gold-50 to-gold-100/50' : ''}`}>
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${service.popular ? 'bg-gold-500 text-white' : 'bg-primary-100 text-primary-700'}`}>
-                    <service.icon className="w-7 h-7" />
+
+                <div className="p-7">
+                  <div className="w-12 h-12 rounded-xl bg-primary-100/80 text-primary-700 flex items-center justify-center mb-5">
+                    <service.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="font-serif text-2xl font-semibold text-primary-950 mb-2">
+
+                  <h3 className="font-serif text-2xl font-semibold text-primary-950 mb-3">
                     {service.name}
                   </h3>
-                  <p className="text-charcoal/70 mb-4">
+                  <p className="text-charcoal/75 leading-relaxed mb-6">
                     {service.description}
                   </p>
-                  <div className="flex items-baseline">
-                    <span className="text-charcoal/50 text-lg">$</span>
-                    <span className="font-serif text-5xl font-bold text-primary-950">
-                      {service.price}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Features */}
-                <div className="p-8 pt-0">
-                  <ul className="space-y-3 mb-8">
-                    {service.features.map((feature) => (
-                      <li key={feature} className="flex items-start space-x-3">
-                        <Check className={`w-5 h-5 mt-0.5 flex-shrink-0 ${service.popular ? 'text-gold-500' : 'text-jade-500'}`} />
-                        <span className="text-charcoal/80">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
+
                   <Link href={`/services/${service.id}`}>
-                    <Button 
-                      variant={service.popular ? 'gold' : 'primary'}
-                      className="w-full"
-                    >
+                    <Button variant="outline" className="w-full">
                       {service.cta}
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
@@ -150,18 +172,42 @@ export function ServicesPreview() {
           ))}
         </div>
 
-        {/* Guarantee */}
+        {/* Monthly story slot */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-16 text-center"
+          transition={{ duration: 0.5, delay: 0.12 }}
+          className="mt-14 east-panel overflow-hidden"
         >
-          <p className="text-charcoal/60">
-            <span className="font-semibold text-jade-600">100% Satisfaction Guarantee:</span>{' '}
-            If your reading doesn&apos;t provide meaningful insights, we&apos;ll refund your purchase. No questions asked.
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-[0.95fr_1.05fr]">
+            <div className="relative min-h-[250px]">
+              <Image
+                src={monthlyFeature.image}
+                alt={`${monthlyFeature.title} monthly cultural story`}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="p-7 md:p-9">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary-100/70 px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-primary-700/85 font-semibold mb-4">
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span>{monthlyFeature.monthLabel}</span>
+              </div>
+              <h3 className="font-serif text-3xl text-primary-950 mb-4">
+                {monthlyFeature.title}
+              </h3>
+              <p className="text-charcoal/75 leading-relaxed mb-6">
+                {monthlyFeature.description}
+              </p>
+              <Link href={monthlyFeature.href}>
+                <Button variant="outline">
+                  Read This Month&apos;s Story
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>
