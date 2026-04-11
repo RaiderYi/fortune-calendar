@@ -27,7 +27,7 @@ const steps = [
 export function HowItWorks() {
   return (
     <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="section-shell">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -39,10 +39,10 @@ export function HowItWorks() {
           <span className="text-jade-600 font-medium tracking-wider uppercase text-sm">
             How It Works
           </span>
-          <h2 className="font-serif text-4xl sm:text-5xl font-bold text-primary-950 mt-4 mb-6">
+          <h2 className="section-title">
             Your Journey to Self-Discovery
           </h2>
-          <p className="text-xl text-charcoal/70">
+          <p className="section-description">
             Three simple steps to unlock the ancient wisdom encoded in your birth chart
           </p>
         </motion.div>

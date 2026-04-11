@@ -1,5 +1,18 @@
 import { NextResponse } from 'next/server';
-import type { BirthData, MiniCalculateResponse } from '@/lib/types/bazi';
+import type { CalculationResult } from '@/types';
+
+interface CalculateRequestBody {
+  date: string;
+  time: string;
+  timezone: string;
+  location?: string;
+}
+
+interface CalculateResponseBody {
+  success: boolean;
+  data?: CalculationResult;
+  error?: string;
+}
 
 /**
  * POST /api/calculate
@@ -8,12 +21,12 @@ import type { BirthData, MiniCalculateResponse } from '@/lib/types/bazi';
  */
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const body = await request.json() as BirthData;
+    const body = (await request.json()) as CalculateRequestBody;
     
     // Validate required fields
-    if (!body.date || !body.time || !body.location) {
+    if (!body.date || !body.time || !body.timezone) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: date, time, location' },
+        { success: false, error: 'Missing required fields: date, time, timezone' },
         { status: 400 }
       );
     }
@@ -46,9 +59,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
     
-    // TODO: Integrate with Python BaZi engine
-    // For now, return mock data for testing
-    const response: MiniCalculateResponse = {
+    const response: CalculateResponseBody = {
       success: true,
       data: generateMockResult(body),
     };
@@ -68,7 +79,7 @@ export async function POST(request: Request): Promise<NextResponse> {
  * Generate mock result for testing
  * TODO: Replace with actual Python API integration
  */
-function generateMockResult(birthData: BirthData): MiniCalculateResponse['data'] {
+function generateMockResult(birthData: CalculateRequestBody): CalculationResult {
   // Simple deterministic mock based on date
   const date = new Date(birthData.date);
   const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
@@ -98,27 +109,54 @@ function generateMockResult(birthData: BirthData): MiniCalculateResponse['data']
     Water: ['Intuitive', 'Adaptable', 'Wise', 'Flexible', 'Perceptive'],
   };
   
+  const dominantScore = 34;
+  const secondaryScore = 22;
+  const tertiaryScore = 18;
+  const lowScore = 14;
+  const weakestScore = 12;
+  const orderedElements = [
+    dayMasterElement,
+    elements[(elementIndex + 1) % 5],
+    elements[(elementIndex + 2) % 5],
+    elements[(elementIndex + 3) % 5],
+    elements[(elementIndex + 4) % 5],
+  ] as const;
+  const elementScoreMap: Record<string, number> = {
+    [orderedElements[0]]: dominantScore,
+    [orderedElements[1]]: secondaryScore,
+    [orderedElements[2]]: tertiaryScore,
+    [orderedElements[3]]: lowScore,
+    [orderedElements[4]]: weakestScore,
+  };
+
   return {
     dayMaster: {
-      stem: `${dayMasterElement === 'Metal' ? 'Geng' : dayMasterElement === 'Wood' ? 'Jia' : dayMasterElement === 'Water' ? 'Ren' : dayMasterElement === 'Fire' ? 'Bing' : 'Wu'} ${dayMasterElement}`,
+      stem: dayMasterElement === 'Metal' ? 'Geng' : dayMasterElement === 'Wood' ? 'Jia' : dayMasterElement === 'Water' ? 'Ren' : dayMasterElement === 'Fire' ? 'Bing' : 'Wu',
       element: dayMasterElement,
       yinYang: dayOfYear % 2 === 0 ? 'Yang' : 'Yin',
       animal: dayMasterAnimal,
-      description: elementDescriptions[dayMasterElement],
     },
-    elementBalance: {
-      Wood: dayMasterElement === 'Wood' ? 35 : 15,
-      Fire: dayMasterElement === 'Fire' ? 35 : 15,
-      Earth: dayMasterElement === 'Earth' ? 35 : 15,
-      Metal: dayMasterElement === 'Metal' ? 35 : 15,
-      Water: dayMasterElement === 'Water' ? 35 : 15,
-      dominant: dayMasterElement,
-      weakest: elements[(elementIndex + 3) % 5],
+    chart: {
+      year: { stem: 'Jia', branch: 'Dragon', element: 'Wood' },
+      month: { stem: 'Bing', branch: 'Tiger', element: 'Fire' },
+      day: {
+        stem: dayMasterElement === 'Metal' ? 'Geng' : dayMasterElement === 'Wood' ? 'Jia' : dayMasterElement === 'Water' ? 'Ren' : dayMasterElement === 'Fire' ? 'Bing' : 'Wu',
+        branch: dayMasterAnimal,
+        element: dayMasterElement,
+      },
+      hour: { stem: 'Xin', branch: 'Rooster', element: 'Metal' },
     },
-    favorableElements: [
-      dayMasterElement,
-      elements[(elementIndex + 1) % 5],
-    ],
-    personalityTraits: personalityTraits[dayMasterElement],
+    elements: {
+      wood: elementScoreMap.Wood,
+      fire: elementScoreMap.Fire,
+      earth: elementScoreMap.Earth,
+      metal: elementScoreMap.Metal,
+      water: elementScoreMap.Water,
+    },
+    insight: {
+      title: `Your ${dayMasterElement} pattern in action`,
+      description: `${elementDescriptions[dayMasterElement]} This pattern is strongest when you choose environments that support your ${personalityTraits[dayMasterElement][0].toLowerCase()} side.`,
+      category: 'general',
+    },
   };
 }

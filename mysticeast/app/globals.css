@@ -48,6 +48,10 @@
   /* Neutral */
   --color-cream: #F5F1E8;
   --color-charcoal: #2C2C2C;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-strong: rgba(255, 255, 255, 0.86);
+  --color-border-soft: rgba(221, 214, 254, 0.65);
+  --color-focus-ring: rgba(167, 139, 250, 0.32);
   
   /* Fonts */
   --font-serif: 'Cormorant Garamond', Georgia, serif;
@@ -66,6 +70,11 @@
   body {
     @apply bg-cream text-charcoal antialiased;
     font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary-400);
+    outline-offset: 2px;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -89,7 +98,33 @@
   }
   
   .crystal-card {
-    @apply bg-white/60 backdrop-blur-sm rounded-2xl shadow-crystal border border-white/20;
+    @apply rounded-2xl shadow-crystal backdrop-blur-sm;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-soft);
+  }
+
+  .section-shell {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply font-serif text-4xl sm:text-5xl font-bold text-primary-950 mt-4 mb-6;
+  }
+
+  .section-description {
+    color: rgba(44, 44, 44, 0.72);
+    @apply text-xl leading-relaxed;
+  }
+
+  .form-input {
+    @apply w-full rounded-xl border bg-white/70 transition-all duration-200 outline-none;
+    border-color: var(--color-border-soft);
+  }
+
+  .form-input:focus {
+    @apply bg-white;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
   }
 }
 

@@ -19,7 +19,7 @@ export function Hero() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-jade-100/10 rounded-full blur-3xl" />
       
       {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative section-shell py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
           <div className="text-center lg:text-left">
           {/* Badge */}
@@ -71,7 +71,7 @@ export function Hero() {
                 className="w-full sm:w-auto text-lg px-8 py-4"
                 onClick={() => trackEvent('landing_cta_clicked', { source: 'hero' })}
               >
-                Calculate Your Chart (Free)
+                Start Free Assessment
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -99,7 +99,7 @@ export function Hero() {
                     />
                   ))}
                 </div>
-                <span>10,000+ charts created</span>
+                <span>10,000+ assessments completed</span>
               </div>
               <div className="flex items-center space-x-1">
                 <span className="text-gold-500">★★★★★</span>

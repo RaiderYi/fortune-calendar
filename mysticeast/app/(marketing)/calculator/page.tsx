@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function CalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cream via-cream to-primary-50/30 py-12 md:py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="section-shell">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left Column - Content */}
           <div className="lg:sticky lg:top-32">

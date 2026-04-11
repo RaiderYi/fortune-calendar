@@ -32,8 +32,8 @@ export function CTA() {
             <span className="text-gradient-gold">Elemental Nature</span>?
           </h2>
           
-          <p className="text-xl text-primary-200/80 mb-10 max-w-2xl mx-auto">
-            Start with a free elemental assessment. In just 2 minutes, uncover your Day Master and receive your first personalized insight.
+          <p className="text-xl text-primary-200/85 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Start with a free elemental assessment. In under two minutes, uncover your Day Master and get your first practical insight.
           </p>
 
           {/* Free Experience Banner */}
@@ -102,8 +102,9 @@ export function CTA() {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
             <Link href="/calculator">
               <Button
+                variant="gold"
                 size="lg"
-                className="w-full sm:w-auto text-lg px-10 py-5 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-white shadow-gold"
+                className="w-full sm:w-auto text-lg px-10 py-5"
                 onClick={() => trackEvent('landing_cta_clicked', { source: 'cta_section' })}
               >
                 Try the Calculator First

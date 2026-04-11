@@ -18,7 +18,7 @@ interface BirthData {
   date: string;
   time: string;
   timezone: string;
-  location: string;
+  location?: string;
 }
 
 const mockResult: CalculationResult = {
@@ -63,26 +63,36 @@ export default function ResultPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [birthData, setBirthData] = useState<BirthData | null>(null);
+  const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('birthData');
-    if (!stored) {
-      router.push('/calculator');
-      return;
-    }
+    try {
+      const stored = sessionStorage.getItem('birthData');
+      const storedResult = sessionStorage.getItem('calculationResult');
+      if (!stored || !storedResult) {
+        router.push('/calculator');
+        return;
+      }
 
-    const parsed = JSON.parse(stored) as BirthData;
-    setBirthData(parsed);
-    trackEvent('result_viewed', {
-      has_location: Boolean(parsed.location),
-      timezone: parsed.timezone,
-    });
+      const parsedBirthData = JSON.parse(stored) as BirthData;
+      const parsedResult = JSON.parse(storedResult) as CalculationResult;
+      setBirthData(parsedBirthData);
+      setCalculationResult(parsedResult);
+      trackEvent('result_viewed', {
+        has_location: Boolean(parsedBirthData.location),
+        timezone: parsedBirthData.timezone,
+      });
+    } catch {
+      router.push('/calculator');
+    }
   }, [router]);
+
+  const result = calculationResult ?? mockResult;
 
   const shareSummary = useMemo(
     () =>
-      `My MysticEast result: ${mockResult.insight.title}. ${mockResult.insight.description}`,
-    []
+      `My MysticEast result: ${result.insight.title}. ${result.insight.description}`,
+    [result.insight.description, result.insight.title]
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,8 +114,8 @@ export default function ResultPage() {
     try {
       const data: EmailCaptureData = {
         email,
-        dayMaster: mockResult.dayMaster.element,
-        element: mockResult.dayMaster.element,
+        dayMaster: result.dayMaster.element,
+        element: result.dayMaster.element,
         consent,
         source: 'result-weekly-insights',
       };
@@ -135,7 +145,7 @@ export default function ResultPage() {
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  if (!birthData) {
+  if (!birthData || !calculationResult) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
@@ -162,14 +172,14 @@ export default function ResultPage() {
             Your first reading is ready
           </h1>
           <p className="mt-4 text-lg text-charcoal/70 max-w-2xl mx-auto leading-relaxed">
-            Here is your core pattern, three practical ways to work with it, and the next best step if you want more weekly guidance.
+            Here is your core pattern, three practical ways to work with it this week, and a next step if you want ongoing guidance.
           </p>
         </motion.div>
 
-        <ElementReveal dayMaster={mockResult.dayMaster} elements={mockResult.elements} />
+        <ElementReveal dayMaster={result.dayMaster} elements={result.elements} />
 
         <div className="mt-8">
-          <InsightCard insight={mockResult.insight} />
+          <InsightCard insight={result.insight} />
         </div>
 
         <ActionableSuggestions suggestions={actionableSuggestions} />
@@ -209,10 +219,10 @@ export default function ResultPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={cn(
-                        'w-full pl-12 pr-4 py-4 rounded-xl border bg-white/70 focus:bg-white transition-all duration-200 outline-none',
+                        'form-input pl-12 pr-4 py-4',
                         error
-                          ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200'
-                          : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                          : 'border-primary-200'
                       )}
                     />
                   </div>

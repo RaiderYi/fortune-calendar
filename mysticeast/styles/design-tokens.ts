@@ -156,6 +156,19 @@ export const effects = {
   }
 } as const;
 
+export const surfaces = {
+  pageGradient: 'linear-gradient(135deg, rgba(245,241,232,1) 0%, rgba(245,241,232,1) 55%, rgba(245,243,255,0.48) 100%)',
+  cardGradient: 'linear-gradient(145deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.62) 100%)',
+  darkSectionGradient: 'linear-gradient(145deg, #2D1B4E 0%, #3a2266 55%, #2D1B4E 100%)',
+} as const;
+
+export const semantic = {
+  focusRing: colors.primary[400],
+  focusRingSoft: 'rgba(167, 139, 250, 0.32)',
+  borderSoft: 'rgba(221, 214, 254, 0.65)',
+  textMuted: 'rgba(44, 44, 44, 0.68)',
+} as const;
+
 // Animation presets
 export const animations = {
   fadeIn: {

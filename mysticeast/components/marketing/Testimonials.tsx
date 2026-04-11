@@ -39,7 +39,7 @@ export function Testimonials() {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative section-shell">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -51,11 +51,11 @@ export function Testimonials() {
           <span className="text-gold-400 font-medium tracking-wider uppercase text-sm">
             Testimonials
           </span>
-          <h2 className="font-serif text-4xl sm:text-5xl font-bold mt-4 mb-6">
+          <h2 className="section-title text-white">
             What Our Clients Say
           </h2>
-          <p className="text-xl text-primary-200/80">
-            Join thousands who have gained clarity and direction through their personalized readings
+          <p className="text-xl text-primary-200/85 leading-relaxed">
+            Join thousands of people who gained clarity and direction through personalized readings.
           </p>
         </motion.div>
 

@@ -7,6 +7,7 @@ import { Calendar, Clock, MapPin, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
+import { type BirthData, type CalculationResult } from '@/types';
 
 // Common timezones
 const timezones = [
@@ -21,11 +22,12 @@ const timezones = [
   { value: 'UTC', label: 'UTC' },
 ];
 
-interface FormData {
-  date: string;
-  time: string;
-  timezone: string;
-  location: string;
+type FormData = BirthData;
+
+interface CalculateApiResponse {
+  success: boolean;
+  data?: CalculationResult;
+  error?: string;
 }
 
 export function BirthForm() {
@@ -37,7 +39,9 @@ export function BirthForm() {
     timezone: 'America/New_York',
     location: '',
   });
+  const [displayDate, setDisplayDate] = useState('');
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     trackEvent('calculator_started');
@@ -45,13 +49,17 @@ export function BirthForm() {
 
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const timeRegex = /^\d{2}:\d{2}$/;
     
-    if (!formData.date) {
-      newErrors.date = 'Please enter your birth date';
+    if (!formData.date || !isoDateRegex.test(formData.date)) {
+      newErrors.date = 'Please enter a valid birth date (MM/DD/YYYY)';
+    } else if (Number.isNaN(new Date(formData.date).getTime())) {
+      newErrors.date = 'Please enter a valid calendar date';
     }
     
-    if (!formData.time) {
-      newErrors.time = 'Please enter your birth time';
+    if (!formData.time || !timeRegex.test(formData.time)) {
+      newErrors.time = 'Please enter a valid birth time';
     }
     
     if (!formData.timezone) {
@@ -64,6 +72,7 @@ export function BirthForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError('');
     
     if (!validateForm()) return;
     
@@ -74,26 +83,78 @@ export function BirthForm() {
     });
 
     try {
-      // Store form data in sessionStorage for result page
+      const payload = {
+        ...formData,
+        location: formData.location?.trim() || undefined,
+      };
+
+      const response = await fetch('/api/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const json = (await response.json()) as CalculateApiResponse;
+      if (!response.ok || !json.success || !json.data) {
+        throw new Error(json.error || 'Unable to calculate your chart right now.');
+      }
+
+      // Store form/result in sessionStorage for result page
       sessionStorage.setItem('birthData', JSON.stringify(formData));
-      
-      // Simulate API call delay for UX
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      sessionStorage.setItem('calculationResult', JSON.stringify(json.data));
       
       // Navigate to result page
       router.push('/result');
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong while calculating your chart. Please try again.';
+      setSubmitError(message);
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Format date for display (YYYY-MM-DD to MM/DD/YYYY)
-  const formatDisplayDate = (dateStr: string) => {
+  // Format ISO date for display (YYYY-MM-DD to MM/DD/YYYY)
+  const formatDisplayDate = (dateStr: string): string => {
     if (!dateStr) return '';
-    const [year, month, day] = dateStr.split('-');
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return '';
+    const [year, month, day] = parts;
+    if (!year || !month || !day) return '';
     return `${month}/${day}/${year}`;
+  };
+
+  const toIsoDate = (input: string): string | null => {
+    const parts = input.split('/');
+    if (parts.length !== 3) return null;
+
+    const [monthRaw, dayRaw, yearRaw] = parts.map((part) => part.trim());
+    if (!monthRaw || !dayRaw || !yearRaw) return null;
+
+    if (!/^\d{1,2}$/.test(monthRaw) || !/^\d{1,2}$/.test(dayRaw) || !/^\d{4}$/.test(yearRaw)) {
+      return null;
+    }
+
+    const month = Number(monthRaw);
+    const day = Number(dayRaw);
+    const year = Number(yearRaw);
+    if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900) {
+      return null;
+    }
+
+    const iso = `${yearRaw}-${monthRaw.padStart(2, '0')}-${dayRaw.padStart(2, '0')}`;
+    const parsed = new Date(iso);
+    if (Number.isNaN(parsed.getTime())) return null;
+
+    const matchesDate =
+      parsed.getUTCFullYear() === year &&
+      parsed.getUTCMonth() + 1 === month &&
+      parsed.getUTCDate() === day;
+
+    return matchesDate ? iso : null;
   };
 
   return (
@@ -115,23 +176,29 @@ export function BirthForm() {
             <input
               type="text"
               id="date"
-              value={formatDisplayDate(formData.date)}
+              value={displayDate}
               onChange={(e) => {
-                // Parse MM/DD/YYYY back to YYYY-MM-DD for storage
-                const parts = e.target.value.split('/');
-                if (parts.length === 3) {
-                  const [month, day, year] = parts;
-                  setFormData({ ...formData, date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}` });
-                } else {
-                  setFormData({ ...formData, date: e.target.value });
+                const rawValue = e.target.value;
+                setDisplayDate(rawValue);
+
+                const isoDate = toIsoDate(rawValue);
+                setFormData({ ...formData, date: isoDate ?? '' });
+                if (errors.date) {
+                  setErrors((current) => ({ ...current, date: undefined }));
                 }
+              }}
+              onBlur={() => {
+                if (!displayDate) return;
+                const isoDate = toIsoDate(displayDate);
+                if (!isoDate) return;
+                setDisplayDate(formatDisplayDate(isoDate));
               }}
               placeholder="MM/DD/YYYY"
               className={cn(
-                'w-full pl-12 pr-4 py-4 rounded-xl border bg-white/50 focus:bg-white transition-all duration-200 outline-none',
+                'form-input pl-12 pr-4 py-4',
                 errors.date 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
-                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                  : 'border-primary-200'
               )}
             />
           </div>
@@ -151,12 +218,17 @@ export function BirthForm() {
               type="time"
               id="time"
               value={formData.time}
-              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, time: e.target.value });
+                if (errors.time) {
+                  setErrors((current) => ({ ...current, time: undefined }));
+                }
+              }}
               className={cn(
-                'w-full pl-12 pr-4 py-4 rounded-xl border bg-white/50 focus:bg-white transition-all duration-200 outline-none',
+                'form-input pl-12 pr-4 py-4',
                 errors.time 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
-                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                  : 'border-primary-200'
               )}
             />
           </div>
@@ -177,12 +249,17 @@ export function BirthForm() {
             <select
               id="timezone"
               value={formData.timezone}
-              onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, timezone: e.target.value });
+                if (errors.timezone) {
+                  setErrors((current) => ({ ...current, timezone: undefined }));
+                }
+              }}
               className={cn(
-                'w-full pl-4 pr-12 py-4 rounded-xl border bg-white/50 focus:bg-white transition-all duration-200 outline-none appearance-none',
+                'form-input pl-4 pr-12 py-4 appearance-none',
                 errors.timezone 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-200' 
-                  : 'border-primary-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200'
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
+                  : 'border-primary-200'
               )}
             >
               {timezones.map((tz) => (
@@ -208,7 +285,7 @@ export function BirthForm() {
               placeholder="City, Country"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full pl-12 pr-4 py-4 rounded-xl border border-primary-200 bg-white/50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200 outline-none"
+              className="form-input pl-12 pr-4 py-4"
             />
           </div>
         </div>
@@ -231,6 +308,12 @@ export function BirthForm() {
             )}
           </Button>
         </div>
+
+        {submitError && (
+          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {submitError}
+          </p>
+        )}
 
         {/* Privacy Note */}
         <p className="text-center text-xs text-charcoal/50">

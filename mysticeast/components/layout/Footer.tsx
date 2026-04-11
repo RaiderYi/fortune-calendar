@@ -20,8 +20,8 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-primary-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-gradient-to-br from-primary-950 via-primary-900 to-primary-950 text-white">
+      <div className="section-shell py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
@@ -31,7 +31,7 @@ export function Footer() {
               </div>
               <span className="font-serif text-xl font-bold">MysticEast</span>
             </Link>
-            <p className="text-primary-200/70 mb-6 max-w-sm">
+            <p className="text-primary-200/80 mb-6 max-w-sm leading-relaxed">
               Bridging ancient Chinese wisdom with modern self-discovery. 
               Discover your elemental nature and the cycles that shape your path.
             </p>
@@ -96,7 +96,7 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-primary-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
+        <div className="border-t border-primary-800/80 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between">
           <p className="text-primary-200/50 text-sm">
             © {new Date().getFullYear()} MysticEast. All rights reserved.
           </p>

@@ -51,7 +51,7 @@ const features = [
 export function Features() {
   return (
     <section className="py-24 bg-cream">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="section-shell">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -63,11 +63,11 @@ export function Features() {
           <span className="text-jade-600 font-medium tracking-wider uppercase text-sm">
             What You&apos;ll Discover
           </span>
-          <h2 className="font-serif text-4xl sm:text-5xl font-bold text-primary-950 mt-4 mb-6">
+          <h2 className="section-title">
             Insights for Every Area of Life
           </h2>
-          <p className="text-xl text-charcoal/70">
-            Your BaZi chart reveals patterns and potentials across career, relationships, health, and personal growth
+          <p className="section-description">
+            Your BaZi chart reveals practical patterns across career, relationships, wellbeing, and long-term growth.
           </p>
         </motion.div>
 

@@ -24,12 +24,12 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-sm border-b border-gold-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-primary-100/90 bg-cream/92 backdrop-blur-md">
+      <div className="section-shell">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-700 to-primary-900 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-700 to-primary-900 shadow-soft flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-gold-400" />
             </div>
             <span className="font-serif text-xl font-bold text-primary-950">
@@ -45,7 +45,7 @@ export function Header() {
                 href={link.href}
                 className={`text-sm font-medium transition-colors ${
                   isActive(link.href)
-                    ? 'text-primary-900'
+                    ? 'text-primary-900 underline decoration-primary-300 decoration-2 underline-offset-8'
                     : 'text-charcoal/70 hover:text-primary-900'
                 }`}
               >
@@ -63,9 +63,10 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-charcoal/70 hover:text-primary-900"
+            className="md:hidden p-2 text-charcoal/70 hover:text-primary-900 rounded-lg hover:bg-primary-50"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -77,7 +78,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gold-100">
+          <div className="md:hidden py-4 border-t border-primary-100/90">
             <nav className="flex flex-col space-y-4">
               {navLinks.map((link) => (
                 <Link
